@@ -1,0 +1,42 @@
+frontend:
+  baseurl: http://localhost:5173
+
+application:
+  uploads:
+    path: uploads
+
+spring:
+  profiles:
+    active: dev
+  application:
+    name: quadzone-api
+    security:
+      jwt:
+        expiration: 300000 # 5 minutes
+        refresh-token:
+          expiration: 86400000 # 1 day
+  main:
+    banner-mode: off
+  servlet:
+    multipart:
+      max-file-size: 1GB
+      max-request-size: 1GB
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: quadzone@gmail.com
+    password: rivu yxgn hqkz uepl # change later
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+
+logging:
+  level:
+    root: error
