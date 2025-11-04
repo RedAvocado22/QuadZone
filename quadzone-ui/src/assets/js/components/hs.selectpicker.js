@@ -5,90 +5,93 @@
  * @version 1.0
  *
  */
-;(function ($) {
-  'use strict';
-  $.HSCore.components.HSSelectPicker = {
-    /**
-     *
-     *
-     * @var Object _baseConfig
-     */
-    _baseConfig: {},
+(function ($) {
+    "use strict";
+    $.HSCore.components.HSSelectPicker = {
+        /**
+         *
+         *
+         * @var Object _baseConfig
+         */
+        _baseConfig: {},
 
-    /**
-     *
-     *
-     * @var jQuery pageCollection
-     */
-    pageCollection: $(),
+        /**
+         *
+         *
+         * @var jQuery pageCollection
+         */
+        pageCollection: $(),
 
-    /**
-     * Initialization of Go To wrapper.
-     *
-     * @param String selector (optional)
-     * @param Object config (optional)
-     *
-     * @return jQuery pageCollection - collection of initialized items.
-     */
+        /**
+         * Initialization of Go To wrapper.
+         *
+         * @param String selector (optional)
+         * @param Object config (optional)
+         *
+         * @return jQuery pageCollection - collection of initialized items.
+         */
 
-    init: function (selector, config) {
-      this.collection = selector && $(selector).length ? $(selector) : $();
-      if (!$(selector).length) return;
+        init: function (selector, config) {
+            this.collection =
+                selector && $(selector).length ? $(selector) : $();
+            if (!$(selector).length) return;
 
-      this.config = config && $.isPlainObject(config) ?
-        $.extend({}, this._baseConfig, config) : this._baseConfig;
+            this.config =
+                config && $.isPlainObject(config)
+                    ? $.extend({}, this._baseConfig, config)
+                    : this._baseConfig;
 
-      this.config.itemSelector = selector;
+            this.config.itemSelector = selector;
 
-      this.initSelectPicker();
+            this.initSelectPicker();
 
-      return this.pageCollection;
-    },
+            return this.pageCollection;
+        },
 
-    initSelectPicker: function () {
-      //Variables
-      var $self = this,
-        collection = $self.pageCollection;
+        initSelectPicker: function () {
+            //Variables
+            var $self = this,
+                collection = $self.pageCollection;
 
-      //Actions
-      this.collection.each(function (i, el) {
-        //Variables
-        var $this = $(el);
+            //Actions
+            this.collection.each(function (i, el) {
+                //Variables
+                var $this = $(el);
 
-        $this.selectpicker();
+                $this.selectpicker();
 
-        $this.on('loaded.bs.select', function (e) {
-          var $searchbox = $this.siblings('.dropdown-menu ').find('.bs-searchbox'),
-            searchBoxClasses = $this.data('searchbox-classes');
+                $this.on("loaded.bs.select", function (e) {
+                    var $searchbox = $this
+                            .siblings(".dropdown-menu ")
+                            .find(".bs-searchbox"),
+                        searchBoxClasses = $this.data("searchbox-classes");
 
-          if (!searchBoxClasses) return;
+                    if (!searchBoxClasses) return;
 
-          $searchbox.addClass(searchBoxClasses);
-        });
+                    $searchbox.addClass(searchBoxClasses);
+                });
 
-        //Actions
-        collection = collection.add($this);
-      });
-    },
+                //Actions
+                collection = collection.add($this);
+            });
+        },
 
-    method: function () {
-      //Variables
-      var $self = this,
-        newArguments = [];
+        method: function () {
+            //Variables
+            var $self = this,
+                newArguments = [];
 
-      for (var i = 1; i < arguments.length; i++) {
+            for (var i = 1; i < arguments.length; i++) {
+                newArguments.push(arguments[i]);
+            }
 
-        newArguments.push(arguments[i]);
+            //Actions
+            $self.collection.each(function (i, el) {
+                //Variables
+                var $this = $(el);
 
-      }
-
-      //Actions
-      $self.collection.each(function (i, el) {
-        //Variables
-        var $this = $(el);
-
-        $this.selectpicker.apply($this, newArguments);
-      });
-    }
-  };
+                $this.selectpicker.apply($this, newArguments);
+            });
+        },
+    };
 })(jQuery);

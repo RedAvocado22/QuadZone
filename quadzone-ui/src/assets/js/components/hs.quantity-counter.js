@@ -5,88 +5,87 @@
  * @version 1.0
  *
  */
-;(function ($) {
-  'use strict';
+(function ($) {
+    "use strict";
 
-  $.HSCore.components.HSQantityCounter = {
-    /**
-     *
-     *
-     * @var Object _baseConfig
-     */
-    _baseConfig: {},
+    $.HSCore.components.HSQantityCounter = {
+        /**
+         *
+         *
+         * @var Object _baseConfig
+         */
+        _baseConfig: {},
 
-    /**
-     *
-     *
-     * @var jQuery pageCollection
-     */
-    pageCollection: $(),
+        /**
+         *
+         *
+         * @var jQuery pageCollection
+         */
+        pageCollection: $(),
 
-    /**
-     * Initialization of Count quantity wrapper.
-     *
-     * @param String selector (optional)
-     * @param Object config (optional)
-     *
-     * @return jQuery pageCollection - collection of initialized items.
-     */
+        /**
+         * Initialization of Count quantity wrapper.
+         *
+         * @param String selector (optional)
+         * @param Object config (optional)
+         *
+         * @return jQuery pageCollection - collection of initialized items.
+         */
 
-    init: function (selector, config) {
+        init: function (selector, config) {
+            this.collection =
+                selector && $(selector).length ? $(selector) : $();
+            if (!$(selector).length) return;
 
-      this.collection = selector && $(selector).length ? $(selector) : $();
-      if (!$(selector).length) return;
+            this.config =
+                config && $.isPlainObject(config)
+                    ? $.extend({}, this._baseConfig, config)
+                    : this._baseConfig;
 
-      this.config = config && $.isPlainObject(config) ?
-          $.extend({}, this._baseConfig, config) : this._baseConfig;
+            this.config.itemSelector = selector;
 
-      this.config.itemSelector = selector;
+            this.initCountQty();
 
-      this.initCountQty();
+            return this.pageCollection;
+        },
 
-      return this.pageCollection;
+        initCountQty: function () {
+            //Variables
+            var $self = this,
+                collection = $self.pageCollection;
 
-    },
+            //Actions
+            this.collection.each(function (i, el) {
+                //Variables
+                var $this = $(el),
+                    $plus = $this.find(".js-plus"),
+                    $minus = $this.find(".js-minus"),
+                    $result = $this.find(".js-result"),
+                    resultVal = parseInt($result.val());
 
-    initCountQty: function () {
-      //Variables
-      var $self = this,
-          collection = $self.pageCollection;
+                $plus.on("click", function (e) {
+                    e.preventDefault();
 
-      //Actions
-      this.collection.each(function (i, el) {
-        //Variables
-        var $this = $(el),
-            $plus = $this.find('.js-plus'),
-            $minus = $this.find('.js-minus'),
-            $result = $this.find('.js-result'),
-            resultVal = parseInt($result.val());
+                    resultVal += 1;
 
-        $plus.on('click', function (e) {
-          e.preventDefault();
+                    $result.val(resultVal);
+                });
 
-          resultVal += 1;
+                $minus.on("click", function (e) {
+                    e.preventDefault();
 
-          $result.val(resultVal);
-        });
+                    if (resultVal >= 1) {
+                        resultVal -= 1;
 
-        $minus.on('click', function (e) {
-          e.preventDefault();
+                        $result.val(resultVal);
+                    } else {
+                        return false;
+                    }
+                });
 
-          if (resultVal >= 1) {
-            resultVal -= 1;
-
-            $result.val(resultVal);
-          } else {
-            return false;
-          }
-        });
-
-        //Actions
-        collection = collection.add($this);
-      });
-    }
-
-  };
-
+                //Actions
+                collection = collection.add($this);
+            });
+        },
+    };
 })(jQuery);

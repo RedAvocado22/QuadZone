@@ -7,131 +7,151 @@
  *
  */
 var isEmpty = function isEmpty(f) {
-  return (/^function[^{]+\{\s*\}/m.test(f.toString())
-  );
-}
+    return /^function[^{]+\{\s*\}/m.test(f.toString());
+};
 
-;(function ($) {
-  'use strict';
+(function ($) {
+    "use strict";
 
-  $.HSCore.components.HSValidation = {
-    /**
-     *
-     *
-     * @var Object _baseConfig
-     */
-    _baseConfig: {
-      errorElement: 'div',
-      errorClass: 'invalid-feedback',
-      rules: {},
-      onkeyup: function(element){$(element).valid()},
-      errorPlacement: function(){},
-      highlight: function(){},
-      unhighlight: function(){},
-      submitHandler: function(){}
-    },
+    $.HSCore.components.HSValidation = {
+        /**
+         *
+         *
+         * @var Object _baseConfig
+         */
+        _baseConfig: {
+            errorElement: "div",
+            errorClass: "invalid-feedback",
+            rules: {},
+            onkeyup: function (element) {
+                $(element).valid();
+            },
+            errorPlacement: function () {},
+            highlight: function () {},
+            unhighlight: function () {},
+            submitHandler: function () {},
+        },
 
-    /**
-     *
-     *
-     * @var jQuery pageCollection
-     */
-    pageCollection: $(),
+        /**
+         *
+         *
+         * @var jQuery pageCollection
+         */
+        pageCollection: $(),
 
-    /**
-     * Initialization of Validation wrapper.
-     *
-     * @param String selector (optional)
-     * @param Object config (optional)
-     *
-     * @return jQuery pageCollection - collection of initialized items.
-     */
+        /**
+         * Initialization of Validation wrapper.
+         *
+         * @param String selector (optional)
+         * @param Object config (optional)
+         *
+         * @return jQuery pageCollection - collection of initialized items.
+         */
 
-    init: function (selector, config) {
-      this.collection = selector && $(selector).length ? $(selector) : $();
-      if (!$(selector).length) return;
+        init: function (selector, config) {
+            this.collection =
+                selector && $(selector).length ? $(selector) : $();
+            if (!$(selector).length) return;
 
-      this.config = config && $.isPlainObject(config) ?
-        $.extend({}, this._baseConfig, config) : this._baseConfig;
+            this.config =
+                config && $.isPlainObject(config)
+                    ? $.extend({}, this._baseConfig, config)
+                    : this._baseConfig;
 
-      this.config.itemSelector = selector;
+            this.config.itemSelector = selector;
 
-      this.initValidation();
+            this.initValidation();
 
-      return this.pageCollection;
-    },
+            return this.pageCollection;
+        },
 
-    initValidation: function () {
-      //Variables
-      var $self = this,
-        config = $self.config,
-        collection = $self.pageCollection;
+        initValidation: function () {
+            //Variables
+            var $self = this,
+                config = $self.config,
+                collection = $self.pageCollection;
 
-      //Actions
-      this.collection.each(function (i, el) {
-        //Variables
-        var $this = $(el);
+            //Actions
+            this.collection.each(function (i, el) {
+                //Variables
+                var $this = $(el);
 
-        if ($this.hasClass('js-step-form')) {
-          $.validator.setDefaults({
-            ignore: ':hidden:not(.active select)'
-          });
-        } else {
-          $.validator.setDefaults({
-            ignore: ':hidden:not(select)'
-          });
-        }
+                if ($this.hasClass("js-step-form")) {
+                    $.validator.setDefaults({
+                        ignore: ":hidden:not(.active select)",
+                    });
+                } else {
+                    $.validator.setDefaults({
+                        ignore: ":hidden:not(select)",
+                    });
+                }
 
-        $this.validate({
-          errorElement: config['errorElement'],
-          errorClass: config['errorClass'],
-          rules: config['rules'],
-          onkeyup: config['onkeyup'],
-          errorPlacement: isEmpty(config['errorPlacement']) === true ? $self.errorPlacement : config['errorPlacement'],
-          highlight: isEmpty(config['highlight']) === true ? $self.highlight : config['highlight'],
-          unhighlight: isEmpty(config['unhighlight']) === true ? $self.unHighlight : config['unhighlight'],
-          submitHandler: isEmpty(config['submitHandler']) === true ? $self.submitHandler : config['submitHandler']
-        });
+                $this.validate({
+                    errorElement: config["errorElement"],
+                    errorClass: config["errorClass"],
+                    rules: config["rules"],
+                    onkeyup: config["onkeyup"],
+                    errorPlacement:
+                        isEmpty(config["errorPlacement"]) === true
+                            ? $self.errorPlacement
+                            : config["errorPlacement"],
+                    highlight:
+                        isEmpty(config["highlight"]) === true
+                            ? $self.highlight
+                            : config["highlight"],
+                    unhighlight:
+                        isEmpty(config["unhighlight"]) === true
+                            ? $self.unHighlight
+                            : config["unhighlight"],
+                    submitHandler:
+                        isEmpty(config["submitHandler"]) === true
+                            ? $self.submitHandler
+                            : config["submitHandler"],
+                });
 
-        if($this.find('select').length) {
+                if ($this.find("select").length) {
+                    $("select").change(function () {
+                        $(this).valid();
+                    });
+                }
 
-          $('select').change(function () {
-            $(this).valid();
-          });
+                //Actions
+                collection = collection.add($this);
+            });
+        },
 
-        }
+        errorPlacement: function (error, element) {
+            var $this = $(element),
+                errorMsgClasses = $this.data("error-msg-classes");
 
-        //Actions
-        collection = collection.add($this);
-      });
-    },
+            error.addClass(errorMsgClasses);
+            error.appendTo(element.parents(".js-form-message"));
+        },
 
-    errorPlacement: function (error, element) {
-      var $this = $(element),
-        errorMsgClasses = $this.data('error-msg-classes');
+        highlight: function (element) {
+            var $this = $(element),
+                errorClass = $this.data("error-class"),
+                successClass = $this.data("success-class");
 
-      error.addClass(errorMsgClasses);
-      error.appendTo(element.parents('.js-form-message'));
-    },
+            $this
+                .parents(".js-form-message")
+                .removeClass(successClass)
+                .addClass(errorClass);
+        },
 
-    highlight: function (element) {
-      var $this = $(element),
-        errorClass = $this.data('error-class'),
-        successClass = $this.data('success-class');
+        unHighlight: function (element) {
+            var $this = $(element),
+                errorClass = $this.data("error-class"),
+                successClass = $this.data("success-class");
 
-      $this.parents('.js-form-message').removeClass(successClass).addClass(errorClass);
-    },
+            $this
+                .parents(".js-form-message")
+                .removeClass(errorClass)
+                .addClass(successClass);
+        },
 
-    unHighlight: function (element) {
-      var $this = $(element),
-        errorClass = $this.data('error-class'),
-        successClass = $this.data('success-class');
-
-      $this.parents('.js-form-message').removeClass(errorClass).addClass(successClass);
-    },
-
-    submitHandler: function (form) {
-      form.submit();
-    }
-  }
+        submitHandler: function (form) {
+            form.submit();
+        },
+    };
 })(jQuery);
