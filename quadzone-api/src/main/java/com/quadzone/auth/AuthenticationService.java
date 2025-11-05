@@ -1,5 +1,7 @@
 package com.quadzone.auth;
 
+import com.quadzone.auth.dto.AuthenticationRequest;
+import com.quadzone.auth.dto.AuthenticationResponse;
 import com.quadzone.config.JwtService;
 import com.quadzone.user.User;
 import com.quadzone.user.UserRepository;
@@ -31,19 +33,19 @@ public class AuthenticationService {
         userRepository.save(user);
         var jwtToken = jwtService.generateToken(user);
 
-        return AuthenticationResponse.builder().token(jwtToken).build();
+        return new AuthenticationResponse(jwtToken);
     }
 
     public AuthenticationResponse authenticate(AuthenticationRequest request) {
         authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
-                        request.getEmail(),
-                        request.getPassword()
+                        request.email(),
+                        request.password()
                 )
         );
 
-        var user = userRepository.findByEmail(request.getEmail()).orElseThrow();
+        var user = userRepository.findByEmail(request.email()).orElseThrow();
         var jwtToken = jwtService.generateToken(user);
-        return AuthenticationResponse.builder().token(jwtToken).build();
+        return new AuthenticationResponse(jwtToken);
     }
 }
