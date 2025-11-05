@@ -1,15 +1,16 @@
 @charset "UTF-8";
 
 @font-face {
-  font-family: "font-electro";
-  src:url("https://transvelo.github.io/electro-html/2.0/assets/fonts/font-electro.eot");
-  src:url("https://transvelo.github.io/electro-html/2.0/assets/fonts/font-electro.eot?#iefix") format("embedded-opentype"),
-    url("https://transvelo.github.io/electro-html/2.0/assets/fonts/font-electro.woff") format("woff"),
-    url("https://transvelo.github.io/electro-html/2.0/assets/fonts/font-electro.ttf") format("truetype"),
-    url("https://transvelo.github.io/electro-html/2.0/assets/fonts/font-electro.svg#font-electro") format("svg");
-  font-weight: normal;
-  font-style: normal;
-
+    font-family: "font-electro";
+    src: url("https://transvelo.github.io/electro-html/2.0/assets/fonts/font-electro.eot");
+    src:
+        url("https://transvelo.github.io/electro-html/2.0/assets/fonts/font-electro.eot?#iefix")
+            format("embedded-opentype"),
+        url("https://transvelo.github.io/electro-html/2.0/assets/fonts/font-electro.woff") format("woff"),
+        url("https://transvelo.github.io/electro-html/2.0/assets/fonts/font-electro.ttf") format("truetype"),
+        url("https://transvelo.github.io/electro-html/2.0/assets/fonts/font-electro.svg#font-electro") format("svg");
+    font-weight: normal;
+    font-style: normal;
 }
 
 [data-icon]:before {
@@ -49,119 +50,119 @@
 }
 
 .ec-menu:before {
-  content: "\61";
+    content: "\61";
 }
 .ec-list-view-medium:before {
-  content: "\62";
+    content: "\62";
 }
 .ec-transport:before {
-  content: "\63";
+    content: "\63";
 }
 .ec-add-to-cart:before {
-  content: "\64";
+    content: "\64";
 }
 .ec-arrow-right-categproes:before {
-  content: "\65";
+    content: "\65";
 }
 .ec-comment:before {
-  content: "\66";
+    content: "\66";
 }
 .ec-compare:before {
-  content: "\67";
+    content: "\67";
 }
 .ec-customers:before {
-  content: "\68";
+    content: "\68";
 }
 .ec-dollar:before {
-  content: "\69";
+    content: "\69";
 }
 .ec-favorites:before {
-  content: "\6a";
+    content: "\6a";
 }
 .ec-grid-view:before {
-  content: "\6b";
+    content: "\6b";
 }
 .ec-list-view:before {
-  content: "\6c";
+    content: "\6c";
 }
 .ec-blog-likes:before {
-  content: "\6d";
+    content: "\6d";
 }
 .ec-phone:before {
-  content: "\6e";
+    content: "\6e";
 }
 .ec-returning:before {
-  content: "\6f";
+    content: "\6f";
 }
 .ec-search:before {
-  content: "\70";
+    content: "\70";
 }
 .ec-shopping-bag:before {
-  content: "\71";
+    content: "\71";
 }
 .ec-support:before {
-  content: "\72";
+    content: "\72";
 }
 .ec-tag:before {
-  content: "\73";
+    content: "\73";
 }
 .ec-thing-arrow-right:before {
-  content: "\74";
+    content: "\74";
 }
 .ec-user:before {
-  content: "\75";
+    content: "\75";
 }
 .ec-category-icon:before {
-  content: "\76";
+    content: "\76";
 }
 .ec-mail:before {
-  content: "\77";
+    content: "\77";
 }
 .ec-map-pointer:before {
-  content: "\78";
+    content: "\78";
 }
 .ec-newsletter:before {
-  content: "\79";
+    content: "\79";
 }
 .ec-close-remove:before {
-  content: "\7a";
+    content: "\7a";
 }
 .ec-payment:before {
-  content: "\41";
+    content: "\41";
 }
 .ec-arrow-down-search:before {
-  content: "\42";
+    content: "\42";
 }
 .ec-list-view-small:before {
-  content: "\43";
+    content: "\43";
 }
 .ec-cameras:before {
-  content: "\44";
+    content: "\44";
 }
 .ec-drone:before {
-  content: "\45";
+    content: "\45";
 }
 .ec-gamepad:before {
-  content: "\46";
+    content: "\46";
 }
 .ec-headphones:before {
-  content: "\47";
+    content: "\47";
 }
 .ec-laptop:before {
-  content: "\48";
+    content: "\48";
 }
 .ec-printer:before {
-  content: "\49";
+    content: "\49";
 }
 .ec-smartphones:before {
-  content: "\4a";
+    content: "\4a";
 }
 .ec-smartwatch:before {
-  content: "\4b";
+    content: "\4b";
 }
 .ec-speaker:before {
-  content: "\4c";
+    content: "\4c";
 }
 .ec-tvs:before {
-  content: "\4d";
+    content: "\4d";
 }
