@@ -16,32 +16,38 @@ import java.util.List;
 @Setter
 @ToString
 @Entity
-@Table(name = "order")
+@Table(name = "orders")
 public class Order implements Serializable {
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "order_sequence")
+    @GeneratedValue(strategy = GenerationType.AUTO, generator = "order_sequence")
     @SequenceGenerator(name = "order_sequence", sequenceName = "order_sequence", allocationSize = 100)
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "customer_id", nullable = false)
+    @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "shipping_address_id", nullable = false)
     private Address shippingAddress;
 
+    @Column
     private LocalDateTime orderDate;
 
+    @Column
     private BigDecimal subtotal;
+    @Column
     private BigDecimal taxAmount;
+    @Column
     private BigDecimal shippingCost;
+    @Column
     private BigDecimal discountAmount;
+    @Column
     private BigDecimal totalAmount;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "order_status")
-    private final OrderStatus orderStatus = OrderStatus.PENDING;
+    private OrderStatus orderStatus = OrderStatus.PENDING;
 
     @Column(columnDefinition = "TEXT")
     private String notes;

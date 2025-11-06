@@ -30,5 +30,4 @@ public class Payment {
     @Enumerated(EnumType.STRING)
     private final PaymentStatus paymentStatus = PaymentStatus.PENDING;
     private LocalDateTime paymentDate;
-    private String installmentPlan;
 }

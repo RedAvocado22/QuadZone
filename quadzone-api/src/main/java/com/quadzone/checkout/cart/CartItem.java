@@ -18,7 +18,7 @@ public class CartItem implements Serializable {
     @Column(name = "added_at", nullable = false)
     private final LocalDateTime addedAt = LocalDateTime.now();
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "cartitem_sequence")
+    @GeneratedValue(strategy = GenerationType.AUTO, generator = "cartitem_sequence")
     @SequenceGenerator(name = "cartitem_sequence", sequenceName = "cartitem_sequence", allocationSize = 100)
     private Long id;
     @ManyToOne(fetch = FetchType.LAZY)

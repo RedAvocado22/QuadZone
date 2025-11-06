@@ -16,7 +16,7 @@ import java.math.BigDecimal;
 @Table(name = "orderitem")
 public class OrderItem implements Serializable {
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "orderitem_sequence")
+    @GeneratedValue(strategy = GenerationType.AUTO, generator = "orderitem_sequence")
     @SequenceGenerator(name = "orderitem_sequence", sequenceName = "orderitem_sequence", allocationSize = 100)
     private Long id;
 
