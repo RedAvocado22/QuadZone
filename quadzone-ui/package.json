@@ -28,6 +28,8 @@
         "@types/lodash": "^4.17.20",
         "@types/react-slick": "^0.23.13",
         "antd": "^5.28.0",
+        "react": "^18.2.0",
+        "react-dom": "^18.2.0",
         "axios": "^1.13.2",
         "chart.js": "^4.5.1",
         "ckeditor5": "^47.1.0",
