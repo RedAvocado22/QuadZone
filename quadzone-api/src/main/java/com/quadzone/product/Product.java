@@ -1,11 +1,13 @@
 package com.quadzone.product;
 
-import com.quadzone.product.category.Category;
+import com.quadzone.product.category.sub_category.SubCategory;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+
+import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "product")
@@ -33,7 +35,13 @@ public class Product {
     @Column
     private String description;
 
+    @Column(name = "is_active")
+    private boolean isActive;
+
     @ManyToOne
-    @JoinColumn(name = "category_id", nullable = false)
-    private Category category;
+    @JoinColumn(name = "sub_category_id", nullable = false)
+    private SubCategory subCategory;
+
+    @Column(name = "created_at", nullable = false)
+    private final LocalDateTime createdAt = LocalDateTime.now();
 }
