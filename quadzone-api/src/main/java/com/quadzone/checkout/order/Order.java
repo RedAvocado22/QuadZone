@@ -22,26 +22,22 @@ public class Order implements Serializable {
     @GeneratedValue(strategy = GenerationType.AUTO, generator = "order_sequence")
     @SequenceGenerator(name = "order_sequence", sequenceName = "order_sequence", allocationSize = 100)
     private Long id;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", nullable = false)
-    private User user;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "shipping_address_id", nullable = false)
-    private Address shippingAddress;
-
+    
     @Column
     private LocalDateTime orderDate;
 
     @Column
     private BigDecimal subtotal;
+
     @Column
     private BigDecimal taxAmount;
+
     @Column
     private BigDecimal shippingCost;
+
     @Column
     private BigDecimal discountAmount;
+
     @Column
     private BigDecimal totalAmount;
 
@@ -55,4 +51,11 @@ public class Order implements Serializable {
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<OrderItem> orderItems;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id", nullable = false)
+    private User user;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "shipping_address_id", nullable = false)
+    private Address shippingAddress;
 }

@@ -13,13 +13,19 @@ import java.math.BigDecimal;
 @Setter
 @ToString
 @Entity
-@Table(name = "orderitem")
+@Table(name = "order_item")
 public class OrderItem implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO, generator = "orderitem_sequence")
     @SequenceGenerator(name = "orderitem_sequence", sequenceName = "orderitem_sequence", allocationSize = 100)
     private Long id;
 
+
+    private Integer quantity;
+    private BigDecimal unitPrice;
+    private BigDecimal subtotal;
+    private String serialNumber;
+    
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "order_id", nullable = false)
     private Order order;
@@ -28,8 +34,4 @@ public class OrderItem implements Serializable {
     @JoinColumn(name = "product_id", nullable = false)
     private Product product;
 
-    private Integer quantity;
-    private BigDecimal unitPrice;
-    private BigDecimal subtotal;
-    private String serialNumber;
 }

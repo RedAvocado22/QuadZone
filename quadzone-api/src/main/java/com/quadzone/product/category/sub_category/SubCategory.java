@@ -22,10 +22,6 @@ public class SubCategory {
     @Column(name = "subcategory_id")
     private Integer subcategoryId;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "category_id", nullable = false)
-    private Category category;
-
     @Column(name = "subcategory_name", nullable = false, length = 100)
     private String subcategoryName;
 
@@ -38,4 +34,7 @@ public class SubCategory {
     @OneToMany(mappedBy = "subCategory", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Product> products;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "category_id", nullable = false)
+    private Category category;
 }

@@ -13,21 +13,31 @@ import java.time.LocalDateTime;
 @Entity
 @Table(name = "payment")
 public class Payment {
-    @Column(name = "created_at", updatable = false)
-    private final LocalDateTime createdAt = LocalDateTime.now();
+
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     @Column(name = "id", nullable = false)
     private Long id;
+
+    @Enumerated(EnumType.STRING)
+    private PaymentMethod paymentMethod;
+
+    @Column(unique = true)
+    private String transactionId;
+
+    private BigDecimal amount;
+
+    @Enumerated(EnumType.STRING)
+    private final PaymentStatus paymentStatus = PaymentStatus.PENDING;
+
+    private LocalDateTime paymentDate;
+
+    @Column(name = "created_at", updatable = false)
+    private final LocalDateTime createdAt = LocalDateTime.now();
+
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "order_id", nullable = false, unique = true)
     private Order order;
-    @Enumerated(EnumType.STRING)
-    private PaymentMethod paymentMethod;
-    @Column(unique = true)
-    private String transactionId;
-    private BigDecimal amount;
-    @Enumerated(EnumType.STRING)
-    private final PaymentStatus paymentStatus = PaymentStatus.PENDING;
-    private LocalDateTime paymentDate;
+
+
 }

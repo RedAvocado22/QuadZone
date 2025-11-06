@@ -22,14 +22,16 @@ public class Cart implements Serializable {
     @GeneratedValue(strategy = GenerationType.IDENTITY, generator = "cart_sequence")
     @SequenceGenerator(name = "cart_sequence", sequenceName = "cart_sequence", allocationSize = 100)
     private Long id;
-    @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "customer_id", nullable = false, unique = true)
-    private User user;
+
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
     @OneToMany(mappedBy = "cart", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<CartItem> items;
+    
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "customer_id", nullable = false, unique = true)
+    private User user;
 
     @PreUpdate
     public void onUpdate() {
