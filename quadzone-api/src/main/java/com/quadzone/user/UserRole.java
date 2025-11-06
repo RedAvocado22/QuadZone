@@ -1,5 +1,5 @@
 package com.quadzone.user;
 
 public enum UserRole {
-    ADMIN, STAFF, CUSTOMER
+    ADMIN, STAFF, CUSTOMER, SHIPPER
 }
