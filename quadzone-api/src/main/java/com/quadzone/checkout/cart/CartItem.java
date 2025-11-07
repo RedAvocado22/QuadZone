@@ -20,7 +20,7 @@ public class CartItem {
     private Long id;
 
     @Column(nullable = false)
-    private final Integer quantity = 1;
+    private Integer quantity = 1;
 
     @Column(name = "added_at", nullable = false)
     private final LocalDateTime addedAt = LocalDateTime.now();
