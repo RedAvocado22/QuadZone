@@ -7,7 +7,6 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Entity
@@ -35,19 +34,17 @@ public class Product {
     @Column(columnDefinition = "TEXT")
     private String description;
 
-    @Column(nullable = false, length = 50, unique = true)
-    private String sku; // Unique product code
 
     @Column(name = "quantity", nullable = false, columnDefinition = "INT DEFAULT 0")
     private Integer quantity;
 
-    @Column(nullable = false, precision = 10, scale = 2)
+    @Column(nullable = false, columnDefinition = "DECIMAL(8,2)")
     private double price;
 
-    @Column(name = "cost_price", precision = 10, scale = 2)
-    private BigDecimal costPrice;
+    @Column(name = "cost_price", columnDefinition = "DECIMAL(8,2)")
+    private double costPrice;
 
-    @Column(name = "weight", precision = 8, scale = 3)
+    @Column(name = "weight", columnDefinition = "DECIMAL(8,2)")
     private double weight;
 
     @Column(length = 50)

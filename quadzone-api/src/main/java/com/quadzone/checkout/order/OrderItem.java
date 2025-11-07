@@ -4,7 +4,6 @@ import com.quadzone.product.Product;
 import jakarta.persistence.*;
 import lombok.*;
 
-import java.io.Serializable;
 import java.math.BigDecimal;
 
 @AllArgsConstructor
@@ -14,10 +13,9 @@ import java.math.BigDecimal;
 @ToString
 @Entity
 @Table(name = "order_item")
-public class OrderItem implements Serializable {
+public class OrderItem {
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO, generator = "orderitem_sequence")
-    @SequenceGenerator(name = "orderitem_sequence", sequenceName = "orderitem_sequence", allocationSize = 100)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
 
@@ -25,7 +23,7 @@ public class OrderItem implements Serializable {
     private BigDecimal unitPrice;
     private BigDecimal subtotal;
     private String serialNumber;
-    
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "order_id", nullable = false)
     private Order order;
