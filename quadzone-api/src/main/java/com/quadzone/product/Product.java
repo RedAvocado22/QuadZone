@@ -16,32 +16,65 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 public class Product {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "product_id")
     private Long id;
 
-    @Column(nullable = false)
+    @Column(name = "product_name", nullable = false, length = 200)
     private String name;
 
-    @Column(nullable = false)
+    @Column(length = 100)
+    private String brand;
+
+    @Column(name = "model_number", length = 100)
+    private String modelNumber;
+
+    @Column(columnDefinition = "TEXT")
+    private String description;
+
+
+    @Column(name = "quantity", nullable = false, columnDefinition = "INT DEFAULT 0")
+    private Integer quantity;
+
+    @Column(nullable = false, columnDefinition = "DECIMAL(8,2)")
     private double price;
 
-    @Column(name = "cost_price", nullable = false)
+    @Column(name = "cost_price", columnDefinition = "DECIMAL(8,2)")
     private double costPrice;
 
-    @Column(name = "image_url", nullable = false)
-    private String imageUrl;
+    @Column(name = "weight", columnDefinition = "DECIMAL(8,2)")
+    private double weight;
 
-    @Column
-    private String description;
+    @Column(length = 50)
+    private String dimensions;
+
+    @Column(columnDefinition = "TEXT")
+    private String specifications;
+
+    @Column(name = "warranty_period_months")
+    private Integer warrantyPeriodMonths;
+
+    @Column(length = 50)
+    private String color;
+
+    @Column(name = "storage_capacity", length = 50)
+    private String storageCapacity;
+
+    @Column(name = "energy_rating", length = 20)
+    private String energyRating;
+
+    @Column(name = "image_url", length = 255)
+    private String imageUrl;
 
     @Column(name = "is_active")
     private boolean isActive;
 
-    @ManyToOne
-    @JoinColumn(name = "sub_category_id", nullable = false)
-    private SubCategory subCategory;
-
     @Column(name = "created_at", nullable = false)
     private final LocalDateTime createdAt = LocalDateTime.now();
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "subcategory_id", nullable = false)
+    private SubCategory subCategory;
 }

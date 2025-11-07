@@ -20,6 +20,7 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 public class User implements UserDetails {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -36,12 +37,12 @@ public class User implements UserDetails {
     @Column(name = "last_name", nullable = false)
     private String lastName;
 
-    @Column(name = "created_at", nullable = false)
-    private final LocalDateTime createdAt = LocalDateTime.now();
-
     @Enumerated(EnumType.STRING)
     @Column(name = "role")
     private UserRole role;
+
+    @Column(name = "created_at", nullable = false)
+    private final LocalDateTime createdAt = LocalDateTime.now();
 
     public String getFullName() {
         return firstName + " " + lastName;
