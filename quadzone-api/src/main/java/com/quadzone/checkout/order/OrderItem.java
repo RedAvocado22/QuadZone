@@ -4,9 +4,6 @@ import com.quadzone.product.Product;
 import jakarta.persistence.*;
 import lombok.*;
 
-import java.io.Serializable;
-import java.math.BigDecimal;
-
 @AllArgsConstructor
 @NoArgsConstructor
 @Getter
@@ -14,18 +11,21 @@ import java.math.BigDecimal;
 @ToString
 @Entity
 @Table(name = "order_item")
-public class OrderItem implements Serializable {
+public class OrderItem {
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO, generator = "orderitem_sequence")
-    @SequenceGenerator(name = "orderitem_sequence", sequenceName = "orderitem_sequence", allocationSize = 100)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(nullable = false)
+    private Integer quantity = 1;
 
-    private Integer quantity;
-    private BigDecimal unitPrice;
-    private BigDecimal subtotal;
-    private String serialNumber;
-    
+    @Column(name = "unit_price", columnDefinition = "DECIMAL(8,2)")
+    private double unitPrice;
+
+    @Column(name = "sub_total", columnDefinition = "DECIMAL(8,2)")
+    private double subtotal;
+
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "order_id", nullable = false)
     private Order order;

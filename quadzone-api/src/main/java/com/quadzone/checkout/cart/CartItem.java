@@ -4,7 +4,6 @@ import com.quadzone.product.Product;
 import jakarta.persistence.*;
 import lombok.*;
 
-import java.io.Serializable;
 import java.time.LocalDateTime;
 
 @AllArgsConstructor
@@ -14,15 +13,14 @@ import java.time.LocalDateTime;
 @ToString
 @Entity
 @Table(name = "cart_item")
-public class CartItem implements Serializable {
+public class CartItem {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO, generator = "cartitem_sequence")
-    @SequenceGenerator(name = "cartitem_sequence", sequenceName = "cartitem_sequence", allocationSize = 100)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    
+
     @Column(nullable = false)
-    private final Integer quantity = 1;
+    private Integer quantity = 1;
 
     @Column(name = "added_at", nullable = false)
     private final LocalDateTime addedAt = LocalDateTime.now();
