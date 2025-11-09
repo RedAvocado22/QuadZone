@@ -4,7 +4,7 @@ import { pxToRem, setFont } from 'minimal-shared/utils';
 
 import { createTheme as getTheme } from '@mui/material/styles';
 
-import { themeConfig } from "src/theme";
+import { themeConfig } from "../theme-config";
 
 // ----------------------------------------------------------------------
 

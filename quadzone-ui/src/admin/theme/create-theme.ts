@@ -5,9 +5,9 @@ import { createTheme as createMuiTheme } from '@mui/material/styles';
 import { shadows } from './core/shadows';
 import { palette } from './core/palette';
 import { themeConfig } from './theme-config';
-import { components } from "src/theme/core";
-import { typography } from "src/theme/core";
-import { customShadows } from "src/theme/core";
+import { components } from "./core";
+import { typography } from "./core";
+import { customShadows } from "./core";
 
 import type { ThemeOptions } from './types';
 

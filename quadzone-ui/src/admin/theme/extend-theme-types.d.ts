@@ -1,5 +1,5 @@
-import type { FontStyleExtend } from "src/theme/core";
-import type { CustomShadows } from "src/theme/core";
+import type { FontStyleExtend } from "./core";
+import type { CustomShadows } from "./core";
 import type {
   GreyExtend,
   TypeTextExtend,
