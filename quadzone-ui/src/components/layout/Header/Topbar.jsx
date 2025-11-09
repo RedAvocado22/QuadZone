@@ -14,25 +14,9 @@ const Topbar = () => {
           <div className="topbar-right ml-auto">
             <ul className="list-inline mb-0">
               <li className="list-inline-item mr-0 u-header-topbar__nav-item u-header-topbar__nav-item-border">
-                <a href="#" className="u-header-topbar__nav-link" onClick={(e) => e.preventDefault()}>
-                  <i className="ec ec-map-pointer mr-1"></i> Store Locator
-                </a>
-              </li>
-              <li className="list-inline-item mr-0 u-header-topbar__nav-item u-header-topbar__nav-item-border">
                 <a href="/track-order" className="u-header-topbar__nav-link">
                   <i className="ec ec-transport mr-1"></i> Track Your Order
                 </a>
-              </li>
-              <li className="list-inline-item mr-0 u-header-topbar__nav-item u-header-topbar__nav-item-border u-header-topbar__nav-item-no-border u-header-topbar__nav-item-border-single">
-                <div className="d-flex align-items-center">
-                  <div className="position-relative">
-                    <a className="dropdown-nav-link dropdown-toggle d-flex align-items-center u-header-topbar__nav-link font-weight-normal" href="#" onClick={(e) => e.preventDefault()}>
-                      <span className="d-none d-sm-inline-flex align-items-center">
-                        <i className="ec ec-dollar mr-1"></i> Dollar (US)
-                      </span>
-                    </a>
-                  </div>
-                </div>
               </li>
               <li className="list-inline-item mr-0 u-header-topbar__nav-item u-header-topbar__nav-item-border">
                 <a 
