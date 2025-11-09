@@ -13,6 +13,8 @@ const DashboardPage = lazy(() => import('src/pages/dashboard'));
 const BlogPage = lazy(() => import('src/pages/blog'));
 const UserPage = lazy(() => import('src/pages/user'));
 const ProductsPage = lazy(() => import('src/pages/products'));
+const CategoryPage = lazy(() => import('src/pages/category'));
+const OrderPage = lazy(() => import('src/pages/order'));
 
 const renderFallback = () => (
     <Box
@@ -27,7 +29,11 @@ const renderFallback = () => (
             sx={{
                 width: 1,
                 maxWidth: 320,
-                bgcolor: (theme) => varAlpha(theme.vars.palette.text.primaryChannel, 0.16),
+                bgcolor: (theme) =>
+                    varAlpha(
+                        theme?.vars?.palette?.text?.primaryChannel ?? '0 0 0',
+                        0.16
+                    ),
                 [`& .${linearProgressClasses.bar}`]: { bgcolor: 'text.primary' },
             }}
         />
@@ -53,6 +59,8 @@ export default function AdminRoutes() {
                 <Route index element={<DashboardPage />} />
                 <Route path="user" element={<UserPage />} />
                 <Route path="products" element={<ProductsPage />} />
+                <Route path="category" element={<CategoryPage />} />
+                <Route path="order" element={<OrderPage />} />
                 <Route path="blog" element={<BlogPage />} />
             </Route>
 

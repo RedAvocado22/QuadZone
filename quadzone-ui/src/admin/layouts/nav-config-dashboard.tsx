@@ -1,5 +1,6 @@
 import { Label } from 'src/components/label';
 import { SvgColor } from 'src/components/svg-color';
+import { Iconify } from 'src/components/iconify';
 
 // ----------------------------------------------------------------------
 
@@ -37,5 +38,15 @@ export const navData = [
     title: 'Blog',
     path: '/admin/blog',
     icon: icon('ic-blog'),
+  },
+  {
+    title: 'Category',
+    path: '/admin/category',
+    icon: <Iconify width={24} icon="solar:folder-bold-duotone" />,
+  },
+  {
+    title: 'Order',
+    path: '/admin/order',
+    icon: <Iconify width={24} icon="solar:bag-check-bold-duotone" />,
   },
 ];

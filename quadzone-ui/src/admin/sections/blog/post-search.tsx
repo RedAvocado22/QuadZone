@@ -15,7 +15,7 @@ type PostSearchProps = {
 
 export function PostSearch({ onSearch, sx }: PostSearchProps) {
   const [searchValue, setSearchValue] = useState('');
-  const timeoutRef = useRef<NodeJS.Timeout>();
+  const timeoutRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
 
   useEffect(() => {
     // Clear previous timeout
