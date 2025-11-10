@@ -1,4 +1,6 @@
 import apiClient from './axios';
+import { USE_MOCK_DATA } from './config';
+import { mockCategories, filterCategories, delay } from '../_mock/mock-data';
 
 // ----------------------------------------------------------------------
 
@@ -30,6 +32,12 @@ interface GetAllCategoriesParams {
 
 export const categoriesApi = {
   getAll: async (params: GetAllCategoriesParams = {}): Promise<CategoriesResponse> => {
+    if (USE_MOCK_DATA) {
+      await delay(300);
+      const { sortBy = 'name', sortOrder = 'asc' } = params;
+      return filterCategories(mockCategories, { ...params, sortBy, sortOrder });
+    }
+    
     const { page = 0, pageSize = 10, search = '', sortBy = 'name', sortOrder = 'asc' } = params;
     
     const response = await apiClient.get('/categories', {

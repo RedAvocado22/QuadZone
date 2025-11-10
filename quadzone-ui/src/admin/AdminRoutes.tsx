@@ -12,6 +12,8 @@ import { DashboardLayout } from 'src/layouts/dashboard';
 const DashboardPage = lazy(() => import('src/pages/dashboard'));
 const BlogPage = lazy(() => import('src/pages/blog'));
 const UserPage = lazy(() => import('src/pages/user'));
+const UserCreatePage = lazy(() => import('src/pages/user-create'));
+const UserEditPage = lazy(() => import('src/pages/user-edit'));
 const ProductsPage = lazy(() => import('src/pages/products'));
 const CategoryPage = lazy(() => import('src/pages/category'));
 const OrderPage = lazy(() => import('src/pages/order'));
@@ -58,6 +60,8 @@ export default function AdminRoutes() {
             >
                 <Route index element={<DashboardPage />} />
                 <Route path="user" element={<UserPage />} />
+                <Route path="user/create" element={<UserCreatePage />} />
+                <Route path="user/:id/edit" element={<UserEditPage />} />
                 <Route path="products" element={<ProductsPage />} />
                 <Route path="category" element={<CategoryPage />} />
                 <Route path="order" element={<OrderPage />} />

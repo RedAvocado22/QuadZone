@@ -1,4 +1,6 @@
 import apiClient from './axios';
+import { USE_MOCK_DATA } from './config';
+import { mockNotifications, delay } from '../_mock/mock-data';
 
 // ----------------------------------------------------------------------
 
@@ -22,6 +24,14 @@ export interface NotificationsResponse {
 export const notificationsApi = {
   // Get all notifications
   getAll: async (): Promise<NotificationsResponse> => {
+    if (USE_MOCK_DATA) {
+      await delay(200);
+      return {
+        data: mockNotifications,
+        total: mockNotifications.length,
+      };
+    }
+    
     const response = await apiClient.get('/notifications');
     const data = response.data;
     
@@ -51,11 +61,26 @@ export const notificationsApi = {
 
   // Mark notification as read
   markAsRead: async (id: string): Promise<void> => {
+    if (USE_MOCK_DATA) {
+      await delay(200);
+      const notification = mockNotifications.find((n) => n.id === id);
+      if (notification) {
+        notification.isUnRead = false;
+      }
+      return;
+    }
     await apiClient.put(`/notifications/${id}/read`);
   },
 
   // Mark all notifications as read
   markAllAsRead: async (): Promise<void> => {
+    if (USE_MOCK_DATA) {
+      await delay(200);
+      mockNotifications.forEach((n) => {
+        n.isUnRead = false;
+      });
+      return;
+    }
     await apiClient.put('/notifications/read-all');
   },
 };

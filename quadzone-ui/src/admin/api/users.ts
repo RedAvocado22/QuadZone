@@ -1,4 +1,6 @@
 import apiClient from './axios';
+import { USE_MOCK_DATA } from './config';
+import { mockUsers, filterUsers, delay } from '../_mock/mock-data';
 
 // ----------------------------------------------------------------------
 
@@ -52,6 +54,11 @@ function mapBackendUserToFrontend(backendUser: BackendUser): User {
 export const usersApi = {
   // Get all users
   getAll: async (params?: { page?: number; pageSize?: number; search?: string }): Promise<UsersResponse> => {
+    if (USE_MOCK_DATA) {
+      await delay(300);
+      return filterUsers(mockUsers, params);
+    }
+    
     const response = await apiClient.get('/user/admin/get', { params });
     const data = response.data;
     
@@ -99,24 +106,59 @@ export const usersApi = {
 
   // Get user by ID
   getById: async (id: string): Promise<User> => {
+    if (USE_MOCK_DATA) {
+      await delay(200);
+      const user = mockUsers.find((u) => u.id === id);
+      if (!user) {
+        throw new Error('User not found');
+      }
+      return user;
+    }
     const response = await apiClient.get(`/users/${id}`);
     return response.data;
   },
 
   // Create user
   create: async (user: Omit<User, 'id'>): Promise<User> => {
+    if (USE_MOCK_DATA) {
+      await delay(300);
+      const newUser: User = {
+        ...user,
+        id: `user-${Date.now()}`,
+      };
+      mockUsers.unshift(newUser);
+      return newUser;
+    }
     const response = await apiClient.post('/users', user);
     return response.data;
   },
 
   // Update user
   update: async (id: string, user: Partial<User>): Promise<User> => {
+    if (USE_MOCK_DATA) {
+      await delay(300);
+      const index = mockUsers.findIndex((u) => u.id === id);
+      if (index === -1) {
+        throw new Error('User not found');
+      }
+      mockUsers[index] = { ...mockUsers[index], ...user };
+      return mockUsers[index];
+    }
     const response = await apiClient.put(`/users/${id}`, user);
     return response.data;
   },
 
   // Delete user
   delete: async (id: string): Promise<void> => {
+    if (USE_MOCK_DATA) {
+      await delay(200);
+      const index = mockUsers.findIndex((u) => u.id === id);
+      if (index === -1) {
+        throw new Error('User not found');
+      }
+      mockUsers.splice(index, 1);
+      return;
+    }
     await apiClient.delete(`/users/${id}`);
   },
 };

@@ -1,4 +1,6 @@
 import apiClient from './axios';
+import { USE_MOCK_DATA } from './config';
+import { mockOrders, filterOrders, delay } from '../_mock/mock-data';
 
 // ----------------------------------------------------------------------
 
@@ -32,6 +34,12 @@ interface GetAllOrdersParams {
 
 export const ordersApi = {
   getAll: async (params: GetAllOrdersParams = {}): Promise<OrdersResponse> => {
+    if (USE_MOCK_DATA) {
+      await delay(300);
+      const { sortBy = 'createdAt', sortOrder = 'desc' } = params;
+      return filterOrders(mockOrders, { ...params, sortBy, sortOrder });
+    }
+    
     const { page = 0, pageSize = 10, search = '', sortBy = 'createdAt', sortOrder = 'desc' } = params;
     
     const response = await apiClient.get('/orders', {

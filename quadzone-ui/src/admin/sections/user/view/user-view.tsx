@@ -12,6 +12,8 @@ import CircularProgress from '@mui/material/CircularProgress';
 
 import { useUsers } from 'src/hooks/useUsers';
 import { DashboardContent } from 'src/layouts/dashboard';
+import { useRouter } from 'src/routes/hooks';
+import { usersApi } from 'src/api/users';
 
 import { Iconify } from 'src/components/iconify';
 import { Scrollbar } from 'src/components/scrollbar';
@@ -29,6 +31,7 @@ import type { UserProps } from '../user-table-row';
 
 export function UserView() {
   const table = useTable();
+  const router = useRouter();
 
   const [filterName, setFilterName] = useState('');
 
@@ -38,6 +41,27 @@ export function UserView() {
     pageSize: table.rowsPerPage,
     search: filterName,
   });
+
+  const handleCreateUser = useCallback(() => {
+    router.push('/admin/user/create');
+  }, [router]);
+
+  const handleEditUser = useCallback((id: string) => {
+    router.push(`/admin/user/${id}/edit`);
+  }, [router]);
+
+  const handleDeleteUser = useCallback(async (id: string) => {
+    if (window.confirm('Are you sure you want to delete this user?')) {
+      try {
+        await usersApi.delete(id);
+        // Refetch users after deletion
+        refetch();
+      } catch (err) {
+        console.error('Failed to delete user:', err);
+        alert('Failed to delete user. Please try again.');
+      }
+    }
+  }, [refetch]);
 
   // Apply client-side sorting only (filtering and pagination are done in API)
   const dataFiltered: UserProps[] = useMemo(() => {
@@ -86,7 +110,7 @@ export function UserView() {
           variant="contained"
           color="inherit"
           startIcon={<Iconify icon="mingcute:add-line" />}
-          onClick={refetch}
+          onClick={handleCreateUser}
         >
           New user
         </Button>
@@ -144,6 +168,8 @@ export function UserView() {
                         row={row}
                         selected={table.selected.includes(row.id)}
                         onSelectRow={() => table.onSelectRow(row.id)}
+                        onEdit={handleEditUser}
+                        onDelete={handleDeleteUser}
                       />
                     ))}
 
