@@ -44,7 +44,6 @@ export function UserEditForm({ userId, onSuccess, onCancel }: UserEditFormProps)
   const [formData, setFormData] = useState<Omit<User, 'id'>>({
     name: '',
     email: '',
-    company: '',
     role: 'CUSTOMER',
     avatarUrl: '',
     isVerified: false,
@@ -61,7 +60,6 @@ export function UserEditForm({ userId, onSuccess, onCancel }: UserEditFormProps)
         setFormData({
           name: user.name || '',
           email: user.email || '',
-          company: user.company || '',
           role: user.role || 'CUSTOMER',
           avatarUrl: user.avatarUrl || '',
           isVerified: user.isVerified ?? false,
@@ -355,13 +353,6 @@ export function UserEditForm({ userId, onSuccess, onCancel }: UserEditFormProps)
                   onChange={handleChange('email')}
                   error={!formData.email.trim() && formData.email !== ''}
                   helperText={!formData.email.trim() && formData.email !== '' ? 'Email is required' : ''}
-                />
-
-                <TextField
-                  fullWidth
-                  label="Company"
-                  value={formData.company}
-                  onChange={handleChange('company')}
                 />
               </Stack>
 

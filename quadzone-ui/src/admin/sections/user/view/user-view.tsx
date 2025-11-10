@@ -83,10 +83,9 @@ export function UserView() {
     return sorted.map((user) => ({
       id: user.id,
       name: user.name,
-      email: user.email,
+      email: user.email || '',
       role: user.role || '',
       status: user.status || 'active',
-      company: user.company || '',
       avatarUrl: user.avatarUrl || '',
       isVerified: user.isVerified ?? true,
     }));
@@ -154,7 +153,7 @@ export function UserView() {
                     }
                     headLabel={[
                       { id: 'name', label: 'Name' },
-                      { id: 'company', label: 'Company' },
+                      { id: 'email', label: 'Email' },
                       { id: 'role', label: 'Role' },
                       { id: 'isVerified', label: 'Verified', align: 'center' },
                       { id: 'status', label: 'Status' },

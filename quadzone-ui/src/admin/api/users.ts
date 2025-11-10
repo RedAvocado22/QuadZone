@@ -42,7 +42,6 @@ function mapBackendUserToFrontend(backendUser: BackendUser): User {
     name: `${backendUser.firstName} ${backendUser.lastName}`,
     email: backendUser.email,
     role: backendUser.role,
-    company: '', // Default value - not in backend
     avatarUrl: '', // Default value - not in backend
     isVerified: true, // Default value - not in backend
     status: 'active', // Default value - not in backend

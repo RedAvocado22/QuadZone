@@ -108,7 +108,6 @@ export const mockUsers: User[] = Array.from({ length: 30 }, (_, index) => ({
   id: _id(index),
   name: _fullName(index % 24),
   email: `user${index + 1}@example.com`,
-  company: ['Tech Corp', 'Design Studio', 'Marketing Agency', 'Retail Store', 'Consulting'][index % 5],
   role: (['ADMIN', 'STAFF', 'CUSTOMER', 'SHIPPER'] as const)[index % 4],
   avatarUrl: `/assets/images/avatar/avatar-${(index % 24) + 1}.webp`,
   isVerified: Math.random() > 0.3,

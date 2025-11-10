@@ -42,7 +42,6 @@ export function UserCreateForm({ onSuccess, onCancel }: UserCreateFormProps) {
   const [formData, setFormData] = useState<Omit<User, 'id'>>({
     name: '',
     email: '',
-    company: '',
     role: 'CUSTOMER',
     avatarUrl: '',
     isVerified: false,
@@ -304,13 +303,6 @@ export function UserCreateForm({ onSuccess, onCancel }: UserCreateFormProps) {
                   onChange={handleChange('email')}
                   error={!formData.email.trim() && formData.email !== ''}
                   helperText={!formData.email.trim() && formData.email !== '' ? 'Email is required' : ''}
-                />
-
-                <TextField
-                  fullWidth
-                  label="Company"
-                  value={formData.company}
-                  onChange={handleChange('company')}
                 />
               </Stack>
 
