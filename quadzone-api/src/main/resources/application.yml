@@ -12,8 +12,10 @@ spring:
     name: quadzone-api
     security:
       jwt:
-        expiration: 300000 # 5 minutes
+        secret: K/gL4Rj8LqP6sUaF/R+dE/pA7vLzN/tS+bJ5wD/aE/gH+kF3jL8aU/wJ/yE7gE/dK/xH/vJ/qM/aA==
+        expiration: 300000
         refresh-token:
+          secret: mD/uJ/wP/sH/aE/gH+kF3jL8aU/wJ/yE7gE/dK/xH/vJ/qM/aK/gL4Rj8LqP6sUaF/R+dE/pA7vLzN/tS+bJ5wD==
           expiration: 86400000 # 1 day
   main:
     banner-mode: off

@@ -1,10 +1,8 @@
-package com.quadzone.checkout.cart;
+package com.quadzone.order;
 
 import com.quadzone.product.Product;
 import jakarta.persistence.*;
 import lombok.*;
-
-import java.time.LocalDateTime;
 
 @AllArgsConstructor
 @NoArgsConstructor
@@ -12,9 +10,8 @@ import java.time.LocalDateTime;
 @Setter
 @ToString
 @Entity
-@Table(name = "cart_item")
-public class CartItem {
-
+@Table(name = "order_item")
+public class OrderItem {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -22,14 +19,19 @@ public class CartItem {
     @Column(nullable = false)
     private Integer quantity = 1;
 
-    @Column(name = "added_at", nullable = false)
-    private final LocalDateTime addedAt = LocalDateTime.now();
+    @Column(name = "unit_price", columnDefinition = "DECIMAL(8,2)")
+    private double unitPrice;
+
+    @Column(name = "sub_total", columnDefinition = "DECIMAL(8,2)")
+    private double subtotal;
+
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "cart_id", nullable = false)
-    private Cart cart;
+    @JoinColumn(name = "order_id", nullable = false)
+    private Order order;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "product_id", nullable = false)
     private Product product;
+
 }

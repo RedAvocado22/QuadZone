@@ -1,4 +1,6 @@
 package com.quadzone.auth.dto;
 
-public record AuthenticationResponse(String token) {
+import com.fasterxml.jackson.annotation.JsonProperty;
+
+public record AuthenticationResponse(@JsonProperty("access_token") String token) {
 }
