@@ -6,12 +6,24 @@ import path from "path";
 export default defineConfig({
     plugins: [react()],
     server: {
-        port: 3000
+        port: 5173,
+        proxy: {
+            "/api/v1": {
+                target: "http://localhost:8080",
+                changeOrigin: true,
+                secure: false
+            }
+        }
     },
+
+    build: {
+        sourcemap: false
+    },
+
     resolve: {
         alias: {
-            '@': path.resolve(__dirname, './src'),
-            '@assets': path.resolve(__dirname, './src/assets')
+            "@": path.resolve(__dirname, "./src"),
+            "@assets": path.resolve(__dirname, "./src/assets")
         }
     }
 });

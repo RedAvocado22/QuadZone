@@ -45,21 +45,15 @@
          */
         helpers: {
             Math: {
-                getRandomValueFromRange: function (
-                    startPoint,
-                    endPoint,
-                    fixed
-                ) {
+                getRandomValueFromRange: function (startPoint, endPoint, fixed) {
                     var fixedInner = fixed ? fixed : false;
 
                     Math.random();
 
                     return fixedInner
                         ? Math.random() * (endPoint - startPoint) + startPoint
-                        : Math.floor(
-                              Math.random() * (endPoint - startPoint + 1)
-                          ) + startPoint;
-                },
+                        : Math.floor(Math.random() * (endPoint - startPoint + 1)) + startPoint;
+                }
             },
 
             /**
@@ -75,20 +69,14 @@
                 if (trident > 0) {
                     // IE 11 => return version number
                     var rv = ua.indexOf("rv:");
-                    var ieV = parseInt(
-                        ua.substring(rv + 3, ua.indexOf(".", rv)),
-                        10
-                    );
+                    var ieV = parseInt(ua.substring(rv + 3, ua.indexOf(".", rv)), 10);
                     document.querySelector("body").className += " IE";
                 }
 
                 var edge = ua.indexOf("Edge/");
                 if (edge > 0) {
                     // IE 12 (aka Edge) => return version number
-                    var ieV = parseInt(
-                        ua.substring(edge + 5, ua.indexOf(".", edge)),
-                        10
-                    );
+                    var ieV = parseInt(ua.substring(edge + 5, ua.indexOf(".", edge)), 10);
                     document.querySelector("body").className += " IE";
                 }
 
@@ -114,24 +102,17 @@
                             sm: 576,
                             md: 768,
                             lg: 992,
-                            xl: 1200,
+                            xl: 1200
                         };
 
-                    $("body").on(
-                        "click.HSMobileHideOnScroll",
-                        ".navbar-toggler",
-                        function (e) {
-                            var $navbar = $(this).closest(".navbar");
+                    $("body").on("click.HSMobileHideOnScroll", ".navbar-toggler", function (e) {
+                        var $navbar = $(this).closest(".navbar");
 
-                            if ($navbar.length) {
-                                $navbar.data(
-                                    "mobile-menu-scroll-position",
-                                    $w.scrollTop()
-                                );
-                            }
-                            e.preventDefault();
+                        if ($navbar.length) {
+                            $navbar.data("mobile-menu-scroll-position", $w.scrollTop());
                         }
-                    );
+                        e.preventDefault();
+                    });
 
                     $w.on("scroll.HSMobileHideOnScroll", function (e) {
                         $collection.each(function (i, el) {
@@ -141,14 +122,10 @@
                                 offset,
                                 $hamburgers,
                                 breakpoint;
-                            if ($this.hasClass("navbar-expand-xl"))
-                                breakpoint = breakpointsMap["xl"];
-                            else if ($this.hasClass("navbar-expand-lg"))
-                                breakpoint = breakpointsMap["lg"];
-                            else if ($this.hasClass("navbar-expand-md"))
-                                breakpoint = breakpointsMap["md"];
-                            else if ($this.hasClass("navbar-expand-xs"))
-                                breakpoint = breakpointsMap["xs"];
+                            if ($this.hasClass("navbar-expand-xl")) breakpoint = breakpointsMap["xl"];
+                            else if ($this.hasClass("navbar-expand-lg")) breakpoint = breakpointsMap["lg"];
+                            else if ($this.hasClass("navbar-expand-md")) breakpoint = breakpointsMap["md"];
+                            else if ($this.hasClass("navbar-expand-xs")) breakpoint = breakpointsMap["xs"];
 
                             if ($w.width() > breakpoint) return;
 
@@ -158,14 +135,9 @@
                             if (!$nav.data("mobile-scroll-hide")) return;
 
                             if ($nav.length) {
-                                offset = $this.data(
-                                    "mobile-menu-scroll-position"
-                                );
+                                offset = $this.data("mobile-menu-scroll-position");
 
-                                if (
-                                    Math.abs($w.scrollTop() - offset) > 40 &&
-                                    $nav.hasClass("show")
-                                ) {
+                                if (Math.abs($w.scrollTop() - offset) > 40 && $nav.hasClass("show")) {
                                     $toggler.trigger("click");
                                     $hamburgers = $toggler.find(".is-active");
                                     if ($hamburgers.length) {
@@ -175,8 +147,8 @@
                             }
                         });
                     });
-                },
-            },
+                }
+            }
         },
 
         /**
@@ -185,8 +157,8 @@
          * @var
          */
         settings: {
-            rtl: false,
-        },
+            rtl: false
+        }
     };
 
     $.HSCore.init();
