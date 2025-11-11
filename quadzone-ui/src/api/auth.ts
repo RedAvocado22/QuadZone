@@ -17,7 +17,7 @@ export interface RegisterRequest {
  */
 export const register = async (req: RegisterRequest): Promise<any | null> => {
     try {
-        console.log("Sending register request:", req);
+        // console.log("Sending register request:", req);
         // The backend expects: firstname, lastname, email, password, confirm_password (with underscore!)
         const payload = {
             firstname: req.firstName,
@@ -27,13 +27,13 @@ export const register = async (req: RegisterRequest): Promise<any | null> => {
             confirm_password: req.confirmPassword
         };
         const response = await API.post("/auth/register", payload);
-        console.log("Register response:", response);
+        // console.log("Register response:", response);
         return response.data;
     } catch (err) {
-        console.error("Register error:", err);
+        // console.error("Register error:", err);
         if (axios.isAxiosError(err)) {
-            console.error("Error response status:", err.response?.status);
-            console.error("Error response data:", err.response?.data);
+            // console.error("Error response status:", err.response?.status);
+            // console.error("Error response data:", err.response?.data);
             Swal.fire({
                 icon: "error",
                 title: "Register failed",

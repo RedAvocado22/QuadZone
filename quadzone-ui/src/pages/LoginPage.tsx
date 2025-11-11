@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useUser } from "../hooks/useUser";
 import { forgotPassword } from "../api/auth";
 import { toast } from "react-toastify";
@@ -22,6 +22,7 @@ const forgotPasswordSchema = yup
 
 export default function LoginPage() {
     const { login } = useUser();
+    const navigate = useNavigate();
 
     // State to control the login tab's view: 'login' or 'forgot'
     const [loginView, setLoginView] = useState<"login" | "forgot">("login");
@@ -40,13 +41,11 @@ export default function LoginPage() {
                     password: values.password
                 });
                 if (ok) {
-                    toast.success("Login successful");
                     resetForm();
-                } else {
-                    toast.error("Login failed. Please check your credentials.");
+                    navigate("/");
                 }
             } catch (err) {
-                console.error("Login error:", err);
+                // console.error("Login error:", err);
                 toast.error("Login failed. Please check your credentials.");
             }
         }
@@ -69,7 +68,7 @@ export default function LoginPage() {
                     toast.error("Failed to send reset link. Please try again.");
                 }
             } catch (err) {
-                console.error("Forgot password error:", err);
+                // console.error("Forgot password error:", err);
                 toast.error("Failed to send reset link. Please try again.");
             }
         }
@@ -111,9 +110,9 @@ export default function LoginPage() {
                         <ul className="nav nav-tabs nav-justified mb-4" id="loginRegisterTab" role="tablist">
                             <li className="nav-item" role="presentation">
                                 <a
-                                    className="nav-link font-size-26 p-3 active" // This tab is always active on this page
+                                    className="nav-link font-size-26 p-3 active"
                                     href="#"
-                                    onClick={(e) => e.preventDefault()} // Stays on this page
+                                    onClick={(e) => e.preventDefault()}
                                     role="tab"
                                     aria-selected={true}>
                                     Login
@@ -121,8 +120,8 @@ export default function LoginPage() {
                             </li>
                             <li className="nav-item" role="presentation">
                                 <Link
-                                    className="nav-link font-size-26 p-3" // This is a Link, not an <a>
-                                    to="/register" // Navigate to the register page
+                                    className="nav-link font-size-26 p-3"
+                                    to="/register"
                                     role="tab"
                                     aria-selected={false}>
                                     Register

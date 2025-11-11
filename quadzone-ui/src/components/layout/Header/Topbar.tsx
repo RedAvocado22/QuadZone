@@ -51,7 +51,6 @@ const Topbar = () => {
 
                             {/* --- CONDITIONAL LINKS --- */}
                             {user ? (
-                                // User is LOGGED IN
                                 <>
                                     <li className="list-inline-item mr-0 u-header-topbar__nav-item u-header-topbar__nav-item-border">
                                         {/* Assuming your user object has a firstName property */}
