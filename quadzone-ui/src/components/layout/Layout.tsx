@@ -1,7 +1,6 @@
 import Header from "./Header/Header";
 import Footer from "./Footer/Footer";
 import MobileSidebar from "./Header/MobileSidebar";
-import AccountSidebar from "../shared/AccountSidebar";
 import GoToTop from "../shared/GoToTop";
 import { useHSCore } from "../../hooks/useHSCore";
 import type { ReactNode } from "react";
@@ -22,7 +21,6 @@ const Layout = ({ children }: LayoutProps) => {
                 {children}
             </main>
             <Footer />
-            <AccountSidebar />
             <GoToTop />
         </>
     );

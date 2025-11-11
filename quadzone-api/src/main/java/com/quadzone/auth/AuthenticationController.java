@@ -2,6 +2,7 @@ package com.quadzone.auth;
 
 import com.quadzone.auth.dto.AuthenticationRequest;
 import com.quadzone.auth.dto.AuthenticationResponse;
+import com.quadzone.auth.dto.RegisterRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
