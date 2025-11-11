@@ -59,5 +59,60 @@ export const ordersApi = {
       pageSize: response.data.pageSize || pageSize,
     };
   },
+
+  getById: async (id: string): Promise<Order> => {
+    if (USE_MOCK_DATA) {
+      await delay(200);
+      const order = mockOrders.find((ord) => ord.id === id);
+      if (!order) {
+        throw new Error('Order not found');
+      }
+      return order;
+    }
+    const response = await apiClient.get(`/orders/${id}`);
+    return response.data;
+  },
+
+  create: async (order: Omit<Order, 'id'>): Promise<Order> => {
+    if (USE_MOCK_DATA) {
+      await delay(300);
+      const newOrder: Order = {
+        id: `order-${Date.now()}`,
+        ...order,
+        createdAt: order.createdAt || new Date().toISOString(),
+      };
+      mockOrders.unshift(newOrder);
+      return newOrder;
+    }
+    const response = await apiClient.post('/orders', order);
+    return response.data;
+  },
+
+  update: async (id: string, order: Partial<Order>): Promise<Order> => {
+    if (USE_MOCK_DATA) {
+      await delay(300);
+      const index = mockOrders.findIndex((ord) => ord.id === id);
+      if (index === -1) {
+        throw new Error('Order not found');
+      }
+      mockOrders[index] = { ...mockOrders[index], ...order } as Order;
+      return mockOrders[index];
+    }
+    const response = await apiClient.put(`/orders/${id}`, order);
+    return response.data;
+  },
+
+  delete: async (id: string): Promise<void> => {
+    if (USE_MOCK_DATA) {
+      await delay(200);
+      const index = mockOrders.findIndex((ord) => ord.id === id);
+      if (index === -1) {
+        throw new Error('Order not found');
+      }
+      mockOrders.splice(index, 1);
+      return;
+    }
+    await apiClient.delete(`/orders/${id}`);
+  },
 };
 

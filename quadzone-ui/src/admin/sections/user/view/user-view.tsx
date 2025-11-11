@@ -172,10 +172,13 @@ export function UserView() {
                       />
                     ))}
 
-                    <TableEmptyRows
-                      height={68}
-                      emptyRows={emptyRows(table.page, table.rowsPerPage, dataFiltered.length)}
-                    />
+                    {!notFound && (
+                      <TableEmptyRows
+                        height={68}
+                        emptyRows={emptyRows(table.page, table.rowsPerPage, dataFiltered.length)}
+                        colSpan={7}
+                      />
+                    )}
 
                     {notFound && <TableNoData searchQuery={filterName} />}
                   </TableBody>
@@ -191,6 +194,11 @@ export function UserView() {
               onPageChange={table.onChangePage}
               rowsPerPageOptions={[5, 10, 25]}
               onRowsPerPageChange={table.onChangeRowsPerPage}
+              sx={{
+                borderTop: '1px solid',
+                borderColor: 'divider',
+                overflow: 'hidden',
+              }}
             />
           </>
         )}

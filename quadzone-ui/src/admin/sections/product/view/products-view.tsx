@@ -2,17 +2,21 @@ import { useState, useCallback } from 'react';
 
 import Box from '@mui/material/Box';
 import Grid from '@mui/material/Grid';
+import Button from '@mui/material/Button';
 import Pagination from '@mui/material/Pagination';
 import Typography from '@mui/material/Typography';
 import CircularProgress from '@mui/material/CircularProgress';
 
 import { useProducts } from 'src/hooks/useProducts';
 import { DashboardContent } from 'src/layouts/dashboard';
+import { useRouter } from 'src/routes/hooks';
+import { productsApi } from 'src/api/products';
 
 import { ProductItem } from '../product-item';
 import { ProductSort } from '../product-sort';
-import { CartIcon } from '../product-cart-widget';
 import { ProductFilters } from '../product-filters';
+
+import { Iconify } from 'src/components/iconify';
 
 import type { FiltersProps } from '../product-filters';
 
@@ -59,6 +63,7 @@ const defaultFilters = {
 };
 
 export function ProductsView() {
+  const router = useRouter();
   const [sortBy, setSortBy] = useState('featured');
   const [page, setPage] = useState(0);
   const [openFilter, setOpenFilter] = useState(false);
@@ -103,13 +108,56 @@ export function ProductsView() {
 
   const totalPages = Math.ceil(total / 12);
 
+  const handleCreateProduct = useCallback(() => {
+    router.push('/admin/products/create');
+  }, [router]);
+
+  const handleViewDetails = useCallback((id: string) => {
+    router.push(`/admin/products/${id}`);
+  }, [router]);
+
+  const handleEdit = useCallback((id: string) => {
+    router.push(`/admin/products/${id}/edit`);
+  }, [router]);
+
+  const handleLock = useCallback(async (id: string) => {
+    if (window.confirm('Are you sure you want to lock this product?')) {
+      try {
+        await productsApi.update(id, { status: 'locked' as any });
+        refetch();
+      } catch (error) {
+        console.error('Failed to lock product:', error);
+        alert('Failed to lock product');
+      }
+    }
+  }, [refetch]);
+
+  const handleUnlock = useCallback(async (id: string) => {
+    if (window.confirm('Are you sure you want to unlock this product?')) {
+      try {
+        await productsApi.update(id, { status: '' as any });
+        refetch();
+      } catch (error) {
+        console.error('Failed to unlock product:', error);
+        alert('Failed to unlock product');
+      }
+    }
+  }, [refetch]);
+
   return (
     <DashboardContent>
-      <CartIcon totalItems={8} />
-
-      <Typography variant="h4" sx={{ mb: 5 }}>
-        Products
-      </Typography>
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 5 }}>
+        <Typography variant="h4">
+          Products
+        </Typography>
+        <Button
+          variant="contained"
+          startIcon={<Iconify icon="mingcute:add-line" />}
+          onClick={handleCreateProduct}
+        >
+          New Product
+        </Button>
+      </Box>
       <Box
         sx={{
           mb: 5,
@@ -182,7 +230,11 @@ export function ProductsView() {
                     coverUrl: product.coverUrl || '',
                     colors: product.colors || [],
                     priceSale: product.priceSale ?? null,
-                  }} 
+                  }}
+                  onViewDetails={handleViewDetails}
+                  onEdit={handleEdit}
+                  onLock={handleLock}
+                  onUnlock={handleUnlock}
                 />
               </Grid>
             ))}

@@ -30,7 +30,14 @@ export function UserTableHead({
 }: UserTableHeadProps) {
   return (
     <TableHead>
-      <TableRow>
+      <TableRow
+        sx={{
+          '& .MuiTableCell-root': {
+            verticalAlign: 'middle',
+            textAlign: 'center',
+          },
+        }}
+      >
         <TableCell padding="checkbox">
           <Checkbox
             indeterminate={numSelected > 0 && numSelected < rowCount}

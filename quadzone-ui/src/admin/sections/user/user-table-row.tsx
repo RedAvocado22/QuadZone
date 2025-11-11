@@ -60,7 +60,17 @@ export function UserTableRow({ row, selected, onSelectRow, onEdit, onDelete }: U
 
   return (
     <>
-      <TableRow hover tabIndex={-1} role="checkbox" selected={selected}>
+      <TableRow 
+        hover 
+        tabIndex={-1} 
+        role="checkbox" 
+        selected={selected}
+        sx={{
+          '& .MuiTableCell-root': {
+            verticalAlign: 'middle',
+          },
+        }}
+      >
         <TableCell padding="checkbox">
           <Checkbox disableRipple checked={selected} onChange={onSelectRow} />
         </TableCell>

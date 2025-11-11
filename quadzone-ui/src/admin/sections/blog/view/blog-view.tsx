@@ -9,6 +9,8 @@ import CircularProgress from '@mui/material/CircularProgress';
 
 import { usePosts } from 'src/hooks/usePosts';
 import { DashboardContent } from 'src/layouts/dashboard';
+import { useRouter } from 'src/routes/hooks';
+import { postsApi } from 'src/api/posts';
 
 import { Iconify } from 'src/components/iconify';
 
@@ -21,6 +23,7 @@ import type { IPostItem } from '../post-item';
 // ----------------------------------------------------------------------
 
 export function BlogView() {
+  const router = useRouter();
   const [sortBy, setSortBy] = useState<'latest' | 'popular' | 'oldest'>('latest');
   const [search, setSearch] = useState('');
   const [page, setPage] = useState(0);
@@ -33,6 +36,40 @@ export function BlogView() {
     sortBy,
   });
 
+  const handleCreatePost = useCallback(() => {
+    router.push('/admin/blog/create');
+  }, [router]);
+
+  const handleViewPost = useCallback(
+    (id: string) => {
+      router.push(`/admin/blog/${id}`);
+    },
+    [router]
+  );
+
+  const handleEditPost = useCallback(
+    (id: string) => {
+      router.push(`/admin/blog/${id}/edit`);
+    },
+    [router]
+  );
+
+  const handleDeletePost = useCallback(
+    async (id: string) => {
+      if (!window.confirm('Are you sure you want to delete this post?')) {
+        return;
+      }
+      try {
+        await postsApi.delete(id);
+        refetch();
+      } catch (err) {
+        console.error('Failed to delete post:', err);
+        alert('Failed to delete post');
+      }
+    },
+    [refetch]
+  );
+
   const handleSort = useCallback((newSort: string) => {
     setSortBy(newSort as 'latest' | 'popular' | 'oldest');
     setPage(0); // Reset to first page when sorting changes
@@ -43,8 +80,8 @@ export function BlogView() {
     setPage(0); // Reset to first page when search changes
   }, []);
 
-  const handlePageChange = useCallback((event: React.ChangeEvent<unknown>, newPage: number) => {
-    setPage(newPage - 1); // Pagination is 1-based, API is 0-based
+  const handlePageChange = useCallback((_event: React.ChangeEvent<unknown>, newPage: number) => {
+      setPage(newPage - 1); // Pagination is 1-based, API is 0-based
   }, []);
 
   const totalPages = Math.ceil(total / 12);
@@ -65,7 +102,7 @@ export function BlogView() {
           variant="contained"
           color="inherit"
           startIcon={<Iconify icon="mingcute:add-line" />}
-          onClick={refetch}
+          onClick={handleCreatePost}
         >
           New post
         </Button>
@@ -120,7 +157,14 @@ export function BlogView() {
                     md: latestPostLarge ? 6 : 3,
                   }}
                 >
-                  <PostItem post={post as IPostItem} latestPost={latestPost} latestPostLarge={latestPostLarge} />
+                  <PostItem
+                    post={post as IPostItem}
+                    latestPost={latestPost}
+                    latestPostLarge={latestPostLarge}
+                    onView={handleViewPost}
+                    onEdit={handleEditPost}
+                    onDelete={handleDeletePost}
+                  />
                 </Grid>
               );
             })}

@@ -1,3 +1,5 @@
+import { useState, useCallback } from 'react';
+
 import type { CardProps } from '@mui/material/Card';
 import type { IconifyName } from 'src/components/iconify';
 
@@ -8,6 +10,10 @@ import Link from '@mui/material/Link';
 import Card from '@mui/material/Card';
 import Avatar from '@mui/material/Avatar';
 import Typography from '@mui/material/Typography';
+import IconButton from '@mui/material/IconButton';
+import Popover from '@mui/material/Popover';
+import MenuList from '@mui/material/MenuList';
+import MenuItem, { menuItemClasses } from '@mui/material/MenuItem';
 
 import { fDate } from 'src/utils/format-time';
 import { fShortenNumber } from 'src/utils/format-number';
@@ -38,12 +44,50 @@ export function PostItem({
   post,
   latestPost,
   latestPostLarge,
+  onView,
+  onEdit,
+  onDelete,
   ...other
 }: CardProps & {
   post: IPostItem;
   latestPost: boolean;
   latestPostLarge: boolean;
+  onView?: (id: string) => void;
+  onEdit?: (id: string) => void;
+  onDelete?: (id: string) => void;
 }) {
+  const [openPopover, setOpenPopover] = useState<HTMLButtonElement | null>(null);
+
+  const handleOpenPopover = useCallback((event: React.MouseEvent<HTMLButtonElement>) => {
+    event.stopPropagation();
+    setOpenPopover(event.currentTarget);
+  }, []);
+
+  const handleClosePopover = useCallback(() => {
+    setOpenPopover(null);
+  }, []);
+
+  const handleView = useCallback(() => {
+    handleClosePopover();
+    if (onView) {
+      onView(post.id);
+    }
+  }, [onView, post.id, handleClosePopover]);
+
+  const handleEdit = useCallback(() => {
+    handleClosePopover();
+    if (onEdit) {
+      onEdit(post.id);
+    }
+  }, [onEdit, post.id, handleClosePopover]);
+
+  const handleDelete = useCallback(() => {
+    handleClosePopover();
+    if (onDelete) {
+      onDelete(post.id);
+    }
+  }, [onDelete, post.id, handleClosePopover]);
+
   const renderAvatar = (
     <Avatar
       alt={post.author.name}
@@ -65,6 +109,12 @@ export function PostItem({
       color="inherit"
       variant="subtitle2"
       underline="hover"
+      onClick={(event) => {
+        event.preventDefault();
+        if (onView) {
+          onView(post.id);
+        }
+      }}
       sx={{
         height: 44,
         overflow: 'hidden',
@@ -162,50 +212,111 @@ export function PostItem({
     />
   );
 
-  return (
-    <Card sx={sx} {...other}>
-      <Box
-        sx={(theme) => ({
-          position: 'relative',
-          pt: 'calc(100% * 3 / 4)',
-          ...((latestPostLarge || latestPost) && {
-            pt: 'calc(100% * 4 / 3)',
-            '&:after': {
-              top: 0,
-              content: "''",
-              width: '100%',
-              height: '100%',
-              position: 'absolute',
-              bgcolor: varAlpha(theme.palette.grey['900Channel'], 0.72),
-            },
-          }),
-          ...(latestPostLarge && {
-            pt: {
-              xs: 'calc(100% * 4 / 3)',
-              sm: 'calc(100% * 3 / 4.66)',
-            },
-          }),
-        })}
-      >
-        {renderShape}
-        {renderAvatar}
-        {renderCover}
-      </Box>
+  const renderActions = (
+    <IconButton
+      onClick={handleOpenPopover}
+      sx={{
+        top: 8,
+        right: 8,
+        zIndex: 20,
+        position: 'absolute',
+        bgcolor: 'background.paper',
+        '&:hover': {
+          bgcolor: 'background.paper',
+        },
+      }}
+    >
+      <Iconify icon="eva:more-vertical-fill" />
+    </IconButton>
+  );
 
-      <Box
-        sx={(theme) => ({
-          p: theme.spacing(6, 3, 3, 3),
-          ...((latestPostLarge || latestPost) && {
-            width: 1,
-            bottom: 0,
-            position: 'absolute',
-          }),
-        })}
+  return (
+    <>
+      <Card sx={sx} {...other}>
+        <Box
+          sx={(theme) => ({
+            position: 'relative',
+            pt: 'calc(100% * 3 / 4)',
+            ...((latestPostLarge || latestPost) && {
+              pt: 'calc(100% * 4 / 3)',
+              '&:after': {
+                top: 0,
+                content: "''",
+                width: '100%',
+                height: '100%',
+                position: 'absolute',
+                bgcolor: varAlpha(theme.palette.grey['900Channel'], 0.72),
+              },
+            }),
+            ...(latestPostLarge && {
+              pt: {
+                xs: 'calc(100% * 4 / 3)',
+                sm: 'calc(100% * 3 / 4.66)',
+              },
+            }),
+          })}
+        >
+          {renderShape}
+          {renderAvatar}
+          {renderCover}
+          {renderActions}
+        </Box>
+
+        <Box
+          sx={(theme) => ({
+            p: theme.spacing(6, 3, 3, 3),
+            ...((latestPostLarge || latestPost) && {
+              width: 1,
+              bottom: 0,
+              position: 'absolute',
+            }),
+          })}
+        >
+          {renderDate}
+          {renderTitle}
+          {renderInfo}
+        </Box>
+      </Card>
+
+      <Popover
+        open={!!openPopover}
+        anchorEl={openPopover}
+        onClose={handleClosePopover}
+        anchorOrigin={{ vertical: 'top', horizontal: 'left' }}
+        transformOrigin={{ vertical: 'top', horizontal: 'right' }}
       >
-        {renderDate}
-        {renderTitle}
-        {renderInfo}
-      </Box>
-    </Card>
+        <MenuList
+          disablePadding
+          sx={{
+            p: 0.5,
+            gap: 0.5,
+            width: 160,
+            display: 'flex',
+            flexDirection: 'column',
+            [`& .${menuItemClasses.root}`]: {
+              px: 1,
+              gap: 2,
+              borderRadius: 0.75,
+              [`&.${menuItemClasses.selected}`]: { bgcolor: 'action.selected' },
+            },
+          }}
+        >
+          <MenuItem onClick={handleView}>
+            <Iconify icon="solar:eye-bold" />
+            View
+          </MenuItem>
+
+          <MenuItem onClick={handleEdit}>
+            <Iconify icon="solar:pen-bold" />
+            Edit
+          </MenuItem>
+
+          <MenuItem onClick={handleDelete} sx={{ color: 'error.main' }}>
+            <Iconify icon="solar:trash-bin-trash-bold" />
+            Delete
+          </MenuItem>
+        </MenuList>
+      </Popover>
+    </>
   );
 }

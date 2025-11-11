@@ -70,7 +70,7 @@ function Item({ item, sx, ...other }: ItemProps) {
           gap: 2,
           display: 'flex',
           alignItems: 'center',
-          borderBottom: `dashed 1px ${theme.vars.palette.divider}`,
+          borderBottom: `dashed 1px ${theme.vars?.palette.divider}`,
         }),
         ...(Array.isArray(sx) ? sx : [sx]),
       ]}

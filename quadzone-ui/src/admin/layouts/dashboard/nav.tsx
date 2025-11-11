@@ -1,7 +1,6 @@
 import type { Theme, SxProps, Breakpoint } from "@mui/material/styles";
 
 import { useEffect } from "react";
-import { varAlpha } from "minimal-shared/utils";
 
 import Box from "@mui/material/Box";
 import ListItem from "@mui/material/ListItem";
@@ -30,7 +29,6 @@ export type NavContentProps = {
 
 export function NavDesktop({ sx, data, slots, layoutQuery }: NavContentProps & { layoutQuery: Breakpoint }) {
     const theme = useTheme();
-    const grey500Channel = theme.vars?.palette.grey["500Channel"];
 
     return (
         <Box
@@ -45,9 +43,8 @@ export function NavDesktop({ sx, data, slots, layoutQuery }: NavContentProps & {
                 flexDirection: "column",
                 zIndex: "var(--layout-nav-zIndex)",
                 width: "var(--layout-nav-vertical-width)",
-                borderRight: grey500Channel
-                    ? `1px solid ${varAlpha(grey500Channel, 0.12)}`
-                    : `1px solid ${theme.palette.divider}`,
+                backgroundColor: theme.vars?.palette.grey[900] || theme.palette.grey[900] || "#121212",
+                borderRight: "none",
                 [theme.breakpoints.up(layoutQuery)]: {
                     display: "flex"
                 },
@@ -76,6 +73,8 @@ export function NavMobile({
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [pathname]);
 
+    const theme = useTheme();
+
     return (
         <Drawer
             open={open}
@@ -86,6 +85,7 @@ export function NavMobile({
                     px: 2.5,
                     overflow: "unset",
                     width: "var(--layout-nav-mobile-width)",
+                    backgroundColor: theme.vars?.palette.grey[900] || theme.palette.grey[900],
                     ...sx
                 }
             }}>
@@ -119,7 +119,7 @@ export function NavContent({ data, slots, sx }: NavContentProps) {
                     <Box
                         component="ul"
                         sx={{
-                            gap: 0.5,
+                            gap: 0,
                             display: "flex",
                             flexDirection: "column"
                         }}>
@@ -139,32 +139,34 @@ export function NavContent({ data, slots, sx }: NavContentProps) {
                                         href={item.path}
                                         sx={[
                                             (theme) => {
-                                                const textSecondary =
-                                                    theme.vars?.palette.text.secondary || theme.palette.text.secondary;
-                                                const primaryMain =
-                                                    theme.vars?.palette.primary.main || theme.palette.primary.main;
-                                                const primaryMainChannel = theme.vars?.palette.primary.mainChannel;
+                                                const whiteColor =
+                                                    theme.vars?.palette.common.white || theme.palette.common.white || "#FFFFFF";
+                                                const activeBgColor = "#42A5F5"; // Light blue solid background for active state - lighter shade
+                                                const hoverBgColor = "rgba(66, 165, 245, 0.3)"; // Lighter blue with opacity for hover state
 
                                                 return {
                                                     pl: 2,
-                                                    py: 1,
+                                                    py: 1.5,
                                                     gap: 2,
                                                     pr: 1.5,
-                                                    borderRadius: 0.75,
+                                                    borderRadius: 1,
                                                     typography: "body2",
                                                     fontWeight: "fontWeightMedium",
-                                                    color: textSecondary,
+                                                    color: whiteColor,
                                                     minHeight: 44,
                                                     ...(isActived && {
                                                         fontWeight: "fontWeightSemiBold",
-                                                        color: primaryMain,
-                                                        bgcolor: primaryMainChannel
-                                                            ? varAlpha(primaryMainChannel, 0.08)
-                                                            : "action.selected",
+                                                        color: whiteColor,
+                                                        bgcolor: activeBgColor,
                                                         "&:hover": {
-                                                            bgcolor: primaryMainChannel
-                                                                ? varAlpha(primaryMainChannel, 0.16)
-                                                                : "action.hover"
+                                                            bgcolor: activeBgColor,
+                                                            color: whiteColor
+                                                        }
+                                                    }),
+                                                    ...(!isActived && {
+                                                        "&:hover": {
+                                                            bgcolor: hoverBgColor,
+                                                            color: whiteColor
                                                         }
                                                     })
                                                 };

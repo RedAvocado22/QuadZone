@@ -4,20 +4,27 @@ import Box from '@mui/material/Box';
 import Card from '@mui/material/Card';
 import Table from '@mui/material/Table';
 import Button from '@mui/material/Button';
+import Popover from '@mui/material/Popover';
 import TableRow from '@mui/material/TableRow';
+import Checkbox from '@mui/material/Checkbox';
+import MenuList from '@mui/material/MenuList';
 import TableBody from '@mui/material/TableBody';
 import TableCell from '@mui/material/TableCell';
 import Typography from '@mui/material/Typography';
+import IconButton from '@mui/material/IconButton';
 import TableContainer from '@mui/material/TableContainer';
 import TablePagination from '@mui/material/TablePagination';
 import CircularProgress from '@mui/material/CircularProgress';
+import MenuItem, { menuItemClasses } from '@mui/material/MenuItem';
 
 import { useOrders } from 'src/hooks/useOrders';
 import { DashboardContent } from 'src/layouts/dashboard';
+import { useRouter } from 'src/routes/hooks';
+import { ordersApi } from 'src/api/orders';
 
+import { Label } from 'src/components/label';
 import { Iconify } from 'src/components/iconify';
 import { Scrollbar } from 'src/components/scrollbar';
-import { Label } from 'src/components/label';
 
 import { UserTableToolbar } from '../../user/user-table-toolbar';
 import { UserTableHead } from '../../user/user-table-head';
@@ -39,6 +46,7 @@ type OrderRow = {
 };
 
 export function OrderView() {
+  const router = useRouter();
   const [page, setPage] = useState(0);
   const [orderBy, setOrderBy] = useState('createdAt');
   const [rowsPerPage, setRowsPerPage] = useState(5);
@@ -53,6 +61,40 @@ export function OrderView() {
     sortBy: orderBy,
     sortOrder: order,
   });
+
+  const handleCreateOrder = useCallback(() => {
+    router.push('/admin/order/create');
+  }, [router]);
+
+  const handleViewOrder = useCallback(
+    (id: string) => {
+      router.push(`/admin/order/${id}`);
+    },
+    [router]
+  );
+
+  const handleEditOrder = useCallback(
+    (id: string) => {
+      router.push(`/admin/order/${id}/edit`);
+    },
+    [router]
+  );
+
+  const handleDeleteOrder = useCallback(
+    async (id: string) => {
+      if (!window.confirm('Are you sure you want to delete this order?')) {
+        return;
+      }
+      try {
+        await ordersApi.delete(id);
+        refetch();
+      } catch (err) {
+        console.error('Failed to delete order:', err);
+        alert('Failed to delete order');
+      }
+    },
+    [refetch]
+  );
 
   const onSort = useCallback(
     (id: string) => {
@@ -89,7 +131,7 @@ export function OrderView() {
         <Typography variant="h4" sx={{ flexGrow: 1 }}>
           Orders
         </Typography>
-        <Button variant="contained" color="inherit" startIcon={<Iconify icon="mingcute:add-line" />}>
+        <Button variant="contained" color="inherit" startIcon={<Iconify icon="mingcute:add-line" />} onClick={handleCreateOrder}>
           New Order
         </Button>
       </Box>
@@ -143,13 +185,19 @@ export function OrderView() {
                         row={row}
                         selected={selected.includes(row.id)}
                         onSelectRow={() => onSelectRow(row.id)}
+                        onView={handleViewOrder}
+                        onEdit={handleEditOrder}
+                        onDelete={handleDeleteOrder}
                       />
                     ))}
 
-                    <TableEmptyRows
-                      height={68}
-                      emptyRows={emptyRows(page, rowsPerPage, orders.length)}
-                    />
+                    {!notFound && (
+                      <TableEmptyRows
+                        height={68}
+                        emptyRows={emptyRows(page, rowsPerPage, orders.length)}
+                        colSpan={9}
+                      />
+                    )}
 
                     {notFound && <TableNoData searchQuery={filterName} />}
                   </TableBody>
@@ -168,6 +216,11 @@ export function OrderView() {
                 setRowsPerPage(parseInt(event.target.value, 10));
                 setPage(0);
               }}
+              sx={{
+                borderTop: '1px solid',
+                borderColor: 'divider',
+                overflow: 'hidden',
+              }}
             />
           </>
         )}
@@ -178,42 +231,166 @@ export function OrderView() {
 
 // ----------------------------------------------------------------------
 
-function OrderTableRow({ row, selected, onSelectRow }: { row: OrderRow; selected: boolean; onSelectRow: () => void }) {
+function OrderTableRow({
+  row,
+  selected,
+  onSelectRow,
+  onView,
+  onEdit,
+  onDelete,
+}: {
+  row: OrderRow;
+  selected: boolean;
+  onSelectRow: () => void;
+  onView?: (id: string) => void;
+  onEdit?: (id: string) => void;
+  onDelete?: (id: string) => void;
+}) {
+  const [openPopover, setOpenPopover] = useState<HTMLButtonElement | null>(null);
+
+  const handleOpenPopover = useCallback((event: React.MouseEvent<HTMLButtonElement>) => {
+    setOpenPopover(event.currentTarget);
+  }, []);
+
+  const handleClosePopover = useCallback(() => {
+    setOpenPopover(null);
+  }, []);
+
+  const handleView = useCallback(() => {
+    handleClosePopover();
+    if (onView) {
+      onView(row.id);
+    }
+  }, [onView, row.id, handleClosePopover]);
+
+  const handleEdit = useCallback(() => {
+    handleClosePopover();
+    if (onEdit) {
+      onEdit(row.id);
+    }
+  }, [onEdit, row.id, handleClosePopover]);
+
+  const handleDelete = useCallback(() => {
+    handleClosePopover();
+    if (onDelete) {
+      onDelete(row.id);
+    }
+  }, [onDelete, row.id, handleClosePopover]);
+
   const getStatusColor = (status: string) => {
     switch (status.toLowerCase()) {
-      case 'completed': return 'success';
-      case 'pending': return 'warning';
-      case 'cancelled': return 'error';
-      case 'processing': return 'info';
-      default: return 'default';
+      case 'completed':
+        return 'success';
+      case 'pending':
+        return 'warning';
+      case 'cancelled':
+        return 'error';
+      case 'processing':
+        return 'info';
+      default:
+        return 'default';
     }
   };
 
   const getPaymentStatusColor = (status: string) => {
     switch (status.toLowerCase()) {
-      case 'paid': return 'success';
-      case 'pending': return 'warning';
-      case 'failed': return 'error';
-      default: return 'default';
+      case 'paid':
+        return 'success';
+      case 'pending':
+        return 'warning';
+      case 'failed':
+        return 'error';
+      default:
+        return 'default';
     }
   };
 
   return (
-    <TableRow hover tabIndex={-1} role="checkbox" selected={selected}>
-      <TableCell padding="checkbox">
-        <input type="checkbox" checked={selected} onChange={onSelectRow} />
-      </TableCell>
-      <TableCell component="th" scope="row">{row.orderNumber}</TableCell>
-      <TableCell>{row.customerName}</TableCell>
-      <TableCell align="center">{row.items}</TableCell>
-      <TableCell>${row.total.toFixed(2)}</TableCell>
-      <TableCell><Label color={getStatusColor(row.status)}>{row.status}</Label></TableCell>
-      <TableCell><Label color={getPaymentStatusColor(row.paymentStatus)}>{row.paymentStatus}</Label></TableCell>
-      <TableCell>{new Date(row.createdAt).toLocaleDateString()}</TableCell>
-      <TableCell align="right">
-        <Iconify icon="eva:more-vertical-fill" />
-      </TableCell>
-    </TableRow>
+    <>
+      <TableRow 
+        hover 
+        tabIndex={-1} 
+        role="checkbox" 
+        selected={selected}
+        sx={{
+          '& .MuiTableCell-root': {
+            verticalAlign: 'middle',
+          },
+        }}
+      >
+        <TableCell padding="checkbox">
+          <Checkbox disableRipple checked={selected} onChange={onSelectRow} />
+        </TableCell>
+
+        <TableCell component="th" scope="row">
+          <Button variant="text" color="inherit" onClick={() => onView?.(row.id)} sx={{ p: 0, minWidth: 'auto' }}>
+            {row.orderNumber}
+          </Button>
+        </TableCell>
+
+        <TableCell>{row.customerName}</TableCell>
+
+        <TableCell align="center">{row.items}</TableCell>
+
+        <TableCell>${row.total.toFixed(2)}</TableCell>
+
+        <TableCell>
+          <Label color={getStatusColor(row.status)}>{row.status}</Label>
+        </TableCell>
+
+        <TableCell>
+          <Label color={getPaymentStatusColor(row.paymentStatus)}>{row.paymentStatus}</Label>
+        </TableCell>
+
+        <TableCell>{new Date(row.createdAt).toLocaleDateString()}</TableCell>
+
+        <TableCell align="right">
+          <IconButton onClick={handleOpenPopover}>
+            <Iconify icon="eva:more-vertical-fill" />
+          </IconButton>
+        </TableCell>
+      </TableRow>
+
+      <Popover
+        open={!!openPopover}
+        anchorEl={openPopover}
+        onClose={handleClosePopover}
+        anchorOrigin={{ vertical: 'top', horizontal: 'left' }}
+        transformOrigin={{ vertical: 'top', horizontal: 'right' }}
+      >
+        <MenuList
+          disablePadding
+          sx={{
+            p: 0.5,
+            gap: 0.5,
+            width: 140,
+            display: 'flex',
+            flexDirection: 'column',
+            [`& .${menuItemClasses.root}`]: {
+              px: 1,
+              gap: 2,
+              borderRadius: 0.75,
+              [`&.${menuItemClasses.selected}`]: { bgcolor: 'action.selected' },
+            },
+          }}
+        >
+          <MenuItem onClick={handleView}>
+            <Iconify icon="solar:eye-bold" />
+            View
+          </MenuItem>
+
+          <MenuItem onClick={handleEdit}>
+            <Iconify icon="solar:pen-bold" />
+            Edit
+          </MenuItem>
+
+          <MenuItem onClick={handleDelete} sx={{ color: 'error.main' }}>
+            <Iconify icon="solar:trash-bin-trash-bold" />
+            Delete
+          </MenuItem>
+        </MenuList>
+      </Popover>
+    </>
   );
 }
 

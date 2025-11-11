@@ -53,7 +53,7 @@ export function HeaderSection({
       sx={[
         (theme) => ({
           ...(isOffset && {
-            '--color': `var(--offset-color, ${theme.vars.palette.text.primary})`,
+            '--color': `var(--offset-color, ${theme.vars?.palette.text.primary})`,
           }),
         }),
         ...(Array.isArray(sx) ? sx : [sx]),
@@ -107,7 +107,7 @@ const HeaderRoot = styled(AppBar, {
     zIndex: pauseZindex.top,
     backdropFilter: `blur(6px)`,
     WebkitBackdropFilter: `blur(6px)`,
-    backgroundColor: varAlpha(theme.vars.palette.background.defaultChannel, 0.8),
+    backgroundColor: varAlpha(theme.vars?.palette?.background?.defaultChannel ?? '', 0.8),
     ...(isOffset && {
       opacity: 1,
       visibility: 'visible',
@@ -124,7 +124,7 @@ const HeaderRoot = styled(AppBar, {
     borderRadius: '50%',
     width: `calc(100% - 48px)`,
     zIndex: pauseZindex.bottom,
-    boxShadow: theme.vars.customShadows.z8,
+    boxShadow: theme.vars?.customShadows.z8,
     ...(isOffset && { opacity: 0.48, visibility: 'visible' }),
   };
 

@@ -16,8 +16,11 @@ export const visuallyHidden = {
 
 // ----------------------------------------------------------------------
 
-export function emptyRows(page: number, rowsPerPage: number, arrayLength: number) {
-  return page ? Math.max(0, (1 + page) * rowsPerPage - arrayLength) : 0;
+export function emptyRows(_page: number, rowsPerPage: number, arrayLength: number) {
+  // For server-side pagination: arrayLength is the number of items on current page
+  // Calculate empty rows needed to fill the current page
+  // Note: _page parameter is kept for API compatibility but not used in server-side pagination
+  return Math.max(0, rowsPerPage - arrayLength);
 }
 
 // ----------------------------------------------------------------------

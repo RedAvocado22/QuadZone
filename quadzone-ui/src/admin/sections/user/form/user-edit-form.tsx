@@ -65,10 +65,8 @@ export function UserEditForm({ userId, onSuccess, onCancel }: UserEditFormProps)
           isVerified: user.isVerified ?? false,
           status: user.status || 'active',
         });
-        // Set preview if user has avatar URL
         if (user.avatarUrl) {
           setPreviewUrl(user.avatarUrl);
-          // Determine method based on URL (data URL = uploaded, http/https = URL)
           if (user.avatarUrl.startsWith('data:')) {
             setAvatarMethod('upload');
           } else {
