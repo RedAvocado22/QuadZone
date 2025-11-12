@@ -20,7 +20,7 @@ INSERT INTO sub_category (subcategory_id, subcategory_name, description, is_acti
 -- Products (15)
 INSERT INTO product (product_id, product_name, brand, model_number, description, quantity, price, cost_price, weight, image_url, is_active, created_at, subcategory_id) VALUES
   (1, 'Galaxy S25 VN', 'Samsung', 'S25-VN', 'Vietnam edition, large battery', 120, 999.99, 650.00, 0.18, '/images/galaxy_s25.jpg', 1, NOW(), 1),
-  (2, 'iPhone 15s', 'Apple', 'IPH15S', 'OLED display, excellent camera', 80, 1199.99, 800.00, 0.17, '/images/iphone15s.jpg', 1, NOW(), 1),
+  (2, 'iPhone 15', 'Apple', 'IPH15', 'OLED display, excellent camera', 80, 1199.99, 800.00, 0.17, '/images/iphone15.jpg', 1, NOW(), 1),
   (3, 'Xiaomi Redmi Note 14', 'Xiaomi', 'RN14', 'Affordable with long battery life', 200, 199.99, 120.00, 0.19, '/images/redmi_note14.jpg', 1, NOW(), 1),
   (4, '65W Fast Charger', 'Baseus', 'BS-65W', 'Fast charger for phones and laptops', 300, 29.99, 12.00, 0.05, '/images/charger_65w.jpg', 1, NOW(), 2),
   (5, 'Clear Protective Case', 'Memumi', 'CASE-TP', 'Shock-resistant TPU clear case', 500, 5.99, 1.50, 0.02, '/images/case_clear.jpg', 1, NOW(), 2),
@@ -41,7 +41,8 @@ INSERT INTO _user (id, email, password, first_name, last_name, role, created_at)
   (2, 'nguyen.van.a@example.com', 'custpass1', 'Nguyen', 'A', 'CUSTOMER', NOW()),
   (3, 'tran.thi.b@example.com', 'custpass2', 'Tran', 'B', 'CUSTOMER', NOW()),
   (4, 'le.van.c@example.com', 'custpass3', 'Le', 'C', 'CUSTOMER', NOW()),
-  (5, 'pham.staff@example.com', 'staffpass', 'Pham', 'Staff', 'STAFF', NOW());
+  (5, 'pham.staff@example.com', 'staffpass', 'Pham', 'Staff', 'STAFF', NOW()),
+  (6, 'dinh.shipper@example.com','shipperypass','Dinh', 'Shipper', 'SHIPPER', NOW());
 
 -- Carts
 INSERT INTO cart (id, created_at, customer_id, updated_at) VALUES

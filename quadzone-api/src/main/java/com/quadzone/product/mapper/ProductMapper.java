@@ -22,6 +22,7 @@ public class ProductMapper {
         dto.setQuantity(p.getQuantity());
         dto.setActive(p.isActive());
         dto.setCreatedAt(p.getCreatedAt() == null ? LocalDateTime.now() : p.getCreatedAt());
+        
         if (p.getSubCategory() != null) {
             SubCategory sc = p.getSubCategory();
             dto.setSubCategoryId((long) sc.getSubcategoryId());
