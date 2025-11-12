@@ -1,4 +1,4 @@
-package com.quadzone.cart;
+package com.quadzone.checkout.cart;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;

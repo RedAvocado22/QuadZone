@@ -1,4 +1,4 @@
-package com.quadzone.order;
+package com.quadzone.checkout.order;
 
 import com.quadzone.product.Product;
 import jakarta.persistence.*;
@@ -24,7 +24,6 @@ public class OrderItem {
 
     @Column(name = "sub_total", columnDefinition = "DECIMAL(8,2)")
     private double subtotal;
-
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "order_id", nullable = false)

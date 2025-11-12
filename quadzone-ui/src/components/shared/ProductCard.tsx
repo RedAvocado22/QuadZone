@@ -21,8 +21,8 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
                 <div className="product-item__inner px-wd-4 p-2 p-md-3">
                     <div className="product-item__body pb-xl-2">
                         <div className="mb-2">
-                            <Link to={`/category/${product.category.id}`} className="font-size-12 text-gray-5">
-                                {product.category.name || "Products"}
+                            <Link to={`/subCategory/${product.subCategoryId}`} className="font-size-12 text-gray-5">
+                                {product.subCategoryName || "Products"}
                             </Link>
                         </div>
 

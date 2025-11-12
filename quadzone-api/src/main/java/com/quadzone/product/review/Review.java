@@ -1,6 +1,6 @@
 package com.quadzone.product.review;
 
-import com.quadzone.order.Order;
+import com.quadzone.checkout.order.Order;
 import com.quadzone.product.Product;
 import com.quadzone.user.User;
 import jakarta.persistence.*;
