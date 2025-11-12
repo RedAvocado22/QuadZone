@@ -7,6 +7,8 @@ import ProtectedRoute from "./routers/ProtectedRoute";
 import { ToastContainer } from "react-toastify";
 import DemoPage from "./components/demo/DemoPage";
 import Layout from "./components/layout/Layout";
+import LoginPage from "./pages/LoginPage";
+import RegisterPage from "./pages/RegisterPage";
 
 function App() {
     return (
@@ -17,6 +19,8 @@ function App() {
                         {/*Public Routes */}
                         <Route path="/" element={<HomePage />} />
                         <Route path="demo" element={<DemoPage />} />
+                        <Route path="/login" element={<LoginPage />} />
+                        <Route path="/register" element={<RegisterPage />} />
 
                         {/* Routes for authenticated users */}
                         <Route element={<ProtectedRoute />}>

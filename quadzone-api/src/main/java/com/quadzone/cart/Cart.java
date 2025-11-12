@@ -1,4 +1,4 @@
-package com.quadzone.checkout.cart;
+package com.quadzone.cart;
 
 import com.quadzone.user.User;
 import jakarta.persistence.*;

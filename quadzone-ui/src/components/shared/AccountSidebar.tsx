@@ -1,88 +1,133 @@
-import React from "react";
+import { useMemo, useEffect, useState } from "react";
 import { useUser } from "../../hooks/useUser";
-import { register } from "../../api/auth";
+import { register, forgotPassword } from "../../api/auth";
 import { toast } from "react-toastify";
-import { useForm } from "react-hook-form";
+import { useFormik } from "formik";
 import * as yup from "yup";
-import { yupResolver } from "@hookform/resolvers/yup";
+import { yupEmail, yupFirstName, yupLastName, yupPassword } from "../../utils/Validation";
+
+const loginSchema = yup
+    .object({
+        email: yupEmail,
+        password: yupPassword
+    })
+    .required();
+
+const registerSchema = yup
+    .object({
+        firstName: yupFirstName,
+        lastName: yupLastName,
+        email: yupEmail,
+        password: yupPassword,
+        confirmPassword: yup
+            .string()
+            .oneOf([yup.ref("password")], "Passwords must match")
+            .required("Confirm password is required")
+    })
+    .required();
+
+const forgotPasswordSchema = yup
+    .object({
+        email: yupEmail
+    })
+    .required();
+
+type FormValues = {
+    firstName?: string;
+    lastName?: string;
+    email: string;
+    password?: string;
+    confirmPassword?: string;
+};
+
+const schemas: Record<string, FormValues> = {
+    login: loginSchema,
+    signup: registerSchema,
+    forgot: forgotPasswordSchema
+};
 
 const AccountSidebar = () => {
-    const [activeForm, setActiveForm] = React.useState("login");
-    const { login } = useUser();
+    const [activeForm, setActiveForm] = useState("login");
+    const { login, refreshUser } = useUser();
 
-    type FormValues = {
-        firstName: string;
-        lastName: string;
-        email: string;
-        password: string;
-        confirmPassword: string;
+    const currentSchema = useMemo(() => schemas[activeForm], [activeForm]);
+
+    const initialValues: FormValues = {
+        email: "",
+        firstName: "",
+        lastName: "",
+        password: "",
+        confirmPassword: ""
     };
 
-    const schema = yup
-        .object({
-            firstName: yup.string().notRequired(),
-            lastName: yup.string().notRequired(),
-            email: yup.string().email("Invalid email").required("Email is required"),
-            password: yup.string().min(6, "Password must be at least 6 characters").required("Password is required"),
-            confirmPassword: yup
-                .string()
-                .oneOf([yup.ref("password")], "Passwords must match")
-                .required("Confirm password is required")
-        })
-        .required();
-
-    const {
-        register: formRegister,
-        handleSubmit: rhfHandleSubmit,
-        reset,
-        formState: { errors, isSubmitting }
-    } = useForm<FormValues>({ resolver: yupResolver(schema) });
-
-    const onSubmit = async (data: FormValues) => {
-        // Temporary visible alert to confirm submit is firing in the browser
-        // and to make the action obvious if console is filtered.
-        // Remove these alerts once debugging is finished.
-        // eslint-disable-next-line no-alert
-        alert("onSubmit fired: " + activeForm);
-        console.log("onSubmit fired", { data, activeForm });
-        try {
+    const formik = useFormik<FormValues>({
+        initialValues: initialValues,
+        validationSchema: currentSchema,
+        onSubmit: async (values, { resetForm }) => {
             if (activeForm === "login") {
-                const ok = await login({ email: data.email, password: data.password });
-                if (ok) {
-                    toast.success("Login successful");
-                    // reset form
-                    reset();
-                    // (DEBUG) keep sidebar open so developers can inspect network/console
-                } else {
-                    toast.error("Login failed");
+                if (!values.email || !values.password) return;
+                try {
+                    const ok = await login({
+                        email: values.email,
+                        password: values.password
+                    });
+                    if (ok) {
+                        toast.success("Login successful");
+                        resetForm();
+                    } else {
+                        toast.error("Login failed. Please check your credentials.");
+                    }
+                } catch (err) {
+                    console.error("Login error:", err);
+                    toast.error("Login failed. Please check your credentials.");
                 }
-            } else {
-                if (!data.firstName || !data.lastName) {
-                    toast.error("First name and last name are required");
-                    return;
-                }
+            } else if (activeForm === "signup") {
+                const { email, password, firstName, lastName, confirmPassword } = values;
+                if (!email || !password || !firstName || !lastName || !confirmPassword) return;
 
-                console.log("Form data before register:", data);
-                const ok = await register({
-                    email: data.email,
-                    password: data.password,
-                    firstName: data.firstName,
-                    lastName: data.lastName
-                });
+                try {
+                    const respData = await register({
+                        email,
+                        password,
+                        firstName,
+                        lastName,
+                        confirmPassword
+                    });
+
+                    if (respData) {
+                        const token = respData.access_token || respData.token || respData.jwtToken;
+
+                        if (typeof token === "string") {
+                            localStorage.setItem("access_token", token);
+                            await refreshUser();
+                            toast.success("Registration successful!");
+                            setActiveForm("login");
+                        } else {
+                            toast.error("Registration succeeded but no token was received.");
+                        }
+                    } else {
+                        console.error("Registration failed, respData is null");
+                    }
+                } catch (err) {
+                    console.error("Registration error:", err);
+                    toast.error("An unexpected error occurred during registration.");
+                }
+            } else if (activeForm === "forgot") {
+                if (!values.email) return;
+
+                const ok = await forgotPassword(values.email);
                 if (ok) {
-                    toast.success("Registration successful. Please check your email to activate your account.");
                     setActiveForm("login");
-                    reset();
-                    // (DEBUG) keep sidebar open so developers can inspect network/console
-                } else {
-                    toast.error("Registration failed");
                 }
             }
-        } catch (err) {
-            console.error("Auth error:", err);
-            toast.error("An unexpected error occurred");
         }
-    };
+    });
+
+    const { errors, touched, isSubmitting, handleSubmit, getFieldProps, resetForm } = formik;
+
+    useEffect(() => {
+        resetForm();
+    }, [activeForm, resetForm]);
 
     return (
         <aside
@@ -102,7 +147,8 @@ const AccountSidebar = () => {
                         {/* Content */}
                         <div className="js-scrollbar u-sidebar__body">
                             <div className="u-sidebar__content u-header-sidebar__content">
-                                <form className="js-validate" onSubmit={rhfHandleSubmit(onSubmit)}>
+                                {/* Use formik.handleSubmit */}
+                                <form className="js-validate" onSubmit={handleSubmit} noValidate>
                                     {/* Login Form */}
                                     {activeForm === "login" && (
                                         <div id="login">
@@ -124,18 +170,26 @@ const AccountSidebar = () => {
                                                         </div>
                                                         <input
                                                             type="email"
-                                                            className="form-control"
+                                                            // Use touched.email to only show error after blur
+                                                            className={`form-control ${
+                                                                touched.email && errors.email ? "is-invalid" : ""
+                                                            }`}
                                                             id="signinEmail"
                                                             placeholder="Email"
-                                                            {...formRegister("email")}
-                                                            aria-invalid={errors.email ? "true" : "false"}
+                                                            // Use getFieldProps
+                                                            {...getFieldProps("email")}
+                                                            aria-invalid={
+                                                                touched.email && errors.email ? "true" : "false"
+                                                            }
                                                         />
-                                                        {errors.email && (
-                                                            <small className="text-danger">
-                                                                {errors.email.message}
-                                                            </small>
-                                                        )}
                                                     </div>
+                                                    {/* Update error logic */}
+                                                    {touched.email && errors.email && (
+                                                        <small className="text-danger mt-1 d-block">
+                                                            {/* Formik error is just a string */}
+                                                            {errors.email}
+                                                        </small>
+                                                    )}
                                                 </div>
                                             </div>
 
@@ -152,18 +206,24 @@ const AccountSidebar = () => {
                                                         </div>
                                                         <input
                                                             type="password"
-                                                            className="form-control"
+                                                            className={`form-control ${
+                                                                touched.password && errors.password ? "is-invalid" : ""
+                                                            }`}
                                                             id="signinPassword"
                                                             placeholder="Password"
-                                                            {...formRegister("password")}
-                                                            aria-invalid={errors.password ? "true" : "false"}
+                                                            // Use getFieldProps
+                                                            {...getFieldProps("password")}
+                                                            aria-invalid={
+                                                                touched.password && errors.password ? "true" : "false"
+                                                            }
                                                         />
-                                                        {errors.password && (
-                                                            <small className="text-danger">
-                                                                {errors.password.message}
-                                                            </small>
-                                                        )}
                                                     </div>
+                                                    {/* Update error logic */}
+                                                    {touched.password && errors.password && (
+                                                        <small className="text-danger mt-1 d-block">
+                                                            {errors.password}
+                                                        </small>
+                                                    )}
                                                 </div>
                                             </div>
 
@@ -183,8 +243,9 @@ const AccountSidebar = () => {
                                                 <button
                                                     type="submit"
                                                     className="btn btn-block btn-sm btn-primary transition-3d-hover"
+                                                    // 'isSubmitting' comes from formik
                                                     disabled={isSubmitting}>
-                                                    Login
+                                                    {isSubmitting ? "Logging in..." : "Login"}
                                                 </button>
                                             </div>
 
@@ -201,10 +262,10 @@ const AccountSidebar = () => {
                                                 </a>
                                             </div>
 
+                                            {/* Social login buttons (optional) */}
                                             <div className="text-center">
                                                 <span className="u-divider u-divider--xs u-divider--text mb-4">OR</span>
                                             </div>
-
                                             <div className="d-flex">
                                                 <a
                                                     className="btn btn-block btn-sm btn-soft-facebook transition-3d-hover mr-1"
@@ -230,6 +291,7 @@ const AccountSidebar = () => {
                                                 <p>Fill out the form to get started.</p>
                                             </header>
 
+                                            {/* First Name */}
                                             <div className="form-group">
                                                 <div className="js-form-message js-focus-state">
                                                     <label className="sr-only" htmlFor="signupFirstName">
@@ -243,21 +305,28 @@ const AccountSidebar = () => {
                                                         </div>
                                                         <input
                                                             type="text"
-                                                            className="form-control"
+                                                            className={`form-control ${
+                                                                touched.firstName && errors.firstName
+                                                                    ? "is-invalid"
+                                                                    : ""
+                                                            }`}
                                                             id="signupFirstName"
                                                             placeholder="First name"
-                                                            {...formRegister("firstName")}
-                                                            aria-invalid={errors.firstName ? "true" : "false"}
+                                                            {...getFieldProps("firstName")}
+                                                            aria-invalid={
+                                                                touched.firstName && errors.firstName ? "true" : "false"
+                                                            }
                                                         />
-                                                        {errors.firstName && (
-                                                            <small className="text-danger">
-                                                                {errors.firstName.message}
-                                                            </small>
-                                                        )}
                                                     </div>
+                                                    {touched.firstName && errors.firstName && (
+                                                        <small className="text-danger mt-1 d-block">
+                                                            {errors.firstName}
+                                                        </small>
+                                                    )}
                                                 </div>
                                             </div>
 
+                                            {/* Last Name */}
                                             <div className="form-group">
                                                 <div className="js-form-message js-focus-state">
                                                     <label className="sr-only" htmlFor="signupLastName">
@@ -271,21 +340,26 @@ const AccountSidebar = () => {
                                                         </div>
                                                         <input
                                                             type="text"
-                                                            className="form-control"
+                                                            className={`form-control ${
+                                                                touched.lastName && errors.lastName ? "is-invalid" : ""
+                                                            }`}
                                                             id="signupLastName"
                                                             placeholder="Last name"
-                                                            {...formRegister("lastName")}
-                                                            aria-invalid={errors.lastName ? "true" : "false"}
+                                                            {...getFieldProps("lastName")}
+                                                            aria-invalid={
+                                                                touched.lastName && errors.lastName ? "true" : "false"
+                                                            }
                                                         />
-                                                        {errors.lastName && (
-                                                            <small className="text-danger">
-                                                                {errors.lastName.message}
-                                                            </small>
-                                                        )}
                                                     </div>
+                                                    {touched.lastName && errors.lastName && (
+                                                        <small className="text-danger mt-1 d-block">
+                                                            {errors.lastName}
+                                                        </small>
+                                                    )}
                                                 </div>
                                             </div>
 
+                                            {/* Email */}
                                             <div className="form-group">
                                                 <div className="js-form-message js-focus-state">
                                                     <label className="sr-only" htmlFor="signupEmail">
@@ -299,21 +373,26 @@ const AccountSidebar = () => {
                                                         </div>
                                                         <input
                                                             type="email"
-                                                            className="form-control"
+                                                            className={`form-control ${
+                                                                touched.email && errors.email ? "is-invalid" : ""
+                                                            }`}
                                                             id="signupEmail"
                                                             placeholder="Email"
-                                                            {...formRegister("email")}
-                                                            aria-invalid={errors.email ? "true" : "false"}
+                                                            {...getFieldProps("email")}
+                                                            aria-invalid={
+                                                                touched.email && errors.email ? "true" : "false"
+                                                            }
                                                         />
-                                                        {errors.email && (
-                                                            <small className="text-danger">
-                                                                {errors.email.message}
-                                                            </small>
-                                                        )}
                                                     </div>
+                                                    {touched.email && errors.email && (
+                                                        <small className="text-danger mt-1 d-block">
+                                                            {errors.email}
+                                                        </small>
+                                                    )}
                                                 </div>
                                             </div>
 
+                                            {/* Password */}
                                             <div className="form-group">
                                                 <div className="js-form-message js-focus-state">
                                                     <label className="sr-only" htmlFor="signupPassword">
@@ -327,21 +406,26 @@ const AccountSidebar = () => {
                                                         </div>
                                                         <input
                                                             type="password"
-                                                            className="form-control"
+                                                            className={`form-control ${
+                                                                touched.password && errors.password ? "is-invalid" : ""
+                                                            }`}
                                                             id="signupPassword"
                                                             placeholder="Password"
-                                                            {...formRegister("password")}
-                                                            aria-invalid={errors.password ? "true" : "false"}
+                                                            {...getFieldProps("password")}
+                                                            aria-invalid={
+                                                                touched.password && errors.password ? "true" : "false"
+                                                            }
                                                         />
-                                                        {errors.password && (
-                                                            <small className="text-danger">
-                                                                {errors.password.message}
-                                                            </small>
-                                                        )}
                                                     </div>
+                                                    {touched.password && errors.password && (
+                                                        <small className="text-danger mt-1 d-block">
+                                                            {errors.password}
+                                                        </small>
+                                                    )}
                                                 </div>
                                             </div>
 
+                                            {/* Confirm Password */}
                                             <div className="form-group">
                                                 <div className="js-form-message js-focus-state">
                                                     <label className="sr-only" htmlFor="signupConfirmPassword">
@@ -355,18 +439,26 @@ const AccountSidebar = () => {
                                                         </div>
                                                         <input
                                                             type="password"
-                                                            className="form-control"
+                                                            className={`form-control ${
+                                                                touched.confirmPassword && errors.confirmPassword
+                                                                    ? "is-invalid"
+                                                                    : ""
+                                                            }`}
                                                             id="signupConfirmPassword"
                                                             placeholder="Confirm Password"
-                                                            {...formRegister("confirmPassword")}
-                                                            aria-invalid={errors.confirmPassword ? "true" : "false"}
+                                                            {...getFieldProps("confirmPassword")}
+                                                            aria-invalid={
+                                                                touched.confirmPassword && errors.confirmPassword
+                                                                    ? "true"
+                                                                    : "false"
+                                                            }
                                                         />
-                                                        {errors.confirmPassword && (
-                                                            <small className="text-danger">
-                                                                {errors.confirmPassword.message}
-                                                            </small>
-                                                        )}
                                                     </div>
+                                                    {touched.confirmPassword && errors.confirmPassword && (
+                                                        <small className="text-danger mt-1 d-block">
+                                                            {errors.confirmPassword}
+                                                        </small>
+                                                    )}
                                                 </div>
                                             </div>
 
@@ -375,12 +467,76 @@ const AccountSidebar = () => {
                                                     type="submit"
                                                     className="btn btn-block btn-sm btn-primary transition-3d-hover"
                                                     disabled={isSubmitting}>
-                                                    Get Started
+                                                    {isSubmitting ? "Signing up..." : "Get Started"}
                                                 </button>
                                             </div>
 
                                             <div className="text-center mb-4">
                                                 <span className="small text-muted">Already have an account?</span>
+                                                <a
+                                                    className="js-animation-link small text-dark"
+                                                    href="#"
+                                                    onClick={(e) => {
+                                                        e.preventDefault();
+                                                        setActiveForm("login");
+                                                    }}>
+                                                    Login
+                                                </a>
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    {/* Forgot Password Form */}
+                                    {activeForm === "forgot" && (
+                                        <div id="forgotPassword">
+                                            <header className="text-center mb-7">
+                                                <h2 className="h4 mb-0">Forgot Password?</h2>
+                                                <p>Enter your email to reset your password.</p>
+                                            </header>
+
+                                            <div className="form-group">
+                                                <div className="js-form-message js-focus-state">
+                                                    <label className="sr-only" htmlFor="forgotEmail">
+                                                        Email
+                                                    </label>
+                                                    <div className="input-group">
+                                                        <div className="input-group-prepend">
+                                                            <span className="input-group-text">
+                                                                <span className="fas fa-envelope"></span>
+                                                            </span>
+                                                        </div>
+                                                        <input
+                                                            type="email"
+                                                            className={`form-control ${
+                                                                touched.email && errors.email ? "is-invalid" : ""
+                                                            }`}
+                                                            id="forgotEmail"
+                                                            placeholder="Email"
+                                                            {...getFieldProps("email")}
+                                                            aria-invalid={
+                                                                touched.email && errors.email ? "true" : "false"
+                                                            }
+                                                        />
+                                                    </div>
+                                                    {touched.email && errors.email && (
+                                                        <small className="text-danger mt-1 d-block">
+                                                            {errors.email}
+                                                        </small>
+                                                    )}
+                                                </div>
+                                            </div>
+
+                                            <div className="mb-2">
+                                                <button
+                                                    type="submit"
+                                                    className="btn btn-block btn-sm btn-primary transition-3d-hover"
+                                                    disabled={isSubmitting}>
+                                                    {isSubmitting ? "Sending..." : "Send Reset Link"}
+                                                </button>
+                                            </div>
+
+                                            <div className="text-center mb-4">
+                                                <span className="small text-muted">Remembered your password?</span>
                                                 <a
                                                     className="js-animation-link small text-dark"
                                                     href="#"

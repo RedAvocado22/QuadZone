@@ -1,5 +1,6 @@
 package com.quadzone.user;
 
+import com.quadzone.auth.token.Token;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -43,6 +44,9 @@ public class User implements UserDetails {
 
     @Column(name = "created_at", nullable = false)
     private final LocalDateTime createdAt = LocalDateTime.now();
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Token> tokens;
 
     public String getFullName() {
         return firstName + " " + lastName;

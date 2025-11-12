@@ -41,10 +41,6 @@ const UserProvider = ({ children }: UserProviderProps) => {
     const login = async (payload: LoginRequest): Promise<boolean> => {
         try {
             const resp = await API.post("/auth/authenticate", payload);
-            if (resp.status === 202) {
-                toast.warn("Your account is un-activated. Check your email.");
-                return false;
-            }
 
             const token = resp.data.access_token;
             if (!token) {
@@ -60,10 +56,10 @@ const UserProvider = ({ children }: UserProviderProps) => {
             let msg = "Please check your email and password.";
             if (isAxiosError(err)) {
                 switch (err.response?.status) {
-                    case 401: // Unauthorized
+                    case 401:
                         msg = "Incorrect email or password.";
                         break;
-                    case 404: // Not Found
+                    case 404:
                         msg = "Account does not exist.";
                         break;
                     default:
@@ -80,12 +76,16 @@ const UserProvider = ({ children }: UserProviderProps) => {
     const logout = async () => {
         localStorage.removeItem("access_token");
         setUser(null);
-        toast.success("Logout successful!");
-        navigate("/", { replace: true });
 
-        API.get("/auth/logout").catch((err: unknown) => {
+        try {
+            await API.post("/auth/logout");
+            toast.success("Logout successful!");
+        } catch (err) {
             console.error("Server logout failed, but user is logged out locally:", err);
-        });
+            toast.success("Logout successful!");
+        }
+
+        navigate("/", { replace: true });
     };
 
     useEffect(() => {
@@ -99,13 +99,10 @@ const UserProvider = ({ children }: UserProviderProps) => {
             }
 
             try {
-                const resp = await API.get("/users/me");
-                setUser(resp.data);
+                await fetchCurrentUser();
                 setReady(true);
             } catch {
-                setUser(null);
                 setReady(true);
-                localStorage.removeItem("access_token");
             }
         };
 

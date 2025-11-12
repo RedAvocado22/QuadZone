@@ -1,10 +1,10 @@
-import React, { useState } from "react";
+import { useState } from "react";
 
 const SearchBar = ({ className = "" }) => {
     const [searchQuery, setSearchQuery] = useState("");
     const [category, setCategory] = useState("all");
 
-    const handleSearch = (e) => {
+    const handleSearch = (e: React.FormEvent) => {
         e.preventDefault();
         console.log("Searching for:", searchQuery, "in category:", category);
         // Implement search functionality

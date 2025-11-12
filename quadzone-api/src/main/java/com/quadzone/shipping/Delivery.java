@@ -1,6 +1,6 @@
 package com.quadzone.shipping;
 
-import com.quadzone.checkout.order.Order;
+import com.quadzone.order.Order;
 import com.quadzone.user.User;
 import jakarta.persistence.*;
 import lombok.Getter;

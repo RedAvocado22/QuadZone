@@ -1,6 +1,6 @@
 package com.quadzone.payment;
 
-import com.quadzone.checkout.order.Order;
+import com.quadzone.order.Order;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
