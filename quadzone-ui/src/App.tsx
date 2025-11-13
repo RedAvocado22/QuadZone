@@ -9,6 +9,7 @@ import DemoPage from "./components/demo/DemoPage";
 import Layout from "./components/layout/Layout";
 import LoginPage from "./pages/LoginPage";
 import RegisterPage from "./pages/RegisterPage";
+import Shop from "./pages/Shop";
 
 function App() {
     return (
@@ -21,6 +22,7 @@ function App() {
                         <Route path="demo" element={<DemoPage />} />
                         <Route path="/login" element={<LoginPage />} />
                         <Route path="/register" element={<RegisterPage />} />
+                        <Route path="/shop" element={<Shop />} />
 
                         {/* Routes for authenticated users */}
                         <Route element={<ProtectedRoute />}>
