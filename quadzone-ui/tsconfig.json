@@ -11,8 +11,9 @@
         "allowImportingTsExtensions": true,
         "verbatimModuleSyntax": true,
         "moduleDetection": "force",
-        "noEmit": true,
+        "noEmit": true /* Linting */,
 
+<<<<<<< HEAD
         /* Path aliases */
         "baseUrl": ".",
         "paths": {
@@ -21,6 +22,8 @@
         },
 
         /* Linting */
+=======
+>>>>>>> 91ccadd69ddc5ebbe78b461ad3cf6eb821874229
         "strict": true,
         "noUnusedLocals": true,
         "noUnusedParameters": true,

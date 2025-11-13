@@ -22,9 +22,14 @@ export default defineConfig({
 
     resolve: {
         alias: {
+<<<<<<< HEAD
             '@': path.resolve(__dirname, './src'),
             '@assets': path.resolve(__dirname, './src/assets'),
             'src': path.resolve(__dirname, './src/admin')
+=======
+            "@": path.resolve(__dirname, "./src"),
+            "@assets": path.resolve(__dirname, "./src/assets")
+>>>>>>> 91ccadd69ddc5ebbe78b461ad3cf6eb821874229
         }
     }
 });

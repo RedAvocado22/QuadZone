@@ -1,5 +1,4 @@
 import { lazy, Suspense } from 'react';
-import type { ComponentType } from 'react';
 import { useIsClient } from 'minimal-shared/hooks';
 import { mergeClasses } from 'minimal-shared/utils';
 
@@ -9,14 +8,11 @@ import { chartClasses } from './classes';
 import { ChartLoading } from './components';
 
 import type { ChartProps } from './types';
-import type { Props as ApexProps } from 'react-apexcharts';
 
 // ----------------------------------------------------------------------
 
 const LazyChart = lazy(() =>
-  import('react-apexcharts').then((module) => ({
-    default: module.default as unknown as ComponentType<ApexProps>,
-  }))
+  import('react-apexcharts').then((module) => ({ default: module.default }))
 );
 
 export function Chart({ type, series, options, slotProps, className, sx, ...other }: ChartProps) {
@@ -48,7 +44,5 @@ const ChartRoot = styled('div')(({ theme }) => ({
   width: '100%',
   flexShrink: 0,
   position: 'relative',
-  borderRadius: typeof theme.shape.borderRadius === 'number'
-    ? theme.shape.borderRadius * 1.5
-    : `calc(${theme.shape.borderRadius} * 1.5)`,
+  borderRadius: theme.shape.borderRadius * 1.5,
 }));

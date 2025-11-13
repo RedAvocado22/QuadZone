@@ -1,5 +1,4 @@
-import { Suspense, lazy } from "react";
-import { Routes, Route, Outlet } from "react-router-dom";
+import { Routes, Route } from "react-router-dom";
 import CartPage from "./pages/CartPage";
 import UserProvider from "./hooks/useUser";
 import { CartProvider } from "./contexts/CartContext";
@@ -11,50 +10,30 @@ import Layout from "./components/layout/Layout";
 import LoginPage from "./pages/LoginPage";
 import RegisterPage from "./pages/RegisterPage";
 
-const AdminApp = lazy(() => import("./admin/AdminApp"));
-const AdminRoutes = lazy(() => import("./admin/AdminRoutes"));
-
-const SiteLayout = () => (
-    <Layout>
-        <Outlet />
-    </Layout>
-);
-
 function App() {
     return (
         <UserProvider>
             <CartProvider>
-                <Routes>
-                    <Route
-                        path="/admin/*"
-                        element={
-                            <Suspense fallback={<div>Loading admin...</div>}>
-                                <AdminApp>
-                                    <AdminRoutes />
-                                </AdminApp>
-                            </Suspense>
-                        }
-                    />
-
-                    <Route element={<SiteLayout />}>
-                        {/* Public Routes */}
-                        <Route index element={<HomePage />} />
+                <Layout>
+                    <Routes>
+                        {/*Public Routes */}
+                        <Route path="/" element={<HomePage />} />
                         <Route path="demo" element={<DemoPage />} />
-                        <Route path="login" element={<LoginPage />} />
-                        <Route path="register" element={<RegisterPage />} />
+                        <Route path="/login" element={<LoginPage />} />
+                        <Route path="/register" element={<RegisterPage />} />
 
                         {/* Routes for authenticated users */}
                         <Route element={<ProtectedRoute />}>
-                            <Route path="cart" element={<CartPage />} />
+                            <Route path="/cart" element={<CartPage />} />
                         </Route>
 
                         {/* Error Boundary */}
-                        {/* <Route path="unauthorized" element={<Unauthorized />} />
-                        <Route path="*" element={<NotFound />} /> */}
-                    </Route>
-                </Routes>
-                <ToastContainer position="top-right" style={{ zIndex: 999999 }} />
+                        {/* <Route path="/unauthorized" element={<Unauthorized />} />
+                    <Route path="/*" element={<NotFound />} /> */}
+                    </Routes>
+                </Layout>
             </CartProvider>
+            <ToastContainer position="top-right" style={{ zIndex: 999999 }} />
         </UserProvider>
     );
 }

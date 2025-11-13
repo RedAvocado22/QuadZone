@@ -45,8 +45,7 @@ export function PostSort({ options, sortBy, onSort, sx, ...other }: PostSortProp
         }
         sx={[
           {
-            bgcolor: (theme) =>
-              varAlpha(theme?.vars?.palette?.grey?.['500Channel'] ?? '0 0 0', 0.08),
+            bgcolor: (theme) => varAlpha(theme.vars.palette.grey['500Channel'], 0.08),
           },
           ...(Array.isArray(sx) ? sx : [sx]),
         ]}
