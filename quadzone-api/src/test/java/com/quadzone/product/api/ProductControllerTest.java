@@ -1,6 +1,7 @@
 package com.quadzone.product.api;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.quadzone.product.ProductController;
 import com.quadzone.product.dto.ProductDTO;
 import com.quadzone.product.service.ProductService;
 import org.junit.jupiter.api.Test;
@@ -26,61 +27,61 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @WebMvcTest(ProductController.class)
 class ProductControllerTest {
 
-    @Autowired
-    private MockMvc mockMvc;
+        @Autowired
+        private MockMvc mockMvc;
 
-    @MockitoBean
-    private ProductService productService;
+        @MockitoBean
+        private ProductService productService;
 
-    @Autowired
-    private ObjectMapper objectMapper;
+        @Autowired
+        private ObjectMapper objectMapper;
 
-    @Test
-    void testListProducts() throws Exception {
-        ProductDTO product = ProductDTO.builder()
-                .id(1L)
-                .name("Test Product")
-                .price(99.99)
-                .quantity(10)
-                .isActive(true)
-                .createdAt(LocalDateTime.now())
-                .build();
-        Page<ProductDTO> page = new PageImpl<>(List.of(product), PageRequest.of(0, 10), 1);
+        @Test
+        void testListProducts() throws Exception {
+                ProductDTO product = ProductDTO.builder()
+                                .id(1L)
+                                .name("Test Product")
+                                .price(99.99)
+                                .quantity(10)
+                                .isActive(true)
+                                .createdAt(LocalDateTime.now())
+                                .build();
+                Page<ProductDTO> page = new PageImpl<>(List.of(product), PageRequest.of(0, 10), 1);
 
-        when(productService.listProducts(any(Pageable.class), eq(null))).thenReturn(page);
+                when(productService.listProducts(any(Pageable.class), eq(null))).thenReturn(page);
 
-        mockMvc.perform(get("/api/products"))
-                .andExpect(status().isOk())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                .andExpect(jsonPath("$.content[0].id").value(1))
-                .andExpect(jsonPath("$.content[0].name").value("Test Product"));
-    }
+                mockMvc.perform(get("/api/products"))
+                                .andExpect(status().isOk())
+                                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                                .andExpect(jsonPath("$.content[0].id").value(1))
+                                .andExpect(jsonPath("$.content[0].name").value("Test Product"));
+        }
 
-    @Test
-    void testGetProduct() throws Exception {
-        ProductDTO product = ProductDTO.builder()
-                .id(1L)
-                .name("Test Product")
-                .price(99.99)
-                .quantity(10)
-                .isActive(true)
-                .createdAt(LocalDateTime.now())
-                .build();
+        @Test
+        void testGetProduct() throws Exception {
+                ProductDTO product = ProductDTO.builder()
+                                .id(1L)
+                                .name("Test Product")
+                                .price(99.99)
+                                .quantity(10)
+                                .isActive(true)
+                                .createdAt(LocalDateTime.now())
+                                .build();
 
-        when(productService.getProduct(1L)).thenReturn(product);
+                when(productService.getProduct(1L)).thenReturn(product);
 
-        mockMvc.perform(get("/api/products/1"))
-                .andExpect(status().isOk())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                .andExpect(jsonPath("$.id").value(1))
-                .andExpect(jsonPath("$.name").value("Test Product"));
-    }
+                mockMvc.perform(get("/api/products/1"))
+                                .andExpect(status().isOk())
+                                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                                .andExpect(jsonPath("$.id").value(1))
+                                .andExpect(jsonPath("$.name").value("Test Product"));
+        }
 
-    @Test
-    void testGetProductNotFound() throws Exception {
-        when(productService.getProduct(999L)).thenThrow(new RuntimeException("Product not found"));
+        @Test
+        void testGetProductNotFound() throws Exception {
+                when(productService.getProduct(999L)).thenThrow(new RuntimeException("Product not found"));
 
-        mockMvc.perform(get("/api/products/999"))
-                .andExpect(status().isNotFound());
-    }
+                mockMvc.perform(get("/api/products/999"))
+                                .andExpect(status().isNotFound());
+        }
 }

@@ -21,6 +21,7 @@ public class ProductDTO {
 
     private String brand;
     private String modelNumber;
+    private String description;
 
     @PositiveOrZero
     private double price;

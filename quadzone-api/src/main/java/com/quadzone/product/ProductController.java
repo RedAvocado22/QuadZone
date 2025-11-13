@@ -1,4 +1,4 @@
-package com.quadzone.product.api;
+package com.quadzone.product;
 
 import com.quadzone.product.dto.ProductDTO;
 import com.quadzone.product.service.ProductService;
@@ -15,39 +15,13 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/api/v1/public/products")
+@RequestMapping("/api/v1/products")
 @RequiredArgsConstructor
 @CrossOrigin(origins = "http://localhost:5173")
 @Tag(name = "Product API", description = "API for managing products")
 public class ProductController {
 
     private final ProductService productService;
-
-    @GetMapping
-    @Operation(summary = "List products", description = "Get a paginated list of products with optional search")
-    @ApiResponse(responseCode = "200", description = "Successful operation")
-    public ResponseEntity<Page<ProductDTO>> listProducts(
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size,
-            @RequestParam(required = false) String q,
-            @RequestParam(defaultValue = "id") String sort) {
-        Pageable pageable = PageRequest.of(page, size);
-        Page<ProductDTO> products = productService.listProducts(pageable, q);
-        return ResponseEntity.ok(products);
-    }
-
-    @GetMapping("/{id}")
-    @Operation(summary = "Get product by ID", description = "Retrieve a single product by its ID")
-    @ApiResponse(responseCode = "200", description = "Product found")
-    @ApiResponse(responseCode = "404", description = "Product not found")
-    public ResponseEntity<ProductDTO> getProduct(@PathVariable Long id) {
-        try {
-            ProductDTO product = productService.getProduct(id);
-            return ResponseEntity.ok(product);
-        } catch (RuntimeException e) {
-            return ResponseEntity.notFound().build();
-        }
-    }
 
     @PostMapping
     @Operation(summary = "Create product", description = "Create a new product")

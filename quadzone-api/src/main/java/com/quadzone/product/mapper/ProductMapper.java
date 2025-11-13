@@ -17,12 +17,13 @@ public class ProductMapper {
         dto.setName(p.getName());
         dto.setBrand(p.getBrand());
         dto.setModelNumber(p.getModelNumber());
+        dto.setDescription(p.getDescription());
         dto.setPrice(p.getPrice());
         dto.setImageUrl(p.getImageUrl());
         dto.setQuantity(p.getQuantity());
         dto.setActive(p.isActive());
         dto.setCreatedAt(p.getCreatedAt() == null ? LocalDateTime.now() : p.getCreatedAt());
-        
+
         if (p.getSubCategory() != null) {
             SubCategory sc = p.getSubCategory();
             dto.setSubCategoryId((long) sc.getSubcategoryId());

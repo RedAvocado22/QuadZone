@@ -36,6 +36,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
                             <Link to={`/product/${product.id}`} className="d-block text-center">
                                 <img
                                     className="img-fluid"
+                                    style={{ width: "160px", height: "150px", objectFit: "cover" }}
                                     src={
                                         product.image
                                             ? `http://localhost:8080/api/v1/public/images/${product.image}`

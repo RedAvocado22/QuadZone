@@ -5,6 +5,7 @@ export interface ProductDTO {
     name: string;
     brand?: string;
     modelNumber?: string;
+    description?: string;
     price: number;
     imageUrl?: string;
     quantity: number;
