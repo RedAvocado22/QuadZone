@@ -1,13 +1,12 @@
 package com.quadzone.payment;
 
+import com.quadzone.order.Order;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-
-import com.quadzone.checkout.order.Order;
 
 @Getter
 @Setter

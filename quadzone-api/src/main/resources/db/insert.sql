@@ -19,21 +19,21 @@ INSERT INTO sub_category (subcategory_id, subcategory_name, description, is_acti
 
 -- Products (15)
 INSERT INTO product (product_id, product_name, brand, model_number, description, quantity, price, cost_price, weight, image_url, is_active, created_at, subcategory_id) VALUES
-  (1, 'Galaxy S25 VN', 'Samsung', 'S25-VN', 'Vietnam edition, large battery', 120, 999.99, 650.00, 0.18, '/images/galaxy_s25.jpg', 1, NOW(), 1),
-  (2, 'iPhone 15', 'Apple', 'IPH15', 'OLED display, excellent camera', 80, 1199.99, 800.00, 0.17, '/images/iphone15.jpg', 1, NOW(), 1),
-  (3, 'Xiaomi Redmi Note 14', 'Xiaomi', 'RN14', 'Affordable with long battery life', 200, 199.99, 120.00, 0.19, '/images/redmi_note14.jpg', 1, NOW(), 1),
-  (4, '65W Fast Charger', 'Baseus', 'BS-65W', 'Fast charger for phones and laptops', 300, 29.99, 12.00, 0.05, '/images/charger_65w.jpg', 1, NOW(), 2),
-  (5, 'Clear Protective Case', 'Memumi', 'CASE-TP', 'Shock-resistant TPU clear case', 500, 5.99, 1.50, 0.02, '/images/case_clear.jpg', 1, NOW(), 2),
-  (6, 'ThinkPad X14', 'Lenovo', 'TP-X14', 'Lightweight business laptop', 40, 899.99, 600.00, 1.25, '/images/thinkpad_x14.jpg', 1, NOW(), 3),
-  (7, 'MacBook Air 15', 'Apple', 'MBA-15', 'M-series chip, ultra thin', 25, 1299.99, 900.00, 1.2, '/images/macbook_air15.jpg', 1, NOW(), 3),
-  (8, 'GTX Graphics Card', 'NVIDIA', 'GTX-1660', 'Mid-range gaming GPU', 15, 249.99, 160.00, 0.7, '/images/gpu_gtx.jpg', 1, NOW(), 4),
-  (9, '1.8L Rice Cooker', 'Electrolux', 'RC-18', 'Family-size rice cooker', 60, 49.99, 30.00, 2.5, '/images/rice_cooker.jpg', 1, NOW(), 5),
-  (10, 'Blender', 'Philips', 'BL-400', 'Multi-purpose blender', 90, 39.99, 20.00, 3.0, '/images/blender.jpg', 1, NOW(), 5),
-  (11, 'Bluetooth ANC Headphones', 'Sony', 'WH-1000XM5', 'Active noise cancellation', 70, 299.99, 180.00, 0.25, '/images/sony_wh1000xm5.jpg', 1, NOW(), 6),
-  (12, 'Portable Bluetooth Speaker', 'JBL', 'CHARGE-5', 'Long battery life & powerful sound', 85, 149.99, 90.00, 1.1, '/images/jbl_charge5.jpg', 1, NOW(), 6),
-  (13, 'PlayStation 5', 'Sony', 'PS5-DIG', 'Next-gen gaming console', 30, 499.99, 350.00, 4.5, '/images/ps5.jpg', 1, NOW(), 7),
-  (14, 'Pro Controller', 'Sony', 'DS5-PRO', 'Premium wireless controller', 120, 69.99, 40.00, 0.4, '/images/dualshock5_pro.jpg', 1, NOW(), 7),
-  (15, 'SSD 1TB NVMe', 'Samsung', 'EVO-1TB', 'High-speed NVMe solid state drive', 150, 119.99, 70.00, 0.05, '/images/ssd_1tb.jpg', 1, NOW(), 4);
+  (1, 'Galaxy S25 VN', 'Samsung', 'S25-VN', 'Vietnam edition, large battery', 120, 999.99, 650.00, 0.18, 'galaxy_s25.jpg', 1, NOW(), 1),
+  (2, 'iPhone 15', 'Apple', 'IPH15', 'OLED display, excellent camera', 80, 1199.99, 800.00, 0.17, 'iphone15.jpg', 1, NOW(), 1),
+  (3, 'Xiaomi Redmi Note 14', 'Xiaomi', 'RN14', 'Affordable with long battery life', 200, 199.99, 120.00, 0.19, 'redmi_note14.jpg', 1, NOW(), 1),
+  (4, '65W Fast Charger', 'Baseus', 'BS-65W', 'Fast charger for phones and laptops', 300, 29.99, 12.00, 0.05, 'charger_65w.jpg', 1, NOW(), 2),
+  (5, 'Clear Protective Case', 'Memumi', 'CASE-TP', 'Shock-resistant TPU clear case', 500, 5.99, 1.50, 0.02, 'case_clear.jpg', 1, NOW(), 2),
+  (6, 'ThinkPad X14', 'Lenovo', 'TP-X14', 'Lightweight business laptop', 40, 899.99, 600.00, 1.25, 'thinkpad_x14.jpg', 1, NOW(), 3),
+  (7, 'MacBook Air 15', 'Apple', 'MBA-15', 'M-series chip, ultra thin', 25, 1299.99, 900.00, 1.2, 'macbook_air15.jpg', 1, NOW(), 3),
+  (8, 'GTX Graphics Card', 'NVIDIA', 'GTX-1660', 'Mid-range gaming GPU', 15, 249.99, 160.00, 0.7, 'gpu_gtx.jpg', 1, NOW(), 4),
+  (9, '1.8L Rice Cooker', 'Electrolux', 'RC-18', 'Family-size rice cooker', 60, 49.99, 30.00, 2.5, 'rice_cooker.jpg', 1, NOW(), 5),
+  (10, 'Blender', 'Philips', 'BL-400', 'Multi-purpose blender', 90, 39.99, 20.00, 3.0, 'blender.jpg', 1, NOW(), 5),
+  (11, 'Bluetooth ANC Headphones', 'Sony', 'WH-1000XM5', 'Active noise cancellation', 70, 299.99, 180.00, 0.25, 'sony_wh1000xm5.jpg', 1, NOW(), 6),
+  (12, 'Portable Bluetooth Speaker', 'JBL', 'CHARGE-5', 'Long battery life & powerful sound', 85, 149.99, 90.00, 1.1, 'jbl_charge5.jpg', 1, NOW(), 6),
+  (13, 'PlayStation 5', 'Sony', 'PS5-DIG', 'Next-gen gaming console', 30, 499.99, 350.00, 4.5, 'ps5.jpg', 1, NOW(), 7),
+  (14, 'Pro Controller', 'Sony', 'DS5-PRO', 'Premium wireless controller', 120, 69.99, 40.00, 0.4, 'dualshock5_pro.jpg', 1, NOW(), 7),
+  (15, 'SSD 1TB NVMe', 'Samsung', 'EVO-1TB', 'High-speed NVMe solid state drive', 150, 119.99, 70.00, 0.05, 'ssd_1tb.jpg', 1, NOW(), 4);
 
 -- Users (5)
 INSERT INTO _user (id, email, password, first_name, last_name, role, created_at) VALUES

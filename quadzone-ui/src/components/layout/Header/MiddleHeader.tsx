@@ -76,7 +76,7 @@ const MiddleHeader = () => {
                                 <div className="email">
                                     E-mail:{" "}
                                     <a href="mailto:info@electro.com?subject=Help Need" className="text-gray-90">
-                                        info@electro.com
+                                        quadzone@gmail.com
                                     </a>
                                 </div>
                             </div>
