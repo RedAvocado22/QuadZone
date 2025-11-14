@@ -10,6 +10,7 @@ import DemoPage from "./components/demo/DemoPage";
 import Layout from "./components/layout/Layout";
 import LoginPage from "./pages/LoginPage";
 import RegisterPage from "./pages/RegisterPage";
+import Shop from "./pages/Shop";
 
 const AdminApp = lazy(() => import("./admin/AdminApp"));
 const AdminRoutes = lazy(() => import("./admin/AdminRoutes"));
