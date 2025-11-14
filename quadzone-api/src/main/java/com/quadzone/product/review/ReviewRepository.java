@@ -1,4 +1,4 @@
-package com.quadzone.review;
+package com.quadzone.product.review;
 
 
 import org.springframework.data.domain.Page;
