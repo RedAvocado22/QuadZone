@@ -1,4 +1,4 @@
-package com.quadzone.product.api;
+package com.quadzone.product;
 
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.Resource;
@@ -16,7 +16,7 @@ import java.nio.file.Paths;
 @CrossOrigin(origins = "http://localhost:5173")
 public class ImageController {
 
-    private static final String UPLOAD_DIR = "uploads"; // relative to project root
+    private static final String UPLOAD_DIR = "uploads"; // relative toProduct project root
 
     @GetMapping("/{filename:.+}")
     public ResponseEntity<Resource> getImage(@PathVariable String filename) {
