@@ -1,7 +1,7 @@
 package com.quadzone.utils;
 
 import com.quadzone.product.Product;
-import com.quadzone.product.dto.ProductResponse;
+import com.quadzone.product.dto.ProductsResponse;
 import com.quadzone.user.User;
 import com.quadzone.user.dto.CurrentUserResponse;
 import org.springframework.stereotype.Component;
@@ -12,7 +12,7 @@ public class EntityMapper {
         return CurrentUserResponse.from(user);
     }
 
-    public ProductResponse toProductResponse(Product product) {
-        return ProductResponse.from(product);
+    public ProductsResponse toProductResponse(Product product) {
+        return ProductsResponse.from(product);
     }
 }
