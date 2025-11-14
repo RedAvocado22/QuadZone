@@ -1,4 +1,4 @@
-package com.quadzone.product.exception;
+package com.quadzone.exception.product;
 
 public class ProductNotFoundException extends RuntimeException {
     public ProductNotFoundException(Long id) {
