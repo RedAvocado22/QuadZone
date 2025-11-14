@@ -1,4 +1,4 @@
-package com.quadzone.product.review;
+package com.quadzone.review;
 
 import com.quadzone.order.Order;
 import com.quadzone.product.Product;

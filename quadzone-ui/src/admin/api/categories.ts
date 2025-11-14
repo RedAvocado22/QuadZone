@@ -11,6 +11,7 @@ export interface Category {
   status: 'active' | 'inactive';
   productCount: number;
   createdAt: string;
+  imageUrl?: string | null;
 }
 
 export interface CategoriesResponse {
@@ -40,21 +41,44 @@ export const categoriesApi = {
     
     const { page = 0, pageSize = 10, search = '', sortBy = 'name', sortOrder = 'asc' } = params;
     
-    const response = await apiClient.get('/categories', {
+    const response = await apiClient.get('/admin/categories', {
       params: {
         page,
-        pageSize,
+        size: pageSize,
         search,
         sortBy,
         sortOrder,
       },
     });
 
+    const payload = response.data as {
+      data: Array<{
+        id: number;
+        name: string;
+        active: boolean;
+        productCount: number;
+        imageUrl: string | null;
+      }>;
+      total: number;
+      page: number;
+      pageSize: number;
+    };
+
+    const mappedData: Category[] = (payload.data ?? []).map((category) => ({
+      id: String(category.id),
+      name: category.name,
+      status: category.active ? 'active' : 'inactive',
+      productCount: category.productCount ?? 0,
+      createdAt: '',
+      description: '',
+      imageUrl: category.imageUrl ?? null,
+    }));
+
     return {
-      data: response.data.data || [],
-      total: response.data.total || 0,
-      page: response.data.page || page,
-      pageSize: response.data.pageSize || pageSize,
+      data: mappedData,
+      total: payload.total ?? 0,
+      page: payload.page ?? page,
+      pageSize: payload.pageSize ?? pageSize,
     };
   },
 
@@ -67,8 +91,24 @@ export const categoriesApi = {
       }
       return category;
     }
-    const response = await apiClient.get(`/categories/${id}`);
-    return response.data;
+    const response = await apiClient.get(`/admin/categories/${id}`);
+    const data = response.data as {
+      id: number;
+      name: string;
+      active: boolean;
+      productCount: number;
+      imageUrl: string | null;
+    };
+
+    return {
+      id: String(data.id),
+      name: data.name,
+      status: data.active ? 'active' : 'inactive',
+      productCount: data.productCount ?? 0,
+      createdAt: '',
+      description: '',
+      imageUrl: data.imageUrl ?? null,
+    };
   },
 
   create: async (category: Omit<Category, 'id'>): Promise<Category> => {
@@ -83,8 +123,7 @@ export const categoriesApi = {
       mockCategories.unshift(newCategory);
       return newCategory;
     }
-    const response = await apiClient.post('/categories', category);
-    return response.data;
+    throw new Error('Category creation API is not implemented yet');
   },
 
   update: async (id: string, category: Partial<Category>): Promise<Category> => {
@@ -97,8 +136,7 @@ export const categoriesApi = {
       mockCategories[index] = { ...mockCategories[index], ...category } as Category;
       return mockCategories[index];
     }
-    const response = await apiClient.put(`/categories/${id}`, category);
-    return response.data;
+    throw new Error('Category update API is not implemented yet');
   },
 
   delete: async (id: string): Promise<void> => {
@@ -111,7 +149,7 @@ export const categoriesApi = {
       mockCategories.splice(index, 1);
       return;
     }
-    await apiClient.delete(`/categories/${id}`);
+    throw new Error('Category delete API is not implemented yet');
   },
 };
 

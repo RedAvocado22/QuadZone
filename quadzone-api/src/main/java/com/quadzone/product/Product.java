@@ -1,6 +1,7 @@
 package com.quadzone.product;
 
 import com.quadzone.product.category.sub_category.SubCategory;
+import com.quadzone.product.dto.ProductUpdateRequest;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -34,7 +35,6 @@ public class Product {
     @Column(columnDefinition = "TEXT")
     private String description;
 
-
     @Column(name = "quantity", nullable = false, columnDefinition = "INT DEFAULT 0")
     private Integer quantity;
 
@@ -47,23 +47,23 @@ public class Product {
     @Column(name = "weight", columnDefinition = "DECIMAL(8,2)")
     private double weight;
 
-    @Column(length = 50)
-    private String dimensions;
+//    @Column(length = 50)
+//    private String dimensions;
 
-    @Column(columnDefinition = "TEXT")
-    private String specifications;
+//    @Column(columnDefinition = "TEXT")
+//    private String specifications;
 
-    @Column(name = "warranty_period_months")
-    private Integer warrantyPeriodMonths;
+//    @Column(name = "warranty_period_months")
+//    private Integer warrantyPeriodMonths;
 
     @Column(length = 50)
     private String color;
 
-    @Column(name = "storage_capacity", length = 50)
-    private String storageCapacity;
-
-    @Column(name = "energy_rating", length = 20)
-    private String energyRating;
+//    @Column(name = "storage_capacity", length = 50)
+//    private String storageCapacity;
+//
+//    @Column(name = "energy_rating", length = 20)
+//    private String energyRating;
 
     @Column(name = "image_url", length = 255)
     private String imageUrl;
@@ -71,10 +71,47 @@ public class Product {
     @Column(name = "is_active")
     private boolean isActive;
 
+    //join bang review
     @Column(name = "created_at", nullable = false)
     private final LocalDateTime createdAt = LocalDateTime.now();
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "subcategory_id", nullable = false)
     private SubCategory subCategory;
+
+    public void updateFrom(ProductUpdateRequest request) {
+        if (request.name() != null) {
+            this.setName(request.name());
+        }
+        if (request.brand() != null) {
+            this.setBrand(request.brand());
+        }
+        if (request.modelNumber() != null) {
+            this.setModelNumber(request.modelNumber());
+        }
+        if (request.description() != null) {
+            this.setDescription(request.description());
+        }
+        if (request.quantity() != null) {
+            this.setQuantity(request.quantity());
+        }
+        if (request.price() != null) {
+            this.setPrice(request.price());
+        }
+        if (request.costPrice() != null) {
+            this.setCostPrice(request.costPrice());
+        }
+        if (request.weight() != null) {
+            this.setWeight(request.weight());
+        }
+        if (request.color() != null) {
+            this.setColor(request.color());
+        }
+        if (request.imageUrl() != null) {
+            this.setImageUrl(request.imageUrl());
+        }
+        if (request.subCategory() != null) {
+            this.setSubCategory(request.subCategory());
+        }
+    }
 }

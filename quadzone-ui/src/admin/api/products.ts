@@ -11,8 +11,20 @@ export interface Product {
   priceSale?: number | null;
   coverUrl?: string;
   colors?: string[];
-  status?: 'sale' | 'new' | '';
+  status?: 'sale' | 'new' | 'locked' | 'active' | '';
   description?: string;
+  brand?: string | null;
+  quantity?: number | null;
+}
+
+interface AdminProductDto {
+  id: number;
+  name: string;
+  brand: string | null;
+  price: number;
+  quantity: number | null;
+  active: boolean;
+  imageUrl: string | null;
 }
 
 export interface ProductsResponse {
@@ -40,8 +52,56 @@ export const productsApi = {
       await delay(300);
       return filterProducts(mockProducts, params);
     }
-    const response = await apiClient.get('/products', { params });
-    return response.data;
+    const {
+      page = 0,
+      pageSize = 12,
+      search = '',
+      category,
+      price,
+      gender,
+      colors,
+      rating,
+    } = params ?? {};
+
+    const response = await apiClient.get('/admin/products', {
+      params: {
+        page,
+        size: pageSize,
+        search,
+        category,
+        price,
+        gender,
+        colors,
+        rating,
+      },
+    });
+
+    const payload = response.data as {
+      data: AdminProductDto[];
+      total: number;
+      page: number;
+      pageSize: number;
+    };
+
+    const mappedData: Product[] = (payload.data ?? []).map((item) => ({
+      id: String(item.id),
+      name: item.name,
+      price: item.price,
+      priceSale: null,
+      coverUrl: item.imageUrl ?? 'https://via.placeholder.com/400x400?text=Product',
+      colors: [],
+      status: item.active ? 'active' : 'locked',
+      description: item.brand ?? '',
+      brand: item.brand,
+      quantity: item.quantity,
+    }));
+
+    return {
+      data: mappedData,
+      total: payload.total ?? 0,
+      page: payload.page ?? page,
+      pageSize: payload.pageSize ?? pageSize,
+    };
   },
 
   // Get product by ID
@@ -54,8 +114,21 @@ export const productsApi = {
       }
       return product;
     }
-    const response = await apiClient.get(`/products/${id}`);
-    return response.data;
+    const response = await apiClient.get(`/admin/products/${id}`);
+    const data = response.data as AdminProductDto;
+
+    return {
+      id: String(data.id),
+      name: data.name,
+      price: data.price,
+      priceSale: null,
+      coverUrl: data.imageUrl ?? 'https://via.placeholder.com/400x400?text=Product',
+      colors: [],
+      status: data.active ? 'active' : 'locked',
+      description: data.brand ?? '',
+      brand: data.brand,
+      quantity: data.quantity,
+    };
   },
 
   // Create product
@@ -69,8 +142,7 @@ export const productsApi = {
       mockProducts.unshift(newProduct);
       return newProduct;
     }
-    const response = await apiClient.post('/products', product);
-    return response.data;
+    throw new Error('Product creation API is not implemented yet');
   },
 
   // Update product
@@ -84,8 +156,7 @@ export const productsApi = {
       mockProducts[index] = { ...mockProducts[index], ...product };
       return mockProducts[index];
     }
-    const response = await apiClient.put(`/products/${id}`, product);
-    return response.data;
+    throw new Error('Product update API is not implemented yet');
   },
 
   // Delete product
@@ -99,7 +170,7 @@ export const productsApi = {
       mockProducts.splice(index, 1);
       return;
     }
-    await apiClient.delete(`/products/${id}`);
+    throw new Error('Product delete API is not implemented yet');
   },
 };
 

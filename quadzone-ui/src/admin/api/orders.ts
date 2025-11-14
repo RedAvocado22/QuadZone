@@ -42,21 +42,70 @@ export const ordersApi = {
     
     const { page = 0, pageSize = 10, search = '', sortBy = 'createdAt', sortOrder = 'desc' } = params;
     
-    const response = await apiClient.get('/orders', {
+    const response = await apiClient.get('/admin/orders', {
       params: {
         page,
-        pageSize,
+        size: pageSize,
         search,
         sortBy,
         sortOrder,
       },
     });
 
+    const payload = response.data as {
+      data: Array<{
+        id: number;
+        orderNumber: string;
+        customerName: string;
+        totalAmount: number;
+        status: string;
+        orderDate: string;
+        itemsCount: number;
+      }>;
+      total: number;
+      page: number;
+      pageSize: number;
+    };
+
+    const normalizeStatus = (status: string): Order['status'] => {
+      switch (status?.toUpperCase()) {
+        case 'PENDING':
+          return 'pending';
+        case 'PROCESSING':
+        case 'IN_PROGRESS':
+          return 'processing';
+        case 'COMPLETED':
+        case 'DELIVERED':
+          return 'completed';
+        case 'CANCELLED':
+        case 'CANCELED':
+          return 'cancelled';
+        default:
+          return 'pending';
+      }
+    };
+
+    const mappedData: Order[] = (payload.data ?? []).map((order) => {
+      const status = normalizeStatus(order.status);
+      const paymentStatus: Order['paymentStatus'] = status === 'completed' ? 'paid' : 'pending';
+
+      return {
+        id: String(order.id),
+        orderNumber: order.orderNumber,
+        customerName: order.customerName,
+        total: Number(order.totalAmount ?? 0),
+        status,
+        paymentStatus,
+        createdAt: order.orderDate ?? '',
+        items: order.itemsCount ?? 0,
+      };
+    });
+
     return {
-      data: response.data.data || [],
-      total: response.data.total || 0,
-      page: response.data.page || page,
-      pageSize: response.data.pageSize || pageSize,
+      data: mappedData,
+      total: payload.total ?? 0,
+      page: payload.page ?? page,
+      pageSize: payload.pageSize ?? pageSize,
     };
   },
 
@@ -69,8 +118,41 @@ export const ordersApi = {
       }
       return order;
     }
-    const response = await apiClient.get(`/orders/${id}`);
-    return response.data;
+    const response = await apiClient.get(`/admin/orders/${id}`);
+    const data = response.data as {
+      id: number;
+      orderNumber: string;
+      customerName: string;
+      totalAmount: number;
+      status: string;
+      orderDate: string;
+      itemsCount: number;
+    };
+
+    const status = data.status?.toUpperCase?.() ?? 'PENDING';
+    const normalizedStatus = ['PENDING', 'PROCESSING', 'COMPLETED', 'DELIVERED', 'CANCELLED', 'CANCELED'].includes(status)
+      ? status
+      : 'PENDING';
+    const statusMap: Record<string, Order['status']> = {
+      PENDING: 'pending',
+      PROCESSING: 'processing',
+      IN_PROGRESS: 'processing',
+      COMPLETED: 'completed',
+      DELIVERED: 'completed',
+      CANCELLED: 'cancelled',
+      CANCELED: 'cancelled',
+    };
+
+    return {
+      id: String(data.id),
+      orderNumber: data.orderNumber,
+      customerName: data.customerName,
+      total: Number(data.totalAmount ?? 0),
+      status: statusMap[normalizedStatus] ?? 'pending',
+      paymentStatus: (statusMap[normalizedStatus] ?? 'pending') === 'completed' ? 'paid' : 'pending',
+      createdAt: data.orderDate ?? '',
+      items: data.itemsCount ?? 0,
+    };
   },
 
   create: async (order: Omit<Order, 'id'>): Promise<Order> => {
@@ -84,8 +166,7 @@ export const ordersApi = {
       mockOrders.unshift(newOrder);
       return newOrder;
     }
-    const response = await apiClient.post('/orders', order);
-    return response.data;
+    throw new Error('Order creation API is not implemented yet');
   },
 
   update: async (id: string, order: Partial<Order>): Promise<Order> => {
@@ -98,8 +179,7 @@ export const ordersApi = {
       mockOrders[index] = { ...mockOrders[index], ...order } as Order;
       return mockOrders[index];
     }
-    const response = await apiClient.put(`/orders/${id}`, order);
-    return response.data;
+    throw new Error('Order update API is not implemented yet');
   },
 
   delete: async (id: string): Promise<void> => {
@@ -112,7 +192,6 @@ export const ordersApi = {
       mockOrders.splice(index, 1);
       return;
     }
-    await apiClient.delete(`/orders/${id}`);
+    throw new Error('Order delete API is not implemented yet');
   },
 };
-

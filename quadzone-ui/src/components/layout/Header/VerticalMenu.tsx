@@ -38,20 +38,6 @@ const VerticalMenu = () => {
                                                                 <a
                                                                     href="#"
                                                                     className="nav-link u-header__nav-link font-weight-bold">
-                                                                    Value of the Day
-                                                                </a>
-                                                            </li>
-                                                            <li className="nav-item u-header__nav-item">
-                                                                <a
-                                                                    href="#"
-                                                                    className="nav-link u-header__nav-link font-weight-bold">
-                                                                    Top 100 Offers
-                                                                </a>
-                                                            </li>
-                                                            <li className="nav-item u-header__nav-item">
-                                                                <a
-                                                                    href="#"
-                                                                    className="nav-link u-header__nav-link font-weight-bold">
                                                                     New Arrivals
                                                                 </a>
                                                             </li>

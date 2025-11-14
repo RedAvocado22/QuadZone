@@ -4,14 +4,12 @@ import { mockUsers, filterUsers, delay } from '../_mock/mock-data';
 
 // ----------------------------------------------------------------------
 
-// Backend User entity structure
-interface BackendUser {
+interface AdminUserDto {
   id: number;
+  name: string;
   email: string;
-  firstName: string;
-  lastName: string;
-  role: 'ADMIN' | 'STAFF' | 'CUSTOMER' | 'SHIPPER';
-  createdAt?: string;
+  role: string;
+  createdAt: string;
 }
 
 // Frontend User interface
@@ -24,6 +22,7 @@ export interface User {
   avatarUrl?: string;
   isVerified?: boolean;
   status?: 'active' | 'banned';
+  createdAt?: string;
 }
 
 export interface UsersResponse {
@@ -35,16 +34,16 @@ export interface UsersResponse {
 
 // ----------------------------------------------------------------------
 
-// Map backend user to frontend user format
-function mapBackendUserToFrontend(backendUser: BackendUser): User {
+function mapAdminUserToFrontend(user: AdminUserDto): User {
   return {
-    id: String(backendUser.id),
-    name: `${backendUser.firstName} ${backendUser.lastName}`,
-    email: backendUser.email,
-    role: backendUser.role,
-    avatarUrl: '', // Default value - not in backend
-    isVerified: true, // Default value - not in backend
-    status: 'active', // Default value - not in backend
+    id: String(user.id),
+    name: user.name,
+    email: user.email,
+    role: user.role,
+    avatarUrl: '',
+    isVerified: true,
+    status: 'active',
+    createdAt: user.createdAt,
   };
 }
 
@@ -57,49 +56,27 @@ export const usersApi = {
       await delay(300);
       return filterUsers(mockUsers, params);
     }
-    
-    const response = await apiClient.get('/user/admin/get', { params });
-    const data = response.data;
-    
-    let users: BackendUser[] = [];
-    
-    // Handle different response formats
-    // If response is directly an array
-    if (Array.isArray(data)) {
-      users = data;
-    }
-    // If response is an object with data property
-    else if (data && typeof data === 'object' && 'data' in data && Array.isArray(data.data)) {
-      users = data.data;
-    }
-    
-    // Map backend users to frontend format
-    const mappedUsers: User[] = users.map(mapBackendUserToFrontend);
-    
-    // Apply search filter if provided (client-side filtering)
-    let filteredUsers = mappedUsers;
-    if (params?.search && params.search.trim() !== '') {
-      const searchLower = params.search.toLowerCase();
-      filteredUsers = mappedUsers.filter(
-        (user) =>
-          user.name.toLowerCase().includes(searchLower) ||
-          user.email.toLowerCase().includes(searchLower) ||
-          user.role?.toLowerCase().includes(searchLower)
-      );
-    }
-    
-    // Apply pagination (client-side)
-    const page = params?.page || 0;
-    const pageSize = params?.pageSize || 10;
-    const startIndex = page * pageSize;
-    const endIndex = startIndex + pageSize;
-    const paginatedUsers = filteredUsers.slice(startIndex, endIndex);
-    
+
+    const page = params?.page ?? 0;
+    const pageSize = params?.pageSize ?? 10;
+    const search = params?.search ?? '';
+
+    const response = await apiClient.get('/admin/users', {
+      params: { page, size: pageSize, search },
+    });
+
+    const payload = response.data as {
+      data: AdminUserDto[];
+      total: number;
+      page: number;
+      pageSize: number;
+    };
+
     return {
-      data: paginatedUsers,
-      total: filteredUsers.length,
-      page,
-      pageSize,
+      data: (payload.data ?? []).map(mapAdminUserToFrontend),
+      total: payload.total ?? 0,
+      page: payload.page ?? page,
+      pageSize: payload.pageSize ?? pageSize,
     };
   },
 
@@ -113,8 +90,9 @@ export const usersApi = {
       }
       return user;
     }
-    const response = await apiClient.get(`/users/${id}`);
-    return response.data;
+    const response = await apiClient.get(`/admin/users/${id}`);
+    const data = response.data as AdminUserDto;
+    return mapAdminUserToFrontend(data);
   },
 
   // Create user
@@ -128,8 +106,7 @@ export const usersApi = {
       mockUsers.unshift(newUser);
       return newUser;
     }
-    const response = await apiClient.post('/users', user);
-    return response.data;
+    throw new Error('User creation API is not implemented yet');
   },
 
   // Update user
@@ -143,8 +120,7 @@ export const usersApi = {
       mockUsers[index] = { ...mockUsers[index], ...user };
       return mockUsers[index];
     }
-    const response = await apiClient.put(`/users/${id}`, user);
-    return response.data;
+    throw new Error('User update API is not implemented yet');
   },
 
   // Delete user
@@ -158,7 +134,7 @@ export const usersApi = {
       mockUsers.splice(index, 1);
       return;
     }
-    await apiClient.delete(`/users/${id}`);
+    throw new Error('User delete API is not implemented yet');
   },
 };
 
