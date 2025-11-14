@@ -5,8 +5,10 @@ import com.quadzone.product.category.Category;
 import com.quadzone.product.category.sub_category.SubCategory;
 import lombok.Builder;
 
+import java.util.List;
+
 @Builder
-public record ProductResponse(
+public record ProductsResponse(
         Long id,
         String name,
         String brand,
@@ -16,10 +18,11 @@ public record ProductResponse(
         String imageUrl,
         Integer quantity,
         SubCategory subCategory,
-        Category category
+        Category category,
+        List<ReviewsResponse> reviews
 ) {
-    public static ProductResponse from(Product product) {
-        return new ProductResponse(
+    public static ProductsResponse from(Product product) {
+        return new ProductsResponse(
                 product.getId(),
                 product.getName(),
                 product.getBrand(),
@@ -27,9 +30,10 @@ public record ProductResponse(
                 product.getDescription(),
                 product.getPrice(),
                 product.getImageUrl(),
-                product.getQuantity(),
+                product.getStock(),
                 product.getSubCategory(),
-                product.getSubCategory().getCategory()
+                product.getSubCategory().getCategory(),
+                null
         );
     }
 }

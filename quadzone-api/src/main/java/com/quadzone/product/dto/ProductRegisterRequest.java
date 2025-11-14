@@ -22,7 +22,7 @@ public record ProductRegisterRequest(
 
         @NotNull(message = "Quantity is required")
         @Min(value = 0, message = "Quantity cannot be negative")
-        Integer quantity,
+        Integer stock,
 
         @NotNull(message = "Price is required")
         @Positive(message = "Price must be a positive value")
@@ -49,7 +49,7 @@ public record ProductRegisterRequest(
                 .brand(request.brand())
                 .modelNumber(request.modelNumber())
                 .description(request.description())
-                .quantity(request.quantity())
+                .stock(request.stock())
                 .price(request.price())
                 .costPrice(request.costPrice())
                 .weight(request.weight())

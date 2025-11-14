@@ -55,7 +55,7 @@ public class AdminProductService {
                 product.getName(),
                 product.getBrand(),
                 product.getPrice(),
-                product.getQuantity(),
+                product.getStock(),
                 product.isActive(),
                 product.getImageUrl()
         );
