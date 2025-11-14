@@ -1,5 +1,5 @@
 import { lazy, Suspense } from 'react';
-import { Routes, Route, Outlet } from 'react-router-dom';
+import { Outlet, Route, Routes } from 'react-router-dom';
 
 import Box from '@mui/material/Box';
 import LinearProgress, { linearProgressClasses } from '@mui/material/LinearProgress';
@@ -59,7 +59,6 @@ const renderFallback = () => (
 export default function AdminRoutes() {
     return (
         <Routes>
-            {/* Dashboard Layout Routes */}
             <Route
                 path=""
                 element={
@@ -91,7 +90,6 @@ export default function AdminRoutes() {
                 <Route path="order/:id" element={<OrderDetailsPage />} />
                 <Route path="order/:id/edit" element={<OrderEditPage />} />
             </Route>
-
         </Routes>
     );
 }
