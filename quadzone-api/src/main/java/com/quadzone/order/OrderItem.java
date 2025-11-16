@@ -25,7 +25,6 @@ public class OrderItem {
     @Column(name = "sub_total", columnDefinition = "DECIMAL(8,2)")
     private double subtotal;
 
-
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "order_id", nullable = false)
     private Order order;

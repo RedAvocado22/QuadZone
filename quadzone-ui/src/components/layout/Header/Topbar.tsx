@@ -23,12 +23,6 @@ const Topbar = () => {
                     </div>
                     <div className="topbar-right ml-auto">
                         <ul className="list-inline mb-0">
-                            {/* ... (Store Locator, Track Order, etc.) ... */}
-                            <li className="list-inline-item mr-0 u-header-topbar__nav-item u-header-topbar__nav-item-border">
-                                <a href="#" className="u-header-topbar__nav-link" onClick={(e) => e.preventDefault()}>
-                                    <i className="ec ec-map-pointer mr-1"></i> Store Locator
-                                </a>
-                            </li>
                             <li className="list-inline-item mr-0 u-header-topbar__nav-item u-header-topbar__nav-item-border">
                                 <Link to="/track-order" className="u-header-topbar__nav-link">
                                     <i className="ec ec-transport mr-1"></i> Track Your Order

@@ -15,4 +15,3 @@ public interface CategoryRepository extends JpaRepository<Category, Long> {
             """)
     Page<Category> search(@Param("keyword") String keyword, Pageable pageable);
 }
-

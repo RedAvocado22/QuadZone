@@ -10,6 +10,7 @@ import DemoPage from "./components/demo/DemoPage";
 import Layout from "./components/layout/Layout";
 import LoginPage from "./pages/LoginPage";
 import RegisterPage from "./pages/RegisterPage";
+import ProductDetailPage from "./pages/ProductDetailPage";
 
 const AdminApp = lazy(() => import("./admin/AdminApp"));
 const AdminRoutes = lazy(() => import("./admin/AdminRoutes"));
@@ -40,9 +41,9 @@ function App() {
                         {/* Public Routes */}
                         <Route index element={<HomePage />} />
                         <Route path="demo" element={<DemoPage />} />
-                        <Route path="login" element={<LoginPage />} />
-                        <Route path="register" element={<RegisterPage />} />
-
+                        <Route path="/login" element={<LoginPage />} />
+                        <Route path="/register" element={<RegisterPage />} />
+                        <Route path="/product/:id" element={<ProductDetailPage />} />
                         {/* Routes for authenticated users */}
                         <Route element={<ProtectedRoute />}>
                             <Route path="cart" element={<CartPage />} />

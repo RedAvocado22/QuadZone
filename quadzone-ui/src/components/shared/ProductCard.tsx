@@ -21,8 +21,8 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
                 <div className="product-item__inner px-wd-4 p-2 p-md-3">
                     <div className="product-item__body pb-xl-2">
                         <div className="mb-2">
-                            <Link to={`/category/${product.category.id}`} className="font-size-12 text-gray-5">
-                                {product.category.name || "Products"}
+                            <Link to={`/subCategory/${product.subCategoryId}`} className="font-size-12 text-gray-5">
+                                {product.subCategoryName || "Products"}
                             </Link>
                         </div>
 
@@ -36,7 +36,12 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
                             <Link to={`/product/${product.id}`} className="d-block text-center">
                                 <img
                                     className="img-fluid"
-                                    src={product.image || defaultImages.product}
+                                    style={{ width: "160px", height: "150px", objectFit: "cover" }}
+                                    src={
+                                        product.image
+                                            ? `http://localhost:8080/api/v1/public/images/${product.image}`
+                                            : defaultImages.product
+                                    }
                                     alt={product.name}
                                 />
                             </Link>
@@ -77,9 +82,6 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
                         <div className="border-top pt-2 flex-center-between flex-wrap">
                             <Link to="/compare" className="text-gray-6 font-size-13">
                                 <i className="ec ec-compare mr-1 font-size-15"></i> Compare
-                            </Link>
-                            <Link to="/wishlist" className="text-gray-6 font-size-13">
-                                <i className="ec ec-favorites mr-1 font-size-15"></i> Wishlist
                             </Link>
                         </div>
                     </div>
