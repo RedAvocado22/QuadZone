@@ -15,7 +15,9 @@ export const useProducts = (page = 0, size = 20, query?: string) => {
             try {
                 setLoading(true);
                 const response = await getProducts(page, size, query);
-                const mappedProducts: Product[] = response.content.map((product: ProductDTO) => ({
+                console.log("🚀 /public/products response:", response);
+
+                const mappedProducts: Product[] = (response.content ?? []).map((product: ProductDTO) => ({
                     id: product.id,
                     name: product.name,
                     price: product.price,
@@ -36,11 +38,13 @@ export const useProducts = (page = 0, size = 20, query?: string) => {
                 setTotalPages(response.totalPages);
                 setTotalElements(response.totalElements);
             } catch (err) {
+                console.error("❌ Error loading products:", err);
                 setError(err instanceof Error ? err.message : "Failed to fetch products");
             } finally {
                 setLoading(false);
             }
         };
+
 
         fetchProducts();
     }, [page, size, query]);

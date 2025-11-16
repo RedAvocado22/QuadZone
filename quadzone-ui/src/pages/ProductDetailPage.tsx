@@ -125,7 +125,10 @@ const ProductDetailPage = () => {
               </button>
               <button
                 className="btn btn-danger flex-fill"
-                onClick={() => alert("Proceed to order")}
+                onClick={() => {
+                  addToCart(mapDtoToProduct(product), 1);
+                  window.location.href = '/cart';
+                }}
                 disabled={product.quantity === 0}
               >
                 <i className="fa fa-bolt me-2"></i>Order Now

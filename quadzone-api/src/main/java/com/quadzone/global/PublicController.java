@@ -1,5 +1,15 @@
 package com.quadzone.global;
 
+import com.quadzone.product.dto.ProductResponse;
+import com.quadzone.product.ProductService;
+import com.quadzone.review.dto.ReviewDTO;
+import com.quadzone.review.ReviewService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
+import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -10,18 +20,6 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-
-import com.quadzone.product.dto.ProductDTO;
-import com.quadzone.product.service.ProductService;
-import com.quadzone.review.dto.ReviewDTO;
-import com.quadzone.review.service.ReviewService;
-
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.validation.constraints.Max;
-import jakarta.validation.constraints.Min;
-import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequestMapping("/api/v1/public")
@@ -48,13 +46,12 @@ public class PublicController {
     @GetMapping("products")
     @Operation(summary = "List products", description = "Get a paginated list of products with optional search")
     @ApiResponse(responseCode = "200", description = "Successful operation")
-    public ResponseEntity<Page<ProductDTO>> listProducts(
+    public ResponseEntity<Page<ProductResponse>> listProducts(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
-            @RequestParam(required = false) String q,
-            @RequestParam(defaultValue = "id") String sort) {
+            @RequestParam(required = false) String q) {
         Pageable pageable = PageRequest.of(page, size);
-        Page<ProductDTO> products = productService.listProducts(pageable, q);
+        Page<ProductResponse> products = productService.getProducts(pageable, q);
         return ResponseEntity.ok(products);
     }
 
@@ -62,9 +59,9 @@ public class PublicController {
     @Operation(summary = "Get product by ID", description = "Retrieve a single product by its ID")
     @ApiResponse(responseCode = "200", description = "Product found")
     @ApiResponse(responseCode = "404", description = "Product not found")
-    public ResponseEntity<ProductDTO> getProduct(@PathVariable Long id) {
+    public ResponseEntity<ProductResponse> getProduct(@PathVariable Long id) {
         try {
-            ProductDTO product = productService.getProduct(id);
+            ProductResponse product = productService.getProduct(id);
             return ResponseEntity.ok(product);
         } catch (RuntimeException e) {
             return ResponseEntity.notFound().build();

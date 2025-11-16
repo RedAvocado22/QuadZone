@@ -1,15 +1,14 @@
 package com.quadzone.product;
 
-import com.quadzone.product.dto.ProductDTO;
-import com.quadzone.product.service.ProductService;
+import com.quadzone.global.dto.PagedResponse;
+import com.quadzone.product.dto.ProductRegisterRequest;
+import com.quadzone.product.dto.ProductResponse;
+import com.quadzone.product.dto.ProductUpdateRequest;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -23,12 +22,31 @@ public class ProductController {
 
     private final ProductService productService;
 
-    @PostMapping
-    @Operation(summary = "Create product", description = "Create a new product")
+    @GetMapping("/admin")
+    @Operation(summary = "Get all products (Admin)", description = "Get all products with pagination and search")
+    @ApiResponse(responseCode = "200", description = "Products returned")
+    public ResponseEntity<PagedResponse<ProductResponse>> getProducts(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "") String search
+    ) {
+        return ResponseEntity.ok(productService.findProducts(page, size, search));
+    }
+
+    @GetMapping("/admin/{id}")
+    @Operation(summary = "Get product by ID (Admin)", description = "Get a product by ID for admin")
+    @ApiResponse(responseCode = "200", description = "Product returned")
+    @ApiResponse(responseCode = "404", description = "Product not found")
+    public ResponseEntity<ProductResponse> getProduct(@PathVariable Long id) {
+        return ResponseEntity.ok(productService.findByIdForAdmin(id));
+    }
+
+    @PostMapping("/admin")
+    @Operation(summary = "Create product (Admin)", description = "Create a new product for admin")
     @ApiResponse(responseCode = "201", description = "Product created")
     @ApiResponse(responseCode = "400", description = "Invalid input")
-    public ResponseEntity<ProductDTO> createProduct(@Valid @RequestBody ProductDTO productDTO) {
-        ProductDTO createdProduct = productService.createProduct(productDTO);
+    public ResponseEntity<ProductResponse> createProduct(@Valid @RequestBody ProductRegisterRequest productRegisterRequest) {
+        ProductResponse createdProduct = productService.createProduct(productRegisterRequest);
         return ResponseEntity.status(HttpStatus.CREATED).body(createdProduct);
     }
 
@@ -37,9 +55,9 @@ public class ProductController {
     @ApiResponse(responseCode = "200", description = "Product updated")
     @ApiResponse(responseCode = "404", description = "Product not found")
     @ApiResponse(responseCode = "400", description = "Invalid input")
-    public ResponseEntity<ProductDTO> updateProduct(@PathVariable Long id, @Valid @RequestBody ProductDTO productDTO) {
+    public ResponseEntity<ProductResponse> updateProduct(@PathVariable Long id, @Valid @RequestBody ProductUpdateRequest productUpdateRequest) {
         try {
-            ProductDTO updatedProduct = productService.updateProduct(id, productDTO);
+            ProductResponse updatedProduct = productService.updateProduct(id, productUpdateRequest);
             return ResponseEntity.ok(updatedProduct);
         } catch (RuntimeException e) {
             return ResponseEntity.notFound().build();

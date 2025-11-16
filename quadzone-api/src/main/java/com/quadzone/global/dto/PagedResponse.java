@@ -1,4 +1,4 @@
-package com.quadzone.admin.dto;
+package com.quadzone.global.dto;
 
 import java.util.List;
 

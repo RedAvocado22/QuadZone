@@ -1,10 +1,8 @@
-import apiClient from './axios';
-import { USE_MOCK_DATA } from './config';
-import { mockUsers, filterUsers, delay } from '../_mock/mock-data';
+import API from "../../api/base";
 
 // ----------------------------------------------------------------------
 
-interface AdminUserDto {
+interface UserDto {
   id: number;
   name: string;
   email: string;
@@ -32,48 +30,66 @@ export interface UsersResponse {
   pageSize: number;
 }
 
-// ----------------------------------------------------------------------
-
-function mapAdminUserToFrontend(user: AdminUserDto): User {
-  return {
-    id: String(user.id),
-    name: user.name,
-    email: user.email,
-    role: user.role,
-    avatarUrl: '',
-    isVerified: true,
-    status: 'active',
-    createdAt: user.createdAt,
-  };
+// Current User interface (from /users/me endpoint)
+export interface CurrentUser {
+  firstname: string;
+  lastname: string;
+  fullName: string;
+  email: string;
+  role: 'ADMIN' | 'STAFF' | 'CUSTOMER' | 'SHIPPER';
+  createdAt: string;
 }
 
 // ----------------------------------------------------------------------
 
+function mapUserToFrontend(dto: UserDto): User {
+  return {
+    id: String(dto.id),
+    name: dto.name,
+    email: dto.email,
+    role: dto.role,
+    avatarUrl: '',
+    isVerified: true,
+    status: 'active',
+    createdAt: dto.createdAt,
+  };
+}
+
 export const usersApi = {
+  // Get current user
+  getCurrentUser: async (): Promise<CurrentUser | null> => {
+    try {
+      const response = await API.get<CurrentUser>('/users/me');
+      return response.data;
+    } catch (error) {
+      console.error('Failed to fetch current user:', error);
+      return null;
+    }
+  },
+
   // Get all users
   getAll: async (params?: { page?: number; pageSize?: number; search?: string }): Promise<UsersResponse> => {
-    if (USE_MOCK_DATA) {
-      await delay(300);
-      return filterUsers(mockUsers, params);
-    }
-
     const page = params?.page ?? 0;
     const pageSize = params?.pageSize ?? 10;
     const search = params?.search ?? '';
 
-    const response = await apiClient.get('/admin/users', {
-      params: { page, size: pageSize, search },
+    const queryParams = new URLSearchParams({
+      page: page.toString(),
+      size: pageSize.toString(),
+      search,
     });
 
-    const payload = response.data as {
-      data: AdminUserDto[];
+    const response = await API.get<{
+      data: UserDto[];
       total: number;
       page: number;
       pageSize: number;
-    };
+    }>(`/users/admin?${queryParams.toString()}`);
+
+    const payload = response.data;
 
     return {
-      data: (payload.data ?? []).map(mapAdminUserToFrontend),
+      data: (payload.data ?? []).map(mapUserToFrontend),
       total: payload.total ?? 0,
       page: payload.page ?? page,
       pageSize: payload.pageSize ?? pageSize,
@@ -82,59 +98,46 @@ export const usersApi = {
 
   // Get user by ID
   getById: async (id: string): Promise<User> => {
-    if (USE_MOCK_DATA) {
-      await delay(200);
-      const user = mockUsers.find((u) => u.id === id);
-      if (!user) {
-        throw new Error('User not found');
-      }
-      return user;
-    }
-    const response = await apiClient.get(`/admin/users/${id}`);
-    const data = response.data as AdminUserDto;
-    return mapAdminUserToFrontend(data);
+    const response = await API.get<UserDto>(`/users/admin/${id}`);
+    return mapUserToFrontend(response.data);
   },
 
   // Create user
   create: async (user: Omit<User, 'id'>): Promise<User> => {
-    if (USE_MOCK_DATA) {
-      await delay(300);
-      const newUser: User = {
-        ...user,
-        id: `user-${Date.now()}`,
-      };
-      mockUsers.unshift(newUser);
-      return newUser;
-    }
-    throw new Error('User creation API is not implemented yet');
+    // Split name into firstName and lastName
+    const nameParts = (user.name || '').split(' ');
+    const firstName = nameParts[0] || '';
+    const lastName = nameParts.slice(1).join(' ') || '';
+    
+    const requestBody = {
+      firstName,
+      lastName,
+      email: user.email,
+      password: 'defaultPassword123', // This should come from the form
+      role: user.role || 'USER',
+    };
+
+    const response = await API.post<UserDto>('/users/admin', requestBody);
+    return mapUserToFrontend(response.data);
   },
 
   // Update user
   update: async (id: string, user: Partial<User>): Promise<User> => {
-    if (USE_MOCK_DATA) {
-      await delay(300);
-      const index = mockUsers.findIndex((u) => u.id === id);
-      if (index === -1) {
-        throw new Error('User not found');
-      }
-      mockUsers[index] = { ...mockUsers[index], ...user };
-      return mockUsers[index];
+    const requestBody: any = {};
+    if (user.name !== undefined) {
+      const nameParts = user.name.split(' ');
+      requestBody.firstName = nameParts[0] || '';
+      requestBody.lastName = nameParts.slice(1).join(' ') || '';
     }
-    throw new Error('User update API is not implemented yet');
+    if (user.email !== undefined) requestBody.email = user.email;
+    if (user.role !== undefined) requestBody.role = user.role;
+
+    const response = await API.put<UserDto>(`/users/${id}`, requestBody);
+    return mapUserToFrontend(response.data);
   },
 
   // Delete user
   delete: async (id: string): Promise<void> => {
-    if (USE_MOCK_DATA) {
-      await delay(200);
-      const index = mockUsers.findIndex((u) => u.id === id);
-      if (index === -1) {
-        throw new Error('User not found');
-      }
-      mockUsers.splice(index, 1);
-      return;
-    }
-    throw new Error('User delete API is not implemented yet');
+    await API.delete(`/users/${id}`);
   },
 };
-

@@ -14,7 +14,7 @@ import MenuItem, { menuItemClasses } from '@mui/material/MenuItem';
 
 import { useRouter, usePathname } from 'src/routes/hooks';
 
-import { _myAccount } from 'src/_mock';
+import { useCurrentUser } from '../../hooks/useCurrentUser';
 
 // ----------------------------------------------------------------------
 
@@ -29,10 +29,15 @@ export type AccountPopoverProps = IconButtonProps & {
 
 export function AccountPopover({ data = [], sx, ...other }: AccountPopoverProps) {
   const router = useRouter();
-
   const pathname = usePathname();
+  const { user } = useCurrentUser();
 
   const [openPopover, setOpenPopover] = useState<HTMLButtonElement | null>(null);
+
+  const fullName = user?.firstname + ' ' + user?.lastname;
+  const displayName = fullName || 'Admin User';
+  const email = user?.email || 'admin@example.com';
+  const initials = fullName?.charAt(0) || 'A';
 
   const handleOpenPopover = useCallback((event: React.MouseEvent<HTMLButtonElement>) => {
     setOpenPopover(event.currentTarget);
@@ -64,8 +69,8 @@ export function AccountPopover({ data = [], sx, ...other }: AccountPopoverProps)
         }}
         {...other}
       >
-        <Avatar src={_myAccount.photoURL} alt={_myAccount.displayName} sx={{ width: 1, height: 1 }}>
-          {_myAccount.displayName.charAt(0).toUpperCase()}
+        <Avatar sx={{ width: 1, height: 1 }}>
+          {initials}
         </Avatar>
       </IconButton>
 
@@ -83,12 +88,17 @@ export function AccountPopover({ data = [], sx, ...other }: AccountPopoverProps)
       >
         <Box sx={{ p: 2, pb: 1.5 }}>
           <Typography variant="subtitle2" noWrap>
-            {_myAccount?.displayName}
+            {displayName}
           </Typography>
 
           <Typography variant="body2" sx={{ color: 'text.secondary' }} noWrap>
-            {_myAccount?.email}
+            {email}
           </Typography>
+          {user?.role && (
+            <Typography variant="caption" sx={{ color: 'text.secondary', display: 'block', mt: 0.5 }}>
+              Role: {user.role}
+            </Typography>
+          )}
         </Box>
 
         <Divider sx={{ borderStyle: 'dashed' }} />

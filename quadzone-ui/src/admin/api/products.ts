@@ -1,6 +1,4 @@
-import apiClient from './axios';
-import { USE_MOCK_DATA } from './config';
-import { mockProducts, filterProducts, delay } from '../_mock/mock-data';
+import API from "../../api/base";
 
 // ----------------------------------------------------------------------
 
@@ -17,14 +15,17 @@ export interface Product {
   quantity?: number | null;
 }
 
-interface AdminProductDto {
+interface ProductDto {
   id: number;
   name: string;
   brand: string | null;
   price: number;
   quantity: number | null;
-  active: boolean;
   imageUrl: string | null;
+  modelNumber?: string | null;
+  description?: string | null;
+  subCategory?: any;
+  category?: any;
 }
 
 export interface ProductsResponse {
@@ -35,6 +36,21 @@ export interface ProductsResponse {
 }
 
 // ----------------------------------------------------------------------
+
+function mapProductToFrontend(dto: ProductDto): Product {
+  return {
+    id: String(dto.id),
+    name: dto.name,
+    price: dto.price,
+    priceSale: null,
+    coverUrl: dto.imageUrl ?? 'https://via.placeholder.com/400x400?text=Product',
+    colors: [],
+    status: 'active',
+    description: dto.description ?? dto.brand ?? '',
+    brand: dto.brand,
+    quantity: dto.quantity,
+  };
+}
 
 export const productsApi = {
   // Get all products
@@ -48,10 +64,6 @@ export const productsApi = {
     colors?: string[];
     rating?: string;
   }): Promise<ProductsResponse> => {
-    if (USE_MOCK_DATA) {
-      await delay(300);
-      return filterProducts(mockProducts, params);
-    }
     const {
       page = 0,
       pageSize = 12,
@@ -63,41 +75,29 @@ export const productsApi = {
       rating,
     } = params ?? {};
 
-    const response = await apiClient.get('/admin/products', {
-      params: {
-        page,
-        size: pageSize,
-        search,
-        category,
-        price,
-        gender,
-        colors,
-        rating,
-      },
+    const queryParams = new URLSearchParams({
+      page: page.toString(),
+      size: pageSize.toString(),
+      search,
     });
 
-    const payload = response.data as {
-      data: AdminProductDto[];
+    if (category) queryParams.append('category', category);
+    if (price) queryParams.append('price', price);
+    if (gender) queryParams.append('gender', gender.join(','));
+    if (colors) queryParams.append('colors', colors.join(','));
+    if (rating) queryParams.append('rating', rating);
+
+    const response = await API.get<{
+      data: ProductDto[];
       total: number;
       page: number;
       pageSize: number;
-    };
+    }>(`/products/admin?${queryParams.toString()}`);
 
-    const mappedData: Product[] = (payload.data ?? []).map((item) => ({
-      id: String(item.id),
-      name: item.name,
-      price: item.price,
-      priceSale: null,
-      coverUrl: item.imageUrl ?? 'https://via.placeholder.com/400x400?text=Product',
-      colors: [],
-      status: item.active ? 'active' : 'locked',
-      description: item.brand ?? '',
-      brand: item.brand,
-      quantity: item.quantity,
-    }));
+    const payload = response.data;
 
     return {
-      data: mappedData,
+      data: (payload.data ?? []).map(mapProductToFrontend),
       total: payload.total ?? 0,
       page: payload.page ?? page,
       pageSize: payload.pageSize ?? pageSize,
@@ -106,71 +106,48 @@ export const productsApi = {
 
   // Get product by ID
   getById: async (id: string): Promise<Product> => {
-    if (USE_MOCK_DATA) {
-      await delay(200);
-      const product = mockProducts.find((p) => p.id === id);
-      if (!product) {
-        throw new Error('Product not found');
-      }
-      return product;
-    }
-    const response = await apiClient.get(`/admin/products/${id}`);
-    const data = response.data as AdminProductDto;
+    const response = await API.get<ProductDto>(`/products/admin/${id}`);
+    const data = response.data;
 
-    return {
-      id: String(data.id),
-      name: data.name,
-      price: data.price,
-      priceSale: null,
-      coverUrl: data.imageUrl ?? 'https://via.placeholder.com/400x400?text=Product',
-      colors: [],
-      status: data.active ? 'active' : 'locked',
-      description: data.brand ?? '',
-      brand: data.brand,
-      quantity: data.quantity,
-    };
+    return mapProductToFrontend(data);
   },
 
   // Create product
   create: async (product: Omit<Product, 'id'>): Promise<Product> => {
-    if (USE_MOCK_DATA) {
-      await delay(300);
-      const newProduct: Product = {
-        ...product,
-        id: `product-${Date.now()}`,
-      };
-      mockProducts.unshift(newProduct);
-      return newProduct;
-    }
-    throw new Error('Product creation API is not implemented yet');
+    const requestBody = {
+      name: product.name,
+      brand: product.brand || '',
+      modelNumber: '',
+      description: product.description || '',
+      quantity: product.quantity || 0,
+      price: product.price,
+      costPrice: product.price * 0.8,
+      weight: 0,
+      color: product.colors?.[0] || '',
+      imageUrl: product.coverUrl || '',
+      subCategory: null, // This needs to be provided from the form
+    };
+
+    const response = await API.post<ProductDto>('/products/admin', requestBody);
+    return mapProductToFrontend(response.data);
   },
 
   // Update product
   update: async (id: string, product: Partial<Product>): Promise<Product> => {
-    if (USE_MOCK_DATA) {
-      await delay(300);
-      const index = mockProducts.findIndex((p) => p.id === id);
-      if (index === -1) {
-        throw new Error('Product not found');
-      }
-      mockProducts[index] = { ...mockProducts[index], ...product };
-      return mockProducts[index];
-    }
-    throw new Error('Product update API is not implemented yet');
+    const requestBody: any = {};
+    if (product.name !== undefined) requestBody.name = product.name;
+    if (product.brand !== undefined) requestBody.brand = product.brand;
+    if (product.description !== undefined) requestBody.description = product.description;
+    if (product.quantity !== undefined) requestBody.quantity = product.quantity;
+    if (product.price !== undefined) requestBody.price = product.price;
+    if (product.coverUrl !== undefined) requestBody.imageUrl = product.coverUrl;
+
+    const response = await API.put<ProductDto>(`/products/${id}`, requestBody);
+    return mapProductToFrontend(response.data);
   },
 
   // Delete product
   delete: async (id: string): Promise<void> => {
-    if (USE_MOCK_DATA) {
-      await delay(200);
-      const index = mockProducts.findIndex((p) => p.id === id);
-      if (index === -1) {
-        throw new Error('Product not found');
-      }
-      mockProducts.splice(index, 1);
-      return;
-    }
-    throw new Error('Product delete API is not implemented yet');
+    await API.delete(`/products/${id}`);
   },
 };
-

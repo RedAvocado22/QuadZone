@@ -1,6 +1,4 @@
-import apiClient from './axios';
-import { USE_MOCK_DATA } from './config';
-import { mockCategories, filterCategories, delay } from '../_mock/mock-data';
+import API from "../../api/base";
 
 // ----------------------------------------------------------------------
 
@@ -23,59 +21,53 @@ export interface CategoriesResponse {
 
 // ----------------------------------------------------------------------
 
-interface GetAllCategoriesParams {
-  page?: number;
-  pageSize?: number;
-  search?: string;
-  sortBy?: string;
-  sortOrder?: 'asc' | 'desc';
+interface CategoryDto {
+  id: number;
+  name: string;
+  active: boolean;
+  productCount: number;
+  imageUrl: string | null;
+}
+
+function mapCategoryToFrontend(dto: CategoryDto): Category {
+  return {
+    id: String(dto.id),
+    name: dto.name,
+    status: dto.active ? 'active' : 'inactive',
+    productCount: dto.productCount ?? 0,
+    createdAt: '',
+    description: '',
+    imageUrl: dto.imageUrl ?? null,
+  };
 }
 
 export const categoriesApi = {
-  getAll: async (params: GetAllCategoriesParams = {}): Promise<CategoriesResponse> => {
-    if (USE_MOCK_DATA) {
-      await delay(300);
-      const { sortBy = 'name', sortOrder = 'asc' } = params;
-      return filterCategories(mockCategories, { ...params, sortBy, sortOrder });
-    }
+  getAll: async (params: {
+    page?: number;
+    pageSize?: number;
+    search?: string;
+    sortBy?: string;
+    sortOrder?: 'asc' | 'desc';
+  } = {}): Promise<CategoriesResponse> => {
+    const { page = 0, pageSize = 10, search = '' } = params;
     
-    const { page = 0, pageSize = 10, search = '', sortBy = 'name', sortOrder = 'asc' } = params;
-    
-    const response = await apiClient.get('/admin/categories', {
-      params: {
-        page,
-        size: pageSize,
-        search,
-        sortBy,
-        sortOrder,
-      },
+    const queryParams = new URLSearchParams({
+      page: page.toString(),
+      size: pageSize.toString(),
+      search,
     });
-
-    const payload = response.data as {
-      data: Array<{
-        id: number;
-        name: string;
-        active: boolean;
-        productCount: number;
-        imageUrl: string | null;
-      }>;
+    
+    const response = await API.get<{
+      data: CategoryDto[];
       total: number;
       page: number;
       pageSize: number;
-    };
+    }>(`/categories/admin?${queryParams.toString()}`);
 
-    const mappedData: Category[] = (payload.data ?? []).map((category) => ({
-      id: String(category.id),
-      name: category.name,
-      status: category.active ? 'active' : 'inactive',
-      productCount: category.productCount ?? 0,
-      createdAt: '',
-      description: '',
-      imageUrl: category.imageUrl ?? null,
-    }));
+    const payload = response.data;
 
     return {
-      data: mappedData,
+      data: (payload.data ?? []).map(mapCategoryToFrontend),
       total: payload.total ?? 0,
       page: payload.page ?? page,
       pageSize: payload.pageSize ?? pageSize,
@@ -83,73 +75,32 @@ export const categoriesApi = {
   },
 
   getById: async (id: string): Promise<Category> => {
-    if (USE_MOCK_DATA) {
-      await delay(200);
-      const category = mockCategories.find((cat) => cat.id === id);
-      if (!category) {
-        throw new Error('Category not found');
-      }
-      return category;
-    }
-    const response = await apiClient.get(`/admin/categories/${id}`);
-    const data = response.data as {
-      id: number;
-      name: string;
-      active: boolean;
-      productCount: number;
-      imageUrl: string | null;
-    };
-
-    return {
-      id: String(data.id),
-      name: data.name,
-      status: data.active ? 'active' : 'inactive',
-      productCount: data.productCount ?? 0,
-      createdAt: '',
-      description: '',
-      imageUrl: data.imageUrl ?? null,
-    };
+    const response = await API.get<CategoryDto>(`/categories/admin/${id}`);
+    return mapCategoryToFrontend(response.data);
   },
 
   create: async (category: Omit<Category, 'id'>): Promise<Category> => {
-    if (USE_MOCK_DATA) {
-      await delay(300);
-      const newCategory: Category = {
-        id: `category-${Date.now()}`,
-        ...category,
-        productCount: category.productCount ?? 0,
-        createdAt: category.createdAt || new Date().toISOString(),
-      };
-      mockCategories.unshift(newCategory);
-      return newCategory;
-    }
-    throw new Error('Category creation API is not implemented yet');
+    const requestBody = {
+      name: category.name,
+      active: category.status === 'active',
+      imageUrl: category.imageUrl || '',
+    };
+
+    const response = await API.post<CategoryDto>('/categories/admin', requestBody);
+    return mapCategoryToFrontend(response.data);
   },
 
   update: async (id: string, category: Partial<Category>): Promise<Category> => {
-    if (USE_MOCK_DATA) {
-      await delay(300);
-      const index = mockCategories.findIndex((cat) => cat.id === id);
-      if (index === -1) {
-        throw new Error('Category not found');
-      }
-      mockCategories[index] = { ...mockCategories[index], ...category } as Category;
-      return mockCategories[index];
-    }
-    throw new Error('Category update API is not implemented yet');
+    const requestBody: any = {};
+    if (category.name !== undefined) requestBody.name = category.name;
+    if (category.status !== undefined) requestBody.active = category.status === 'active';
+    if (category.imageUrl !== undefined) requestBody.imageUrl = category.imageUrl;
+
+    const response = await API.put<CategoryDto>(`/categories/${id}`, requestBody);
+    return mapCategoryToFrontend(response.data);
   },
 
   delete: async (id: string): Promise<void> => {
-    if (USE_MOCK_DATA) {
-      await delay(200);
-      const index = mockCategories.findIndex((cat) => cat.id === id);
-      if (index === -1) {
-        throw new Error('Category not found');
-      }
-      mockCategories.splice(index, 1);
-      return;
-    }
-    throw new Error('Category delete API is not implemented yet');
+    await API.delete(`/categories/${id}`);
   },
 };
-

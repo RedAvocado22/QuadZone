@@ -4,7 +4,6 @@ import CartPage from "./pages/CartPage";
 import UserProvider from "./hooks/useUser";
 import { CartProvider } from "./contexts/CartContext";
 import HomePage from "./pages/HomePage";
-import ProtectedRoute from "./routers/ProtectedRoute";
 import { ToastContainer } from "react-toastify";
 import DemoPage from "./components/demo/DemoPage";
 import Layout from "./components/layout/Layout";
@@ -44,10 +43,8 @@ function App() {
                         <Route path="/login" element={<LoginPage />} />
                         <Route path="/register" element={<RegisterPage />} />
                         <Route path="/product/:id" element={<ProductDetailPage />} />
-                        {/* Routes for authenticated users */}
-                        <Route element={<ProtectedRoute />}>
-                            <Route path="cart" element={<CartPage />} />
-                        </Route>
+                        {/* Cart - accessible to everyone (guest and authenticated) */}
+                        <Route path="cart" element={<CartPage />} />
 
                         {/* Error Boundary */}
                         {/* <Route path="unauthorized" element={<Unauthorized />} />

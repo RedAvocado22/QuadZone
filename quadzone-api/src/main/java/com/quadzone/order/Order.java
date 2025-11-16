@@ -7,6 +7,7 @@ import lombok.*;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
+import com.quadzone.order.dto.OrderUpdateRequest;
 
 @AllArgsConstructor
 @NoArgsConstructor
@@ -55,4 +56,30 @@ public class Order {
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
+    public void updateFrom(OrderUpdateRequest request) {
+        if (request.subtotal() != null) {
+            this.setSubtotal(request.subtotal());
+        }
+        if (request.taxAmount() != null) {
+            this.setTaxAmount(request.taxAmount());
+        }
+        if (request.shippingCost() != null) {
+            this.setShippingCost(request.shippingCost());
+        }
+        if (request.discountAmount() != null) {
+            this.setDiscountAmount(request.discountAmount());
+        }
+        if (request.totalAmount() != null) {
+            this.setTotalAmount(request.totalAmount());
+        }
+        if (request.orderStatus() != null) {
+            this.setOrderStatus(request.orderStatus());
+        }
+        if (request.notes() != null) {
+            this.setNotes(request.notes());
+        }
+        if (request.address() != null) {
+            this.setAddress(request.address());
+        }
+    }
 }

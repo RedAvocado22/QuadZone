@@ -6,6 +6,7 @@ import LinearProgress, { linearProgressClasses } from '@mui/material/LinearProgr
 import { varAlpha } from 'minimal-shared/utils';
 
 import { DashboardLayout } from 'src/layouts/dashboard';
+import { ProtectedRoute } from './components/ProtectedRoute';
 
 // ----------------------------------------------------------------------
 
@@ -62,29 +63,57 @@ export default function AdminRoutes() {
             <Route
                 path=""
                 element={
-                    <DashboardLayout>
-                        <Suspense fallback={renderFallback()}>
-                            <Outlet />
-                        </Suspense>
-                    </DashboardLayout>
+                    <ProtectedRoute allowedRoles={['ADMIN', 'STAFF']}>
+                        <DashboardLayout>
+                            <Suspense fallback={renderFallback()}>
+                                <Outlet />
+                            </Suspense>
+                        </DashboardLayout>
+                    </ProtectedRoute>
                 }
             >
                 <Route index element={<DashboardPage />} />
-                <Route path="user" element={<UserPage />} />
-                <Route path="user/create" element={<UserCreatePage />} />
-                <Route path="user/:id/edit" element={<UserEditPage />} />
+                {/* Admin only routes */}
+                <Route 
+                    path="user" 
+                    element={
+                        <ProtectedRoute allowedRoles="ADMIN">
+                            <UserPage />
+                        </ProtectedRoute>
+                    } 
+                />
+                <Route 
+                    path="user/create" 
+                    element={
+                        <ProtectedRoute allowedRoles="ADMIN">
+                            <UserCreatePage />
+                        </ProtectedRoute>
+                    } 
+                />
+                <Route 
+                    path="user/:id/edit" 
+                    element={
+                        <ProtectedRoute allowedRoles="ADMIN">
+                            <UserEditPage />
+                        </ProtectedRoute>
+                    } 
+                />
+                {/* Staff and Admin can access products */}
                 <Route path="products" element={<ProductsPage />} />
                 <Route path="products/create" element={<ProductCreatePage />} />
                 <Route path="products/:id" element={<ProductDetailsPage />} />
                 <Route path="products/:id/edit" element={<ProductEditPage />} />
+                {/* Staff and Admin can access blog */}
                 <Route path="blog" element={<BlogPage />} />
                 <Route path="blog/create" element={<BlogCreatePage />} />
                 <Route path="blog/:id" element={<BlogDetailsPage />} />
                 <Route path="blog/:id/edit" element={<BlogEditPage />} />
+                {/* Staff and Admin can access category */}
                 <Route path="category" element={<CategoryPage />} />
                 <Route path="category/create" element={<CategoryCreatePage />} />
                 <Route path="category/:id" element={<CategoryDetailsPage />} />
                 <Route path="category/:id/edit" element={<CategoryEditPage />} />
+                {/* Staff and Admin can access orders */}
                 <Route path="order" element={<OrderPage />} />
                 <Route path="order/create" element={<OrderCreatePage />} />
                 <Route path="order/:id" element={<OrderDetailsPage />} />

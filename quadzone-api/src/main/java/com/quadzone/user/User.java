@@ -86,4 +86,22 @@ public class User implements UserDetails {
     public boolean isEnabled() {
         return true;
     }
+
+    public void updateFrom(com.quadzone.user.dto.UserUpdateRequest request) {
+        if (request.firstName() != null) {
+            this.setFirstName(request.firstName());
+        }
+        if (request.lastName() != null) {
+            this.setLastName(request.lastName());
+        }
+        if (request.email() != null) {
+            this.setEmail(request.email());
+        }
+        if (request.password() != null) {
+            this.setPassword(request.password());
+        }
+        if (request.role() != null) {
+            this.setRole(request.role());
+        }
+    }
 }

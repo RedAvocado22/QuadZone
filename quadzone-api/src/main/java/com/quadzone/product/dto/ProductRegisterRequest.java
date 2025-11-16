@@ -3,7 +3,6 @@ package com.quadzone.product.dto;
 import com.quadzone.product.Product;
 import com.quadzone.product.category.sub_category.SubCategory;
 import jakarta.validation.constraints.*;
-import org.hibernate.validator.constraints.URL;
 
 public record ProductRegisterRequest(
 
@@ -37,11 +36,9 @@ public record ProductRegisterRequest(
 
         String color,
 
-        @URL(message = "Image URL must be a valid URL")
-        String imageUrl,
+        String imageUrl,  // Allow null or empty, validation can be done in service
 
-        @NotNull(message = "SubCategory is required")
-        SubCategory subCategory
+        SubCategory subCategory  // Allow null for now, can be set later
 ) {
     public static Product toProduct(ProductRegisterRequest request) {
         return Product.builder()
@@ -55,7 +52,7 @@ public record ProductRegisterRequest(
                 .weight(request.weight())
                 .color(request.color())
                 .imageUrl(request.imageUrl())
-                .subCategory(request.subCategory())
+                .subCategory(request.subCategory())  // Can be null, should be set via update
                 .build();
     }
 }

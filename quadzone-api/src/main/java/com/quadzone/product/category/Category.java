@@ -8,6 +8,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.util.List;
+import com.quadzone.product.category.dto.CategoryUpdateRequest;
 
 @Entity
 @Table(name = "category")
@@ -33,4 +34,15 @@ public class Category {
     @OneToMany(mappedBy = "category", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<SubCategory> subcategories;
 
+    public void updateFrom(CategoryUpdateRequest request) {
+        if (request.name() != null) {
+            this.setName(request.name());
+        }
+        if (request.active() != null) {
+            this.setActive(request.active());
+        }
+        if (request.imageUrl() != null) {
+            this.setImageUrl(request.imageUrl());
+        }
+    }
 }
