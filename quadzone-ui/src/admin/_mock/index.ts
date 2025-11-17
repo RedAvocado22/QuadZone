@@ -1,3 +1,3 @@
-export * from './_mock';
-export * from './_data';
-export * from './mock-data';
+export * from "./_mock";
+export * from "./_data";
+export * from "./mock-data";

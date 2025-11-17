@@ -29,7 +29,7 @@ const MobileSidebar = () => {
                                         <a
                                             className="u-header-collapse__nav-link u-header-collapse__nav-pointer"
                                             href="#">
-                                            Home & Static Pages
+                                            Home 
                                         </a>
                                     </li>
 

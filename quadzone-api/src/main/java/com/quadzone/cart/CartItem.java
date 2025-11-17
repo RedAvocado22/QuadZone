@@ -10,7 +10,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @Getter
 @Setter
-@ToString
+@ToString(exclude = {"cart", "product"})
 @Entity
 @Table(name = "cart_item")
 public class CartItem {

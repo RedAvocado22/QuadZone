@@ -2,15 +2,14 @@ package com.quadzone.auth.token;
 
 import com.quadzone.user.User;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
-@Data
+@Getter
+@Setter
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@ToString(exclude = {"user"})
 @Entity
 public class Token {
 
@@ -26,7 +25,7 @@ public class Token {
 
     @Builder.Default
     public boolean revoked = false;
-    
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
     public User user;
