@@ -1,19 +1,18 @@
 package com.quadzone.order;
 
-import com.quadzone.payment.Payment;
 import com.quadzone.user.User;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 
 @AllArgsConstructor
 @NoArgsConstructor
 @Getter
 @Setter
-@ToString(exclude = {"orderItems", "user", "payment"})
+@ToString
 @Entity
 @Table(name = "orders")
 public class Order {
@@ -21,23 +20,23 @@ public class Order {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false, updatable = false)
-    private LocalDateTime orderDate = LocalDateTime.now();
+    @Column
+    private LocalDateTime orderDate;
 
     @Column
-    private Double subtotal;
+    private double subtotal;
 
     @Column
-    private Double taxAmount;
+    private double taxAmount = 0.08;
 
     @Column
-    private Double shippingCost;
+    private double shippingCost;
 
     @Column
-    private Double discountAmount;
+    private double discountAmount;
 
     @Column
-    private Double totalAmount;
+    private double totalAmount;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "order_status")
@@ -50,20 +49,10 @@ public class Order {
     private String address;
 
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<OrderItem> orderItems = new ArrayList<>();
+    private List<OrderItem> orderItems;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
-    @OneToOne(mappedBy = "order", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    private Payment payment;
-
-    public void addOrderItem(OrderItem item) {
-        if (orderItems == null) {
-            orderItems = new ArrayList<>();
-        }
-        orderItems.add(item);
-        item.setOrder(this);
-    }
 }

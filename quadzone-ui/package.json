@@ -60,6 +60,7 @@
         "@emotion/styled": "^11.14.0",
         "@fontsource-variable/dm-sans": "^5.2.5",
         "@fontsource/barlow": "^5.2.5",
+        "@fortawesome/fontawesome-free": "^7.1.0",
         "@iconify/react": "^5.2.1",
         "@mui/lab": "^7.0.0-beta.10",
         "@mui/material": "^7.0.1",
