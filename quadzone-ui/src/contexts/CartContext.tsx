@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
 import type { Product } from "../types/Product";
+import { toast } from "react-toastify";
 
 interface CartItem extends Product {
     quantity: number;
@@ -40,16 +41,36 @@ export const CartProvider = ({ children }: { children: React.ReactNode }) => {
         setItems((prev) => {
             const existing = prev.find((item) => item.id === product.id);
             if (existing) {
+                toast.info(`Updated quantity for ${product.name}`, {
+                    position: "top-right",
+                    autoClose: 1500
+                });
+
                 return prev.map((item) =>
                     item.id === product.id ? { ...item, quantity: item.quantity + quantity } : item
                 );
             }
+
+            toast.success(`${product.name} added to cart!`, {
+                position: "top-right",
+                autoClose: 1500
+            });
+
             return [...prev, { ...product, quantity }];
         });
     };
 
     const removeFromCart = (productId: number) => {
+        const removedItem = items.find((item) => item.id === productId);
+
         setItems((prev) => prev.filter((item) => item.id !== productId));
+
+        if (removedItem) {
+            toast.error(`${removedItem.name} removed from cart`, {
+                position: "top-right",
+                autoClose: 1500
+            });
+        }
     };
 
     const updateQuantity = (productId: number, quantity: number) => {
@@ -57,11 +78,21 @@ export const CartProvider = ({ children }: { children: React.ReactNode }) => {
             removeFromCart(productId);
             return;
         }
+
         setItems((prev) => prev.map((item) => (item.id === productId ? { ...item, quantity } : item)));
+
+        toast.info(`Quantity updated`, {
+            position: "top-right",
+            autoClose: 1500
+        });
     };
 
     const clearCart = () => {
         setItems([]);
+        toast.warn("Cart cleared", {
+            position: "top-right",
+            autoClose: 1500
+        });
     };
 
     const totalPrice = items.reduce((sum, item) => sum + item.price * item.quantity, 0);

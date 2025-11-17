@@ -1,4 +1,6 @@
 // Shop Product Types
+import type { SubCategory } from './Product';
+
 export interface Product {
   id: number;
   name: string;
@@ -10,6 +12,9 @@ export interface Product {
   reviews?: number;
   sku?: string;
   features?: string[];
+  quantity: number;
+  weight: number;
+  subCategory: SubCategory;
 }
 
 // Shop Category Types

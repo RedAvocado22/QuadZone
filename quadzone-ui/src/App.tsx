@@ -11,6 +11,7 @@ import Layout from "./components/layout/Layout";
 import LoginPage from "./pages/LoginPage";
 import RegisterPage from "./pages/RegisterPage";
 import ProductDetailPage from "./pages/ProductDetailPage";
+import Shop from "./pages/Shop";
 
 const AdminApp = lazy(() => import("./admin/AdminApp"));
 const AdminRoutes = lazy(() => import("./admin/AdminRoutes"));
@@ -44,6 +45,7 @@ function App() {
                         <Route path="/login" element={<LoginPage />} />
                         <Route path="/register" element={<RegisterPage />} />
                         <Route path="/product/:id" element={<ProductDetailPage />} />
+                        <Route path="/shop" element={<Shop/>} />
                         {/* Routes for authenticated users */}
                         <Route element={<ProtectedRoute />}>
                             <Route path="cart" element={<CartPage />} />
