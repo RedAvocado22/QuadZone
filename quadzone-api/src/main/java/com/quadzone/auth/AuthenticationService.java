@@ -9,6 +9,8 @@ import com.quadzone.config.JwtService;
 import com.quadzone.user.User;
 import com.quadzone.user.UserRepository;
 import com.quadzone.user.UserRole;
+import com.quadzone.user.UserStatus;
+import com.quadzone.utils.email.EmailSenderService;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -32,11 +34,16 @@ public class AuthenticationService {
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
     private final AuthenticationManager authenticationManager;
+    private final EmailSenderService emailSenderService;
 
     @Value("${spring.application.security.jwt.refresh-token.expiration}")
     private long refreshTokenExpirationMs;
 
-    public AuthenticationResponse register(RegisterRequest request, HttpServletResponse response) {
+    public void register(RegisterRequest request) {
+//        userRepository.findByEmail(request.email()).ifPresent(user -> {
+//            throw new UserAlreadyExistsException(String.format("User with email %s is already exists.", request.email()));
+//        });
+
         if (!request.password().equals(request.confirm_password())) {
             throw new IllegalArgumentException("Passwords do not match");
         }
@@ -47,6 +54,7 @@ public class AuthenticationService {
                 .email(request.email())
                 .password(passwordEncoder.encode(request.password()))
                 .role(UserRole.CUSTOMER)
+                .status(UserStatus.ACTIVE)
                 .build();
 
         var savedUser = userRepository.save(user);
@@ -54,13 +62,21 @@ public class AuthenticationService {
         var accessToken = jwtService.generateToken(user);
         var refreshToken = jwtService.generateRefreshToken(user);
 
-        saveUserToken(savedUser, refreshToken);
-        setRefreshTokenCookie(response, refreshToken);
-
-        return new AuthenticationResponse(accessToken);
+//        emailSenderService.sendAccountActivationEmail(user.getEmail(), accessToken);
     }
 
     public AuthenticationResponse authenticate(AuthenticationRequest request, HttpServletResponse response) {
+        var user = userRepository.findByEmail(request.email()).orElseThrow();
+
+//        if (user.getStatus() == UserStatus.SUSPENDED) {
+//            throw new SuspendedAccountException("User account is suspended.");
+//        }
+
+//        if (user.getStatus() == UserStatus.UNACTIVE) {
+//            emailSenderService.sendAccountActivationEmail(user.getEmail(), jwtService.generateToken(user));
+//            throw new InactiveAccountException("User account is not activated. Check email.");
+//        }
+
         authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
                         request.email(),
@@ -68,7 +84,6 @@ public class AuthenticationService {
                 )
         );
 
-        var user = userRepository.findByEmail(request.email()).orElseThrow();
         var accessToken = jwtService.generateToken(user);
         var refreshToken = jwtService.generateRefreshToken(user);
 

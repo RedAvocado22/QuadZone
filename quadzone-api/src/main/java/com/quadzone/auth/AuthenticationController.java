@@ -5,6 +5,7 @@ import com.quadzone.auth.dto.AuthenticationResponse;
 import com.quadzone.auth.dto.RegisterRequest;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -17,18 +18,20 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 public class AuthenticationController {
 
+    //thêm active link qua mail, thêm forget-password, thêm email sender
     private final AuthenticationService authenticationService;
 
     @PostMapping("/register")
-    public ResponseEntity<AuthenticationResponse> register(
-            @RequestBody RegisterRequest request,
-            HttpServletResponse response
+    public ResponseEntity<String> register(
+            @Valid @RequestBody RegisterRequest request
     ) {
-        return ResponseEntity.ok(authenticationService.register(request, response));
+        authenticationService.register(request);
+        return ResponseEntity.ok("User registered successfully");
     }
 
     @PostMapping("/authenticate")
     public ResponseEntity<AuthenticationResponse> authenticate(
+            //Add valid
             @RequestBody AuthenticationRequest request,
             HttpServletResponse response
     ) {

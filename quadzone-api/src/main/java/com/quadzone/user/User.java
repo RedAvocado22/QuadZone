@@ -42,6 +42,10 @@ public class User implements UserDetails {
     @Column(name = "role")
     private UserRole role;
 
+    @Enumerated(EnumType.STRING)
+    @Column
+    private UserStatus status;
+
     @Column(name = "created_at", nullable = false, updatable = false)
     private final LocalDateTime createdAt = LocalDateTime.now();
 
