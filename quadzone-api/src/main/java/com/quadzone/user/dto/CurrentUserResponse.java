@@ -6,8 +6,8 @@ import com.quadzone.user.UserRole;
 import java.time.LocalDateTime;
 
 public record CurrentUserResponse(
-        String firstname,
-        String lastname,
+        String firstName,
+        String lastName,
         String email,
         UserRole role,
         LocalDateTime createdAt
