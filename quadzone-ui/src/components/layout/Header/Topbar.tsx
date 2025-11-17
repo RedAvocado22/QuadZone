@@ -4,6 +4,8 @@ import { useUser } from "../../../hooks/useUser";
 const Topbar = () => {
     const { user, logout } = useUser();
 
+    console.log(user);
+
     const handleLogout = (e: React.MouseEvent<HTMLAnchorElement>) => {
         e.preventDefault();
         logout();
@@ -50,7 +52,10 @@ const Topbar = () => {
                                         {/* Assuming your user object has a firstName property */}
                                         <Link to="/my-account" className="u-header-topbar__nav-link">
                                             <i className="ec ec-user mr-1"></i>
-                                            Hi, {user.firstName || "My Account"}
+                                            Hi,{" "}
+                                            {user && user.firstName
+                                                ? `${user.firstName} ${user.lastName}`
+                                                : "My Account"}
                                         </Link>
                                     </li>
                                     <li className="list-inline-item mr-0 u-header-topbar__nav-item u-header-topbar__nav-item-border">

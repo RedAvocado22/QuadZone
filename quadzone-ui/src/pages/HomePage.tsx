@@ -1,9 +1,46 @@
+import { useEffect, useState } from "react";
 import HeroSection from "../components/home/HeroSection";
 import ProductSlider from "../components/home/ProductSlider";
-import { useProducts } from "../hooks/useProducts";
+import API from "@/api/base";
+import type { Product } from "../types/Product";
+import { toast } from "react-toastify";
 
 const HomePage = () => {
-    const { products, loading, error } = useProducts(0, 20);
+    const [bestSellers, setBestSellers] = useState<Product[]>([]);
+    const [featured, setFeatured] = useState<Product[]>([]);
+    const [newArrivals, setNewArrivals] = useState<Product[]>([]);
+    const [loading, setLoading] = useState<boolean>(true);
+    const [error, setError] = useState<string | null>(null);
+
+    useEffect(() => {
+        const fetchHomeProducts = async () => {
+            try {
+                setError(null);
+                const response = await API.get("/public");
+
+                // simulate network delay
+                await new Promise((resolve) => setTimeout(resolve, 1000));
+
+                const { bestSellers, featured, newArrivals } = response.data;
+
+                setBestSellers(bestSellers?.content || []);
+                setFeatured(featured?.content || []);
+                setNewArrivals(newArrivals?.content || []);
+            } catch {
+                const errorMessage = "Failed to load products.";
+                setError(errorMessage);
+                toast.error(errorMessage + " Please try again later.");
+
+                setBestSellers([]);
+                setFeatured([]);
+                setNewArrivals([]);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchHomeProducts();
+    }, []);
 
     if (loading) {
         return (
@@ -39,15 +76,15 @@ const HomePage = () => {
 
             <div className="container">
                 <div className="mb-6">
-                    <ProductSlider title="Featured Products" products={products.slice(0, 6)} />
+                    <ProductSlider title="Featured Products" products={featured.slice(0, 8)} />
                 </div>
 
                 <div className="mb-6">
-                    <ProductSlider title="Best Sellers" products={products.slice(6, 12)} />
+                    <ProductSlider title="Best Sellers" products={bestSellers.slice(0, 8)} />
                 </div>
 
                 <div className="mb-6">
-                    <ProductSlider title="New Arrivals" products={products.slice(12, 18)} />
+                    <ProductSlider title="New Arrivals" products={newArrivals.slice(0, 8)} />
                 </div>
             </div>
         </div>

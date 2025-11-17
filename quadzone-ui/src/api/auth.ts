@@ -17,8 +17,6 @@ export interface RegisterRequest {
  */
 export const register = async (req: RegisterRequest): Promise<any | null> => {
     try {
-        // console.log("Sending register request:", req);
-        // The backend expects: firstname, lastname, email, password, confirm_password (with underscore!)
         const payload = {
             firstname: req.firstName,
             lastname: req.lastName,

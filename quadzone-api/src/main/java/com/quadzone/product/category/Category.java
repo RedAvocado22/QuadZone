@@ -2,23 +2,23 @@ package com.quadzone.product.category;
 
 import com.quadzone.product.category.sub_category.SubCategory;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
+import java.util.ArrayList;
 import java.util.List;
 
-@Entity
-@Table(name = "category")
-@Data
+@Getter
+@Setter
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@ToString(exclude = {"subcategories"})
+@Entity
+@Table(name = "category")
 public class Category {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "category_id")
+    @Column(name = "id")
     private Long id;
 
     @Column
@@ -31,6 +31,13 @@ public class Category {
     private String imageUrl;
 
     @OneToMany(mappedBy = "category", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<SubCategory> subcategories;
+    private List<SubCategory> subcategories = new ArrayList<>();
 
+    public void addSubCategory(SubCategory subCategory) {
+        if (subcategories == null) {
+            subcategories = new ArrayList<>();
+        }
+        subcategories.add(subCategory);
+        subCategory.setCategory(this);
+    }
 }

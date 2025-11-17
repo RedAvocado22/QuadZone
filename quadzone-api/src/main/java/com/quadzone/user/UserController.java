@@ -1,7 +1,7 @@
 package com.quadzone.user;
 
 import com.quadzone.user.dto.CurrentUserResponse;
-import com.quadzone.utils.ObjectMapper;
+import com.quadzone.utils.EntityMapper;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -11,9 +11,9 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping(path = "/api/v1/users")
 public class UserController {
-    private final ObjectMapper objectMapper;
+    private final EntityMapper objectMapper;
 
-    public UserController(ObjectMapper objectMapper) {
+    public UserController(EntityMapper objectMapper) {
         this.objectMapper = objectMapper;
     }
 

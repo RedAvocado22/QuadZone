@@ -1,29 +1,30 @@
 package com.quadzone.order;
 
 import com.quadzone.product.Product;
+import com.quadzone.product.review.Review;
 import jakarta.persistence.*;
 import lombok.*;
 
-@AllArgsConstructor
-@NoArgsConstructor
+import java.math.BigDecimal;
+
 @Getter
 @Setter
-@ToString
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
+@ToString(exclude = {"order", "product", "review"})
 @Entity
-@Table(name = "order_item")
+@Table(name = "order_items")
 public class OrderItem {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @Column(nullable = false)
-    private Integer quantity = 1;
+    private Integer quantity;
 
-    @Column(name = "unit_price", columnDefinition = "DECIMAL(8,2)")
-    private double unitPrice;
-
-    @Column(name = "sub_total", columnDefinition = "DECIMAL(8,2)")
-    private double subtotal;
+    @Column(name = "price_at_purchase", nullable = false)
+    private BigDecimal priceAtPurchase;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "order_id", nullable = false)
@@ -33,4 +34,6 @@ public class OrderItem {
     @JoinColumn(name = "product_id", nullable = false)
     private Product product;
 
+    @OneToOne(mappedBy = "orderItem", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    private Review review;
 }
