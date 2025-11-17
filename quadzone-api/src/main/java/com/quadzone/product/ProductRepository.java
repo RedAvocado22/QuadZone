@@ -15,4 +15,6 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
                OR LOWER(COALESCE(p.brand, '')) LIKE LOWER(CONCAT('%', :keyword, '%'))
             """)
     Page<Product> search(@Param("keyword") String keyword, Pageable pageable);
+
+    Page<Product> findByNameContainingIgnoreCase(String query, Pageable pageable);
 }

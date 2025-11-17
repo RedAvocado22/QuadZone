@@ -37,7 +37,7 @@ INSERT INTO product (product_id, product_name, brand, model_number, description,
 
 -- Users (5)
 INSERT INTO _user (id, email, password, first_name, last_name, role, created_at) VALUES
-  (1, 'admin@quadzone.vn', 'adminpass', 'Admin', 'QuadZone', 'ADMIN', NOW()),
+  (1, 'admin@quadzone.vn', '$2a$10$WqoQai1iCgTK8b0/Mi7aKeImCl1Ns7kY3bJISZoXKrjdCTofBZPi.', 'Admin', 'QuadZone', 'ADMIN', NOW()),
   (2, 'nguyen.van.a@example.com', 'custpass1', 'Nguyen', 'A', 'CUSTOMER', NOW()),
   (3, 'tran.thi.b@example.com', 'custpass2', 'Tran', 'B', 'CUSTOMER', NOW()),
   (4, 'le.van.c@example.com', 'custpass3', 'Le', 'C', 'CUSTOMER', NOW()),
