@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { productsApi, type Product } from 'src/api/products';
+import { productsApi, type Product } from 'src/api/productsAdmin';
 
 // ----------------------------------------------------------------------
 

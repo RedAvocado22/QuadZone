@@ -11,8 +11,8 @@ import LoginPage from "./pages/LoginPage";
 import RegisterPage from "./pages/RegisterPage";
 import ProductDetailPage from "./pages/ProductDetailPage";
 
-const AdminApp = lazy(() => import("./admin/AdminApp"));
-const AdminRoutes = lazy(() => import("./admin/AdminRoutes"));
+const AdminApp = lazy(() => import("./AdminApp"));
+const AdminRoutes = lazy(() => import("./AdminRoutes"));
 
 const SiteLayout = () => (
     <Layout>

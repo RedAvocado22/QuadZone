@@ -1,4 +1,4 @@
-export * from '../../api/base';
+export * from './base';
 export * from './users';
 export * from './products';
 export * from './posts';

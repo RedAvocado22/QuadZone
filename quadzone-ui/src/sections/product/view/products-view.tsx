@@ -7,10 +7,10 @@ import Pagination from '@mui/material/Pagination';
 import Typography from '@mui/material/Typography';
 import CircularProgress from '@mui/material/CircularProgress';
 
-import { useProducts } from 'src/hooks/useProducts';
+import { useProducts as useAdminProducts } from 'src/hooks/useProductsAdmin';
 import { DashboardContent } from 'src/layouts/dashboard';
 import { useRouter } from 'src/routes/hooks';
-import { productsApi } from 'src/api/products';
+import { productsApi } from 'src/api/productsAdmin';
 
 import { ProductItem } from '../product-item';
 import { ProductSort } from '../product-sort';
@@ -70,7 +70,7 @@ export function ProductsView() {
   const [filters, setFilters] = useState<FiltersProps>(defaultFilters);
 
   // Fetch products from API
-  const { products, loading, error, total, refetch } = useProducts({
+  const { products, loading, error, total, refetch } = useAdminProducts({
     page,
     pageSize: 12,
     category: filters.category,

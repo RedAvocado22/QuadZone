@@ -11,7 +11,7 @@ import CircularProgress from '@mui/material/CircularProgress';
 import Alert from '@mui/material/Alert';
 
 import { DashboardContent } from 'src/layouts/dashboard';
-import { productsApi } from 'src/api/products';
+import { productsApi } from 'src/api/productsAdmin';
 import { fCurrency } from 'src/utils/format-number';
 import { Label } from 'src/components/label';
 import { ColorPreview } from 'src/components/color-utils';

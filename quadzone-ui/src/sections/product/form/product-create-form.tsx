@@ -17,7 +17,7 @@ import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
 
 import { Iconify } from 'src/components/iconify';
 import { DashboardContent } from 'src/layouts/dashboard';
-import { productsApi, type Product } from 'src/api/products';
+import { productsApi, type Product } from 'src/api/productsAdmin';
 import { uploadApi } from 'src/api/upload';
 
 // ----------------------------------------------------------------------
