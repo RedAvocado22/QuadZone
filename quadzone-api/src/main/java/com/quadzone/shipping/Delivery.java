@@ -14,6 +14,7 @@ import java.time.LocalDateTime;
 @Entity
 @Table(name = "deliveries")
 public class Delivery {
+    //chỉnh tên với các attribute xuống sau id
     @Column(name = "created_at", updatable = false)
     private final LocalDateTime createdAt = LocalDateTime.now();
 
@@ -28,7 +29,7 @@ public class Delivery {
     private String carrier; // e.g., FedEx
     @Enumerated(EnumType.STRING)
     @Column(name = "delivery_status", length = 30)
-    private final DeliveryStatus deliveryStatus = DeliveryStatus.PENDING;
+    private DeliveryStatus deliveryStatus = DeliveryStatus.PENDING;
 
     @Column(name = "estimated_delivery_date")
     private LocalDate estimatedDeliveryDate;

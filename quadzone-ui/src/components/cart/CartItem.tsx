@@ -35,7 +35,7 @@ const CartItem = ({ item }: CartItemProps) => {
                 <Link to={`/product/${item.id}`}>
                     <img
                         className="img-fluid max-width-100 p-1 border border-color-1"
-                        src={item.image || defaultImages.cart}
+                        src={item.imageUrl || defaultImages.cart}
                         alt={item.name}
                     />
                 </Link>

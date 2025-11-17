@@ -24,19 +24,19 @@ public class Order {
     private LocalDateTime orderDate;
 
     @Column
-    private BigDecimal subtotal;
+    private double subtotal;
 
     @Column
-    private BigDecimal taxAmount;
+    private double taxAmount = 0.08;
 
     @Column
-    private BigDecimal shippingCost;
+    private double shippingCost;
 
     @Column
-    private BigDecimal discountAmount;
+    private double discountAmount;
 
     @Column
-    private BigDecimal totalAmount;
+    private double totalAmount;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "order_status")

@@ -25,10 +25,10 @@ public class Payment {
     @Column(unique = true)
     private String transactionId;
 
-    private BigDecimal amount;
+    private double amount;
 
     @Enumerated(EnumType.STRING)
-    private final PaymentStatus paymentStatus = PaymentStatus.PENDING;
+    private PaymentStatus paymentStatus = PaymentStatus.PENDING;
 
     private LocalDateTime paymentDate;
 
@@ -38,6 +38,5 @@ public class Payment {
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "order_id", nullable = false, unique = true)
     private Order order;
-
 
 }

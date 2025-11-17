@@ -1,81 +1,90 @@
+import { useEffect, useState } from "react";
 import HeroSection from "../components/home/HeroSection";
 import ProductSlider from "../components/home/ProductSlider";
-import { productImages } from "../constants/images";
-
-// Mock data for products
-const mockProducts = [
-    {
-        id: 1,
-        name: "Wireless Audio System Multiroom 360 degree Full base audio",
-        category: { id: 1, name: "Speakers" },
-        price: 685.0,
-        quantity: 1,
-        image: productImages[1],
-        rating: 4.5
-    },
-    {
-        id: 2,
-        name: "Video Camera 4k Waterproof",
-        category: { id: 2, name: "Camera" },
-        price: 899.0,
-        quantity: 1,
-        image: productImages[2],
-        rating: 5
-    },
-    {
-        id: 3,
-        name: "Smartphone 6S 32GB LTE",
-        category: { id: 3, name: "Smartphones" },
-        price: 685.0,
-        quantity: 1,
-        image: productImages[4],
-        rating: 4
-    },
-    {
-        id: 4,
-        name: "Widescreen NX Mini F1 SMART NX",
-        category: { id: 4, name: "Cameras" },
-        price: 685.0,
-        quantity: 1,
-        image: productImages[5],
-        rating: 4.5
-    },
-    {
-        id: 5,
-        name: "Full Color LaserJet Pro M452dn",
-        category: { id: 5, name: "Printers" },
-        price: 439.0,
-        quantity: 1,
-        image: productImages[6],
-        rating: 4
-    },
-    {
-        id: 6,
-        name: "GameConsole Destiny Special Edition",
-        category: { id: 6, name: "Gaming" },
-        price: 399.0,
-        quantity: 1,
-        image: productImages[7],
-        rating: 5
-    }
-];
+import API from "@/api/base";
+import type { Product } from "../types/Product";
+import { toast } from "react-toastify";
 
 const HomePage = () => {
+    const [bestSellers, setBestSellers] = useState<Product[]>([]);
+    const [featured, setFeatured] = useState<Product[]>([]);
+    const [newArrivals, setNewArrivals] = useState<Product[]>([]);
+    const [loading, setLoading] = useState<boolean>(true);
+    const [error, setError] = useState<string | null>(null);
+
+    useEffect(() => {
+        const fetchHomeProducts = async () => {
+            try {
+                setError(null);
+                const response = await API.get("/public");
+
+                // simulate network delay
+                await new Promise((resolve) => setTimeout(resolve, 1000));
+
+                const { bestSellers, featured, newArrivals } = response.data;
+
+                setBestSellers(bestSellers?.content || []);
+                setFeatured(featured?.content || []);
+                setNewArrivals(newArrivals?.content || []);
+            } catch {
+                const errorMessage = "Failed to load products.";
+                setError(errorMessage);
+                toast.error(errorMessage + " Please try again later.");
+
+                setBestSellers([]);
+                setFeatured([]);
+                setNewArrivals([]);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchHomeProducts();
+    }, []);
+
+    if (loading) {
+        return (
+            <div className="home-v6">
+                <HeroSection />
+                <div className="container">
+                    <div className="text-center py-5">
+                        <div className="spinner-border" role="status">
+                            <span className="sr-only">Loading...</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        );
+    }
+
+    if (error) {
+        return (
+            <div className="home-v6">
+                <HeroSection />
+                <div className="container">
+                    <div className="alert alert-danger" role="alert">
+                        Error loading products: {error}
+                    </div>
+                </div>
+            </div>
+        );
+    }
+
     return (
         <div className="home-v6">
             <HeroSection />
 
             <div className="container">
                 <div className="mb-6">
-                    <ProductSlider title="Featured Products" products={mockProducts} />
+                    <ProductSlider title="Featured Products" products={featured.slice(0, 8)} />
                 </div>
 
                 <div className="mb-6">
-                    <ProductSlider title="Best Sellers" products={mockProducts.slice().reverse()} />
+                    <ProductSlider title="Best Sellers" products={bestSellers.slice(0, 8)} />
                 </div>
 
                 <div className="mb-6">
-                    <ProductSlider title="New Arrivals" products={mockProducts} />
+                    <ProductSlider title="New Arrivals" products={newArrivals.slice(0, 8)} />
                 </div>
             </div>
         </div>
