@@ -36,14 +36,7 @@ VALUES
     (9, 'Tablet Mini', 'Apple', 'QZ-TAB-MGL', 'Gold', 'A powerful tablet in a compact 7.9-inch size.', 429.00, 300.00, 0.3, 50, '/src/assets/img/212X200/img9.jpg', DATE_SUB(NOW(), INTERVAL 7 DAY), true, 7),
     (10, 'Tablet Pro 10-inch', 'Samsung', 'QZ-TAB-P10', 'White', 'A large display tablet perfect for media.', 349.50, 220.00, 0.5, 250, '/src/assets/img/212X200/img10.jpg', DATE_SUB(NOW(), INTERVAL 20 DAY), true, 7);
 
--- Users (5)
-INSERT INTO _user (id, email, password, first_name, last_name, role, created_at) VALUES
-  (1, 'admin@quadzone.vn', '$2a$10$WqoQai1iCgTK8b0/Mi7aKeImCl1Ns7kY3bJISZoXKrjdCTofBZPi.', 'Admin', 'QuadZone', 'ADMIN', NOW()),
-  (2, 'nguyen.van.a@example.com', 'custpass1', 'Nguyen', 'A', 'CUSTOMER', NOW()),
-  (3, 'tran.thi.b@example.com', 'custpass2', 'Tran', 'B', 'CUSTOMER', NOW()),
-  (4, 'le.van.c@example.com', 'custpass3', 'Le', 'C', 'CUSTOMER', NOW()),
-  (5, 'pham.staff@example.com', 'staffpass', 'Pham', 'Staff', 'STAFF', NOW()),
-  (6, 'dinh.shipper@example.com','shipperypass','Dinh', 'Shipper', 'SHIPPER', NOW());
+
 INSERT INTO cart (id, customer_id, created_at, updated_at)
 VALUES
     (1, 1, DATE_SUB(NOW(), INTERVAL 1 DAY), NOW()),

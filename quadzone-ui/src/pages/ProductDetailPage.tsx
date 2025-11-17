@@ -67,9 +67,9 @@ const ProductDetailPage = () => {
 
                 <div className="col-md-6">
                     <h2 className="fw-bold mb-3">{product.name}</h2>
-                    {product.brand && <p className="text-secondary small mb-1">Brand: {product.brand}</p>}
-                    {product.modelNumber && <p className="text-secondary small mb-3">Model: {product.modelNumber}</p>}
-
+                    {product.brand && <p className="text-secondary  mb-1">Brand: {product.brand}</p>}
+                    {product.modelNumber && <p className="text-secondary  mb-1">Model: {product.modelNumber}</p>}
+                    {product.weight && <p className="text-secondary  mb-1">Weight: {product.weight} kg</p>}
                     {/* Add to Cart Box */}
                     <div className="border rounded-3 p-4 bg-light shadow-sm mt-3">
                         <div className="d-flex align-items-center justify-content-between mb-3">
