@@ -2,12 +2,16 @@ package com.quadzone.product;
 
 import com.quadzone.exception.product.ProductNotFoundException;
 import com.quadzone.product.category.sub_category.SubCategoryRepository;
+import com.quadzone.product.dto.BrandResponse;
 import com.quadzone.product.dto.ProductDetailsResponse;
 import com.quadzone.product.dto.ProductRegisterRequest;
 import com.quadzone.product.dto.ProductResponse;
 import com.quadzone.product.dto.ProductUpdateRequest;
 import com.quadzone.utils.EntityMapper;
 import lombok.RequiredArgsConstructor;
+
+import java.util.List;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -54,8 +58,7 @@ public class ProductService {
     public ProductResponse createProduct(ProductRegisterRequest request) {
         Product product = ProductRegisterRequest.toProduct(request);
         return objectMapper.toProductResponse(
-                productRepository.save(product)
-        );
+                productRepository.save(product));
     }
 
     public ProductResponse updateProduct(Long id, ProductUpdateRequest request) {
@@ -73,4 +76,17 @@ public class ProductService {
         }
         productRepository.deleteById(id);
     }
+
+    public List<BrandResponse> listBrands() {
+        return productRepository.findAllBrands()
+                .stream()
+                .map(BrandResponse::new)
+                .toList();
+    }
+
+    public Page<ProductResponse> searchProducts(String brand, Long categoryId, Long subcategoryId, Pageable pageable) {
+        Page<Product> products = productRepository.searchProducts(brand, categoryId, subcategoryId, pageable);
+        return products.map(objectMapper::toProductResponse);
+    }
+
 }

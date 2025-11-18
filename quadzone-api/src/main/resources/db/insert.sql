@@ -8,10 +8,13 @@ VALUES
     (6, 'binh.le@example.com', '$2a$10$slYQmyNdGzTn7ZLBXBChFOC9f6kFjAqPhccnP6DxlWXx2lPk1C3G6', 'Ben', 'Lee', 'CUSTOMER', NOW(), 'ACTIVE'),
     (7, 'chi.pham@example.com', '$2a$10$slYQmyNdGzTn7ZLBXBChFOC9f6kFjAqPhccnP6DxlWXx2lPk1C3G6', 'Chloe', 'Pham', 'CUSTOMER', NOW(), 'ACTIVE'),
     (8, 'dung.tran@example.com', '$2a$10$slYQmyNdGzTn7ZLBXBChFOC9f6kFjAqPhccnP6DxlWXx2lPk1C3G6', 'David', 'Tran', 'CUSTOMER', NOW(), 'ACTIVE');
-
+-- password:Abc1234@
 INSERT INTO category (id, name, is_active, image_url)
 VALUES
-    (1, 'Electronics', true, 'https://example.com/images/electronics.jpg');
+    (1, 'Electronics', true, 'https://example.com/images/electronics.jpg'),
+    (2, 'Software & Services', true, 'https://example.com/images/software.jpg'),
+    (3, 'Home & Smart Devices', true, 'https://example.com/images/smarthome.jpg'),
+    (4, 'Components & DIY', true, 'https://example.com/images/components.jpg');
 
 INSERT INTO sub_category (id, name, description, is_active, category_id)
 VALUES
@@ -21,20 +24,47 @@ VALUES
     (4, 'Cameras', 'Digital cameras and camcorders.', true, 1),
     (5, 'Peripherals', 'Printers, monitors, and accessories.', true, 1),
     (6, 'Gaming', 'Consoles and gaming accessories.', true, 1),
-    (7, 'Tablets', 'Portable tablets for work and play.', true, 1);
+    (7, 'Tablets', 'Portable tablets for work and play.', true, 1),
+    -- Software & Services (category_id 2)
+    (8, 'Operating Systems', 'Software to run your computer and devices.', true, 2),
+    (9, 'Security & Antivirus', 'Protect your data and devices from threats.', true, 2),
+    (10, 'Creative Software', 'Tools for design, video, and audio editing.', true, 2),
+    
+    -- Home & Smart Devices (category_id 3)
+    (11, 'Smart Lighting', 'App-controlled bulbs and light strips.', true, 3),
+    (12, 'Smart Security', 'Cameras and alarm systems for home monitoring.', true, 3),
+    (13, 'Voice Assistants', 'Smart speakers and displays.', true, 3),
+    
+    -- Components & DIY (category_id 4)
+    (14, 'Processors & CPUs', 'The brain of your computer.', true, 4),
+    (15, 'Memory (RAM)', 'High-speed memory modules.', true, 4),
+    (16, 'Storage (SSD\HDD)', 'Drives for all your data needs.', true, 4);
 
 INSERT INTO product (id, name, brand, model_number, color, description, price, cost_price, weight, stock_quantity, image_url, created_at, is_active, subcategory_id)
 VALUES
     (1, 'Wireless Egg Speaker', 'QuadZone', 'QZ-SPK-EGG', 'White', '360-degree sound in a stunning design.', 249.99, 150.00, 1.5, 50, '/src/assets/img/212X200/img1.jpg', DATE_SUB(NOW(), INTERVAL 10 DAY), true, 3),
     (2, 'Convertible Laptop 14"', 'QuadZone', 'QZ-LP-CV14', 'Silver', 'A versatile 2-in-1 laptop for productivity.', 1099.50, 700.00, 1.8, 150, '/src/assets/img/212X200/img2.jpg', DATE_SUB(NOW(), INTERVAL 12 DAY), true, 1),
     (3, 'Rose Gold Headphones', 'QuadZone Beats', 'QZ-HP-RG', 'Rose Gold', 'Wireless over-ear headphones with noise cancelling.', 129.99, 50.00, 0.4, 500, '/src/assets/img/212X200/img3.jpg', DATE_SUB(NOW(), INTERVAL 30 DAY), true, 3),
-    (4, 'Smartphone 6S', 'QuadZone', 'QZ-PH-6S', 'Gold', '["6.1-inch Full HD+ Display","128GB Internal Storage","8GB RAM for smooth multitasking","48MP AI Triple Camera System","5000mAh Battery with Fast Charging","Dual SIM + 5G Connectivity","Face Unlock & In-Display Fingerprint Sensor"]', 699.00, 400.00, 0.14, 80, '/src/assets/img/212X200/img4.jpg', DATE_SUB(NOW(), INTERVAL 5 DAY), true, 2),
+    (4, 'Smartphone 6S', 'Apple', 'QZ-PH-6S', 'Gold', '["6.1-inch Full HD+ Display","128GB Internal Storage","8GB RAM for smooth multitasking","48MP AI Triple Camera System","5000mAh Battery with Fast Charging","Dual SIM + 5G Connectivity","Face Unlock & In-Display Fingerprint Sensor"]', 699.00, 400.00, 0.14, 80, '/src/assets/img/212X200/img4.jpg', DATE_SUB(NOW(), INTERVAL 5 DAY), true, 2),
     (5, 'Digital Camera Mint', 'Samsung', 'QZ-CAM-M', 'Mint Blue', 'A sleek point-and-shoot camera with 20MP.', 299.00, 200.00, 0.3, 75, '/src/assets/img/212X200/img5.jpg', DATE_SUB(NOW(), INTERVAL 8 DAY), true, 4),
-    (6, 'Color Laser Printer', 'HP', 'QZ-PRN-CL', 'White', 'High-quality color printing for your home office.', 179.99, 100.00, 5.5, 200, '/src/assets/img/212X200/img6.jpg', DATE_SUB(NOW(), INTERVAL 25 DAY), true, 5),
+    (6, 'All-in-One Inkjet Printer', 'HP', 'QZ-PRN-CL', 'White', 'High-quality color printing for your home office.', 179.99, 100.00, 5.5, 200, '/src/assets/img/212X200/img6.jpg', DATE_SUB(NOW(), INTERVAL 25 DAY), true, 5),
     (7, 'Gaming Console White', 'Sony', 'QZ-PS4-WHT', 'White Marble', 'Special edition gaming console.', 399.99, 280.00, 2.8, 300, '/src/assets/img/212X200/img7.jpg', DATE_SUB(NOW(), INTERVAL 30 DAY), true, 6),
     (8, 'HD Camcorder', 'Generic', 'QZ-VID-HDW', 'White', 'Capture all your moments in high definition.', 149.99, 80.00, 0.6, 120, '/src/assets/img/212X200/img8.jpg', DATE_SUB(NOW(), INTERVAL 15 DAY), true, 4),
     (9, 'Tablet Mini', 'Apple', 'QZ-TAB-MGL', 'Gold', 'A powerful tablet in a compact 7.9-inch size.', 429.00, 300.00, 0.3, 50, '/src/assets/img/212X200/img9.jpg', DATE_SUB(NOW(), INTERVAL 7 DAY), true, 7),
-    (10, 'Tablet Pro 10-inch', 'Samsung', 'QZ-TAB-P10', 'White', 'A large display tablet perfect for media.', 349.50, 220.00, 0.5, 250, '/src/assets/img/212X200/img10.jpg', DATE_SUB(NOW(), INTERVAL 20 DAY), true, 7);
+    (10, 'Tablet Pro 10-inch', 'Samsung', 'QZ-TAB-P10', 'White', 'A large display tablet perfect for media.', 349.50, 220.00, 0.5, 250, '/src/assets/img/212X200/img10.jpg', DATE_SUB(NOW(), INTERVAL 20 DAY), true, 7),
+    -- Software & Services (category_id 2)
+    (11, 'Pro Video Editor License', 'EditMaster', 'EM-PRO-VID', 'Digital', '1-year license for professional video editing suite.', 199.99, 50.00, 0.0, 999, '/src/assets/img/212X200/img11.jpg', DATE_SUB(NOW(), INTERVAL 3 DAY), true, 10),
+    (12, 'Ultimate Security Suite', 'GuardDog', 'GD-SEC-ULT', 'Digital', 'Lifetime license for 5-device comprehensive security.', 49.99, 15.00, 0.0, 800, '/src/assets/img/212X200/img12.jpg', DATE_SUB(NOW(), INTERVAL 1 DAY), true, 9),
+    
+    -- Home & Smart Devices (category_id 3)
+    (13, 'Smart Speaker Mini', 'QuadZone', 'QZ-SMT-SPKM', 'Charcoal', 'Compact smart speaker with voice assistant integration.', 49.00, 25.00, 0.25, 400, '/src/assets/img/212X200/img13.jpg', DATE_SUB(NOW(), INTERVAL 6 DAY), true, 13),
+    (14, 'Outdoor Smart Cam Pro', 'SenseHome', 'SH-CAM-OUT', 'Black', 'Weatherproof outdoor camera with night vision and motion alerts.', 159.50, 80.00, 0.5, 120, '/src/assets/img/212X200/img14.jpg', DATE_SUB(NOW(), INTERVAL 14 DAY), true, 12),
+    (15, 'E27 Smart Light Bulb', 'Lumi', 'LM-BULB-CLR', 'White', 'Color-changing smart bulb (E27 base) compatible with all major assistants.', 24.99, 10.00, 0.1, 750, '/src/assets/img/212X200/img15.jpg', DATE_SUB(NOW(), INTERVAL 9 DAY), true, 11),
+    
+    -- Components & DIY (category_id 4)
+    (16, 'M.2 NVMe SSD 1TB', 'Velocity', 'VEL-SSD-1TB', 'Black', 'High-speed 1TB M.2 solid-state drive.', 99.99, 60.00, 0.05, 180, '/src/assets/img/212X200/img16.jpg', DATE_SUB(NOW(), INTERVAL 2 DAY), true, 16),
+    (17, 'DDR4 32GB (2x16GB) Kit', 'HyperData', 'HD-RAM-32', 'Red', '32GB kit of performance DDR4 desktop memory.', 119.00, 75.00, 0.1, 100, '/src/assets/img/212X200/img17.jpg', DATE_SUB(NOW(), INTERVAL 18 DAY), true, 15),
+    (18, 'Intel Core i7 Processor', 'Intel', 'i7-14700K', 'Grey', 'Latest generation high-performance desktop CPU.', 389.00, 280.00, 0.08, 60, '/src/assets/img/212X200/img18.jpg', DATE_SUB(NOW(), INTERVAL 4 DAY), true, 14);
 
 
 INSERT INTO cart (id, customer_id, created_at, updated_at)

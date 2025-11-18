@@ -5,15 +5,18 @@ import com.quadzone.product.ProductService;
 import com.quadzone.product.category.CategoryRepository;
 import com.quadzone.product.category.CategoryService;
 import com.quadzone.product.category.dto.CategoryResponse;
+import com.quadzone.product.dto.BrandResponse;
 import com.quadzone.product.dto.ProductDetailsResponse;
 import com.quadzone.product.dto.ProductResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @RestController
@@ -40,11 +43,28 @@ public class PublicController {
     public ResponseEntity<Page<ProductResponse>> listProducts(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
-            @RequestParam(required = false) String q,
-            @RequestParam(defaultValue = "id") String sort) {
-        Pageable pageable = PageRequest.of(page, size);
-        Page<ProductResponse> products = productService.getProducts(pageable, q);
-        return ResponseEntity.ok(products);
+            @RequestParam(required = false) String brand,
+            @RequestParam(required = false) Long categoryId,
+            @RequestParam(required = false) Long subcategoryId,
+            @RequestParam(required = false) String sortBy) {
+        Sort sort = Sort.unsorted();
+        if (sortBy != null && !sortBy.isEmpty()) {
+            String[] sortFields = sortBy.split(",");
+            List<Sort.Order> orders = new ArrayList<>();
+            for (String field : sortFields) {
+                String[] parts = field.trim().split(":");
+                String property = parts[0];
+                Sort.Direction direction = parts.length > 1 && "desc".equalsIgnoreCase(parts[1]) ? Sort.Direction.DESC
+                        : Sort.Direction.ASC;
+                orders.add(new Sort.Order(direction, property));
+            }
+            sort = Sort.by(orders);
+        }
+        Pageable pageable = PageRequest.of(page, size, sort);
+
+        Page<ProductResponse> response = productService.searchProducts(brand, categoryId, subcategoryId, pageable);
+
+        return ResponseEntity.ok(response);
     }
 
     @GetMapping("/products/{id}")
@@ -56,4 +76,20 @@ public class PublicController {
             return ResponseEntity.notFound().build();
         }
     }
+
+    @GetMapping("/products/brands")
+    public ResponseEntity<List<BrandResponse>> listBrands() {
+        return ResponseEntity.ok(productService.listBrands());
+    }
+
+    @GetMapping("/categories/names")
+    public ResponseEntity<List<CategoryResponse>> viewCategoriesName() {
+        try {
+            List<CategoryResponse> categories = categoryService.findAll();
+            return ResponseEntity.ok(categories);
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
+        }
+    }
+
 }
