@@ -1,6 +1,6 @@
 package com.quadzone.shipping;
 
-import com.quadzone.checkout.order.Order;
+import com.quadzone.order.Order;
 import com.quadzone.user.User;
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -14,6 +14,7 @@ import java.time.LocalDateTime;
 @Entity
 @Table(name = "deliveries")
 public class Delivery {
+    //chỉnh tên với các attribute xuống sau id
     @Column(name = "created_at", updatable = false)
     private final LocalDateTime createdAt = LocalDateTime.now();
 

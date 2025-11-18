@@ -21,7 +21,6 @@ const registerSchema = yup
     .required();
 
 export default function RegisterPage() {
-    const { refreshUser } = useUser();
     const navigate = useNavigate();
 
     const registerFormik = useFormik({
@@ -44,22 +43,11 @@ export default function RegisterPage() {
                 });
 
                 if (respData) {
-                    const token = respData.access_token || respData.token || respData.jwtToken;
-                    if (typeof token === "string") {
-                        localStorage.setItem("access_token", token);
-                        await refreshUser();
-                        toast.success("Registration successful!");
-                        resetForm();
-                        navigate("/");
-                    } else {
-                        toast.error("Registration succeeded but no token was received.");
-                    }
-                } else {
-                    console.error("Registration failed, respData is null");
-                    toast.error("Registration failed. The email might already be in use.");
+                    toast.success("Registration successful! Please log in.");
+                    resetForm();
+                    navigate("/login");
                 }
-            } catch (err) {
-                console.error("Registration error:", err);
+            } catch {
                 toast.error("An unexpected error occurred during registration.");
             }
         }

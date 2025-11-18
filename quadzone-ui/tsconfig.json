@@ -11,8 +11,16 @@
         "allowImportingTsExtensions": true,
         "verbatimModuleSyntax": true,
         "moduleDetection": "force",
-        "noEmit": true /* Linting */,
+        "noEmit": true,
 
+        /* Path aliases */
+        "baseUrl": ".",
+        "paths": {
+            "src/*": ["./src/admin/*"],
+            "@/*": ["./src/*"]
+        },
+
+        /* Linting */
         "strict": true,
         "noUnusedLocals": true,
         "noUnusedParameters": true,

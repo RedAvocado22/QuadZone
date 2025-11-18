@@ -1,16 +1,21 @@
+// Review.java
 package com.quadzone.product.review;
 
-import com.quadzone.checkout.order.Order;
+import com.quadzone.order.OrderItem;
 import com.quadzone.product.Product;
 import com.quadzone.user.User;
 import jakarta.persistence.*;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
+import lombok.ToString;
 
 import java.time.LocalDateTime;
 
 @Getter
 @Setter
+@NoArgsConstructor
+@ToString(exclude = {"product", "user", "orderItem"})
 @Entity
 @Table(name = "review")
 public class Review {
@@ -23,10 +28,10 @@ public class Review {
     private Integer rating; // 1 to 5
 
     @Column(name = "review_title", length = 200)
-    private String reviewTitle;
+    private String title;
 
     @Column(columnDefinition = "TEXT")
-    private String reviewText;
+    private String text;
 
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
@@ -42,13 +47,12 @@ public class Review {
     @JoinColumn(name = "customer_id", nullable = false)
     private User user;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "order_id")
-    private Order order; // optional verified purchase link
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "order_item_id", unique = true)
+    private OrderItem orderItem;
 
     @PreUpdate
     public void onUpdate() {
         updatedAt = LocalDateTime.now();
     }
-
 }

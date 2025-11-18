@@ -9,6 +9,12 @@ interface ProductSliderProps {
     products: Product[];
 }
 
+const sliderStyle = {
+    border: "1px solid #e0e0e0",
+    borderRadius: "8px",
+    padding: "20px 20px 35px 20px"
+};
+
 const ProductSlider: React.FC<ProductSliderProps> = ({ title, products }) => {
     const settings = {
         dots: true,
@@ -47,7 +53,7 @@ const ProductSlider: React.FC<ProductSliderProps> = ({ title, products }) => {
     };
 
     return (
-        <div className="product-slider mb-6">
+        <div className="product-slider mb-6" style={sliderStyle}>
             {title && (
                 <div className="d-flex justify-content-between align-items-center mb-3">
                     <h2 className="h3 mb-0">{title}</h2>
