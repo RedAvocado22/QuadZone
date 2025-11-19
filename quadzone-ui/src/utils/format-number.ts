@@ -31,18 +31,21 @@ export function fNumber(inputValue: InputNumberValue, options?: Options) {
 
 // ----------------------------------------------------------------------
 
-export function fCurrency(inputValue: InputNumberValue, options?: Options) {
-  const locale = DEFAULT_LOCALE;
+export function fCurrency(inputValue: InputNumberValue, options?: Options & { currency?: string }) {
+  const currencyCode = options?.currency || DEFAULT_LOCALE.currency;
+  const locale = currencyCode === 'VND' ? { code: 'vi-VN', currency: 'VND' } : DEFAULT_LOCALE;
 
   const number = processInput(inputValue);
   if (number === null) return '';
 
+  const { currency: _, ...restOptions } = options || {};
+
   return new Intl.NumberFormat(locale.code, {
         style: "currency",
-        currency: locale.currency,
+        currency: currencyCode,
         minimumFractionDigits: 0,
-        maximumFractionDigits: 2,
-        ...options
+        maximumFractionDigits: currencyCode === 'VND' ? 0 : 2,
+        ...restOptions
     }).format(number);
 }
 

@@ -7,6 +7,7 @@ export interface ProductDTO {
     modelNumber?: string;
     description?: string;
     price: number;
+    priceVND:number;
     imageUrl?: string;
     quantity: number;
     isActive: boolean;

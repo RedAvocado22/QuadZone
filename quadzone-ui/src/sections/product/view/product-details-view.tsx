@@ -13,6 +13,7 @@ import Alert from '@mui/material/Alert';
 import { DashboardContent } from 'src/layouts/dashboard';
 import { productsApi } from 'src/api/productsAdmin';
 import { fCurrency } from 'src/utils/format-number';
+import { useCurrency } from 'src/contexts/CurrencyContext';
 import { Label } from 'src/components/label';
 import { ColorPreview } from 'src/components/color-utils';
 
@@ -21,6 +22,7 @@ import { ColorPreview } from 'src/components/color-utils';
 export function ProductDetailsView() {
   const { id } = useParams<{ id: string }>();
   const router = useRouter();
+  const { currency, convertPrice } = useCurrency();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [product, setProduct] = useState<any>(null);
@@ -132,10 +134,10 @@ export function ProductDetailsView() {
                           mr: 1,
                         }}
                       >
-                        {fCurrency(product.priceSale)}
+                        {fCurrency(convertPrice(product.priceSale), { currency })}
                       </Typography>
                     )}
-                    {fCurrency(product.price)}
+                    {fCurrency(convertPrice(product.price), { currency })}
                   </Typography>
                 </Box>
 

@@ -2,6 +2,8 @@ import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { getProduct } from "../api/products";
 import { useCart } from "../contexts/CartContext";
+import { useCurrency } from "../contexts/CurrencyContext";
+import { fCurrency } from "../utils/format-number";
 import type { ProductDTO } from "../api/products";
 import type { Product } from "../types/Product";
 import { getReviewsByProduct, postReview, type ReviewResponse } from "../api/review";
@@ -11,6 +13,7 @@ const ProductDetailPage = () => {
   const [product, setProduct] = useState<ProductDTO | null>(null);
   const [loading, setLoading] = useState(true);
   const { addToCart } = useCart();
+  const { currency, convertPrice } = useCurrency();
   const [reviews, setReviews] = useState<ReviewResponse | null>(null);
   const [newComment, setNewComment] = useState("");
   const [submitting, setSubmitting] = useState(false);
@@ -109,7 +112,7 @@ const ProductDetailPage = () => {
           <div className="border rounded-3 p-4 bg-light shadow-sm mt-3">
             <div className="d-flex align-items-center justify-content-between mb-3">
               <h3 className="text-danger fw-bold mb-0">
-                ${product.price.toFixed(2)}
+                {fCurrency(convertPrice(product.price), { currency })}
               </h3>
               <span className="text-muted small">
                 {product.quantity > 0 ? "In Stock" : "Out of Stock"}

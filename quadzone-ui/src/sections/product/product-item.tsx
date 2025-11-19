@@ -11,6 +11,7 @@ import MenuList from '@mui/material/MenuList';
 import MenuItem, { menuItemClasses } from '@mui/material/MenuItem';
 
 import { fCurrency } from 'src/utils/format-number';
+import { useCurrency } from 'src/contexts/CurrencyContext';
 
 import { Label } from 'src/components/label';
 import { Iconify } from 'src/components/iconify';
@@ -37,6 +38,7 @@ type ProductItemComponentProps = {
 };
 
 export function ProductItem({ product, onViewDetails, onEdit, onLock, onUnlock }: ProductItemComponentProps) {
+  const { currency, convertPrice } = useCurrency();
   const [openPopover, setOpenPopover] = useState<HTMLButtonElement | null>(null);
 
   const handleOpenPopover = useCallback((event: React.MouseEvent<HTMLButtonElement>) => {
@@ -118,10 +120,10 @@ export function ProductItem({ product, onViewDetails, onEdit, onLock, onUnlock }
           textDecoration: 'line-through',
         }}
       >
-        {product.priceSale && fCurrency(product.priceSale)}
+        {product.priceSale && fCurrency(convertPrice(product.priceSale), { currency })}
       </Typography>
       &nbsp;
-      {fCurrency(product.price)}
+      {fCurrency(convertPrice(product.price), { currency })}
     </Typography>
   );
 

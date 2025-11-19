@@ -1,5 +1,7 @@
 import { Link } from "react-router-dom";
 import { useCart } from "../../contexts/CartContext";
+import { useCurrency } from "../../contexts/CurrencyContext";
+import { fCurrency } from "../../utils/format-number";
 import { defaultImages } from "../../constants/images";
 import type { Product } from "../../types/Product";
 
@@ -9,6 +11,7 @@ interface ProductCardProps {
 
 const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
     const { addToCart } = useCart();
+    const { currency, convertPrice } = useCurrency();
 
     const handleAddToCart = (e: any) => {
         e.preventDefault();
@@ -49,8 +52,8 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
 
                         <div className="flex-center-between mb-1">
                             <div className="prodcut-price">
-                                {/* {product.oldPrice && <del className="text-gray-9 mr-2">${product.oldPrice}</del>} */}
-                                <div className="text-gray-100">${product.price}</div>
+                                {/* {product.oldPrice && <del className="text-gray-9 mr-2">{fCurrency(convertPrice(product.oldPrice), { currency })}</del>} */}
+                                <div className="text-gray-100">{fCurrency(convertPrice(product.price), { currency })}</div>
                             </div>
 
                             <div className="d-none d-xl-block prodcut-add-cart">

@@ -3,6 +3,7 @@ import { Routes, Route, Outlet } from "react-router-dom";
 import CartPage from "./pages/CartPage";
 import UserProvider from "./hooks/useUser";
 import { CartProvider } from "./contexts/CartContext";
+import { CurrencyProvider } from "./contexts/CurrencyContext";
 import HomePage from "./pages/HomePage";
 import { ToastContainer } from "react-toastify";
 import DemoPage from "./components/demo/DemoPage";
@@ -23,8 +24,9 @@ const SiteLayout = () => (
 function App() {
     return (
         <UserProvider>
-            <CartProvider>
-                <Routes>
+            <CurrencyProvider>
+                <CartProvider>
+                    <Routes>
                     <Route
                         path="/admin/*"
                         element={
@@ -50,9 +52,10 @@ function App() {
                         {/* <Route path="unauthorized" element={<Unauthorized />} />
                         <Route path="*" element={<NotFound />} /> */}
                     </Route>
-                </Routes>
-                <ToastContainer position="top-right" style={{ zIndex: 999999 }} />
-            </CartProvider>
+                    </Routes>
+                    <ToastContainer position="top-right" style={{ zIndex: 999999 }} />
+                </CartProvider>
+            </CurrencyProvider>
         </UserProvider>
     );
 }

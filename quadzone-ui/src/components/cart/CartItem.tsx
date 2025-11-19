@@ -1,5 +1,7 @@
 import { Link } from "react-router-dom";
 import { useCart } from "../../contexts/CartContext";
+import { useCurrency } from "../../contexts/CurrencyContext";
+import { fCurrency } from "../../utils/format-number";
 import { defaultImages } from "../../constants/images";
 import type { Product } from "../../types/Product";
 
@@ -9,6 +11,7 @@ interface CartItemProps {
 
 const CartItem = ({ item }: CartItemProps) => {
     const { removeFromCart, updateQuantity } = useCart();
+    const { currency, convertPrice } = useCurrency();
 
     const handleQuantityChange = (newQuantity: number) => {
         if (newQuantity > 0 && item.id) {
@@ -46,7 +49,7 @@ const CartItem = ({ item }: CartItemProps) => {
                 </Link>
             </td>
             <td data-title="Price">
-                <span>${item.price.toFixed(2)}</span>
+                <span>{fCurrency(convertPrice(item.price), { currency })}</span>
             </td>
             <td data-title="Quantity">
                 <span className="sr-only">Quantity</span>
@@ -84,7 +87,7 @@ const CartItem = ({ item }: CartItemProps) => {
                 </div>
             </td>
             <td data-title="Total">
-                <span>${(item.price * item.quantity).toFixed(2)}</span>
+                <span>{fCurrency(convertPrice(item.price * item.quantity), { currency })}</span>
             </td>
         </tr>
     );

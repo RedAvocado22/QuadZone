@@ -19,13 +19,13 @@ public record ProductResponse(
 
         @PositiveOrZero
         double price,
-
         String imageUrl,
         Integer quantity,
         boolean isActive,
         Long subCategoryId,
         String subCategoryName,
         LocalDateTime createdAt
+
 ) {
     public static ProductResponse from(Product product) {
         Long subCategoryId = null;

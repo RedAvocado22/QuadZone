@@ -1,8 +1,11 @@
 import { useState } from "react";
 import { useCart } from "../../contexts/CartContext";
+import { useCurrency } from "../../contexts/CurrencyContext";
+import { fCurrency } from "../../utils/format-number";
 
 const CartTotals = () => {
     const { totalPrice } = useCart();
+    const { currency, convertPrice } = useCurrency();
     const [showShipping, setShowShipping] = useState(false);
     const shippingCost = 300.0;
     const grandTotal = totalPrice + shippingCost;
@@ -18,13 +21,13 @@ const CartTotals = () => {
                         <tr className="cart-subtotal">
                             <th>Subtotal</th>
                             <td data-title="Subtotal">
-                                <span className="amount">${totalPrice.toFixed(2)}</span>
+                                <span className="amount">{fCurrency(convertPrice(totalPrice), { currency })}</span>
                             </td>
                         </tr>
                         <tr className="shipping">
                             <th>Shipping</th>
                             <td data-title="Shipping">
-                                Flat Rate: <span className="amount">${shippingCost.toFixed(2)}</span>
+                                Flat Rate: <span className="amount">{fCurrency(convertPrice(shippingCost), { currency })}</span>
                                 <div className="mt-1">
                                     <a
                                         className="font-size-12 text-gray-90 text-decoration-on underline-on-hover font-weight-bold mb-3 d-inline-block"
@@ -73,7 +76,7 @@ const CartTotals = () => {
                             <th>Total</th>
                             <td data-title="Total">
                                 <strong>
-                                    <span className="amount">${grandTotal.toFixed(2)}</span>
+                                    <span className="amount">{fCurrency(convertPrice(grandTotal), { currency })}</span>
                                 </strong>
                             </td>
                         </tr>
