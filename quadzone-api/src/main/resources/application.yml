@@ -27,7 +27,7 @@ spring:
     host: smtp.gmail.com
     port: 587
     username: quadzone04@gmail.com
-    password: lzjv yayr lpid noel
+    password: hiel wsxf kven mvht
     properties:
       mail:
         smtp:
@@ -38,3 +38,4 @@ spring:
 logging:
   level:
     root: warn
+
