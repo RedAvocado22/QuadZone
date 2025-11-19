@@ -21,7 +21,7 @@ public class EmailSenderService {
 
     @Value("${spring.mail.username}")
     private String from;
-
+    
     @Value("${frontend.baseurl}")
     private String feBaseUrl;
 
