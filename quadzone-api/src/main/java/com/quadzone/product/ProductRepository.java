@@ -4,11 +4,13 @@ import java.util.List;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
-public interface ProductRepository extends JpaRepository<Product, Long> {
+public interface ProductRepository extends JpaRepository<Product, Long>, JpaSpecificationExecutor<Product> {
 
         @Query("""
                         SELECT p
@@ -57,4 +59,6 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
                         AND p.isActive = true AND p.stock > 0
                         """)
         Page<Product> searchProducts(String brand, Long categoryId, Long subcategoryId, Pageable pageable);
+
+        // Page<Product> findAll(Specification<Product> spec, Pageable pageable);
 }

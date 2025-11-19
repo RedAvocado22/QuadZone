@@ -14,6 +14,7 @@ import java.util.List;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -84,8 +85,35 @@ public class ProductService {
                 .toList();
     }
 
-    public Page<ProductResponse> searchProducts(String brand, Long categoryId, Long subcategoryId, Pageable pageable) {
-        Page<Product> products = productRepository.searchProducts(brand, categoryId, subcategoryId, pageable);
+    public Page<ProductResponse> searchProducts(String brand,
+            Long categoryId,
+            Long subcategoryId,
+            Double minPrice,
+            Double maxPrice,
+            Pageable pageable) {
+
+        Specification<Product> spec = Specification.where(null);
+
+        if (brand != null && !brand.isEmpty()) {
+            spec = spec.and((root, query, cb) -> cb.equal(root.get("brand"), brand));
+        }
+
+        if (categoryId != null) {
+            spec = spec.and((root, query, cb) -> cb.equal(root.get("category").get("id"), categoryId));
+        }
+
+        if (subcategoryId != null) {
+            spec = spec.and((root, query, cb) -> cb.equal(root.get("subcategory").get("id"), subcategoryId));
+        }
+
+        if (minPrice != null) {
+            spec = spec.and((root, query, cb) -> cb.greaterThanOrEqualTo(root.get("price"), minPrice));
+        }
+
+        if (maxPrice != null) {
+            spec = spec.and((root, query, cb) -> cb.lessThanOrEqualTo(root.get("price"), maxPrice));
+        }
+        Page<Product> products = productRepository.findAll(spec, pageable);
         return products.map(objectMapper::toProductResponse);
     }
 

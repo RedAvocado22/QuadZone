@@ -40,32 +40,43 @@ public class PublicController {
     }
 
     @GetMapping("/products")
-    public ResponseEntity<Page<ProductResponse>> listProducts(
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size,
-            @RequestParam(required = false) String brand,
-            @RequestParam(required = false) Long categoryId,
-            @RequestParam(required = false) Long subcategoryId,
-            @RequestParam(required = false) String sortBy) {
-        Sort sort = Sort.unsorted();
-        if (sortBy != null && !sortBy.isEmpty()) {
-            String[] sortFields = sortBy.split(",");
-            List<Sort.Order> orders = new ArrayList<>();
-            for (String field : sortFields) {
-                String[] parts = field.trim().split(":");
-                String property = parts[0];
-                Sort.Direction direction = parts.length > 1 && "desc".equalsIgnoreCase(parts[1]) ? Sort.Direction.DESC
-                        : Sort.Direction.ASC;
-                orders.add(new Sort.Order(direction, property));
-            }
-            sort = Sort.by(orders);
+public ResponseEntity<Page<ProductResponse>> listProducts(
+        @RequestParam(defaultValue = "0") int page,
+        @RequestParam(defaultValue = "10") int size,
+        @RequestParam(required = false) String brand,
+        @RequestParam(required = false) Long categoryId,
+        @RequestParam(required = false) Long subcategoryId,
+        @RequestParam(required = false) Double minPrice,
+        @RequestParam(required = false) Double maxPrice,
+        @RequestParam(required = false) String sortBy) {
+    
+    Sort sort = Sort.unsorted();
+    if (sortBy != null && !sortBy.isEmpty()) {
+        String[] sortFields = sortBy.split(",");
+        List<Sort.Order> orders = new ArrayList<>();
+        for (String field : sortFields) {
+            String[] parts = field.trim().split(":");
+            String property = parts[0];
+            Sort.Direction direction = parts.length > 1 && "desc".equalsIgnoreCase(parts[1]) 
+                ? Sort.Direction.DESC 
+                : Sort.Direction.ASC;
+            orders.add(new Sort.Order(direction, property));
         }
-        Pageable pageable = PageRequest.of(page, size, sort);
-
-        Page<ProductResponse> response = productService.searchProducts(brand, categoryId, subcategoryId, pageable);
-
-        return ResponseEntity.ok(response);
+        sort = Sort.by(orders);
     }
+    
+    Pageable pageable = PageRequest.of(page, size, sort);
+    Page<ProductResponse> response = productService.searchProducts(
+        brand, 
+        categoryId, 
+        subcategoryId, 
+        minPrice, 
+        maxPrice, 
+        pageable
+    );
+
+    return ResponseEntity.ok(response);
+}
 
     @GetMapping("/products/{id}")
     public ResponseEntity<ProductDetailsResponse> getProduct(@PathVariable Long id) {

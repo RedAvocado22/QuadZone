@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
-import type { Product, ViewMode } from "../../types/shop";
+import type { Product } from "../../types/Product";
+import type { ViewMode } from "../../types/shop";
 import { useCart } from "../../contexts/CartContext";
 
 interface ProductGridProps {
@@ -45,7 +46,7 @@ const GridView = ({ products, addToCart }: GridViewProps) => {
                                         <Link
                                             to={`/subCategory/${product.subCategory.id}`}
                                             className="font-size-12 text-gray-5">
-                                            {product.category}
+                                            {product.subCategory.name}
                                         </Link>
                                     </div>
                                     <h5 className="mb-1 product-item__title">
@@ -55,23 +56,12 @@ const GridView = ({ products, addToCart }: GridViewProps) => {
                                     </h5>
                                     <div className="mb-2">
                                         <Link to={`/product/${product.id}`} className="d-block text-center">
-                                            <img className="img-fluid" src={product.image} alt={product.name} />
+                                            <img className="img-fluid" src={product.imageUrl} alt={product.name} />
                                         </Link>
                                     </div>
                                     <div className="flex-center-between mb-1">
                                         <div className="prodcut-price">
-                                            {product.oldPrice ? (
-                                                <div className="d-flex align-items-center position-relative">
-                                                    <ins className="font-size-20 text-red text-decoration-none">
-                                                        ${product.price.toFixed(2)}
-                                                    </ins>
-                                                    <del className="font-size-12 tex-gray-6 position-absolute bottom-100">
-                                                        ${product.oldPrice.toFixed(2)}
-                                                    </del>
-                                                </div>
-                                            ) : (
-                                                <div className="text-gray-100">${product.price.toFixed(2)}</div>
-                                            )}
+                                            <div className="text-gray-100">${product.price.toFixed(2)}</div>
                                         </div>
                                         <div className="d-none d-xl-block prodcut-add-cart">
                                             <button
@@ -105,7 +95,7 @@ const GridDetailsView = ({ products, addToCart }: GridViewProps) => {
                                 <div className="product-item__body pb-xl-2">
                                     <div className="mb-2">
                                         <Link to="#" className="font-size-12 text-gray-5">
-                                            {product.category}
+                                            {product.subCategory.name}
                                         </Link>
                                     </div>
                                     <h5 className="mb-1 product-item__title">
@@ -115,33 +105,9 @@ const GridDetailsView = ({ products, addToCart }: GridViewProps) => {
                                     </h5>
                                     <div className="mb-2">
                                         <Link to={`/product/${product.id}`} className="d-block text-center">
-                                            <img className="img-fluid" src={product.image} alt={product.name} />
+                                            <img className="img-fluid" src={product.imageUrl} alt={product.name} />
                                         </Link>
                                     </div>
-                                    <div className="mb-3">
-                                        <a className="d-inline-flex align-items-center small font-size-14" href="#">
-                                            <div className="text-warning mr-2">
-                                                {[...Array(5)].map((_, i) => (
-                                                    <small
-                                                        key={i}
-                                                        className={
-                                                            i < product.rating
-                                                                ? "fas fa-star"
-                                                                : "far fa-star text-muted"
-                                                        }></small>
-                                                ))}
-                                            </div>
-                                            <span className="text-secondary">({product.reviews})</span>
-                                        </a>
-                                    </div>
-                                    <ul className="font-size-12 p-0 text-gray-110 mb-4">
-                                        {product.features?.map((feature, i) => (
-                                            <li key={i} className="line-clamp-1 mb-1 list-bullet">
-                                                {feature}
-                                            </li>
-                                        ))}
-                                    </ul>
-                                    <div className="text-gray-20 mb-2 font-size-12">SKU: {product.sku}</div>
                                     <div className="flex-center-between mb-1">
                                         <div className="prodcut-price">
                                             <div className="text-gray-100">${product.price.toFixed(2)}</div>
@@ -178,7 +144,7 @@ const ListView = ({ products, addToCart }: GridViewProps) => {
                                 <div className="product-item__header col-6 col-md-4">
                                     <div className="mb-2">
                                         <Link to="#" className="d-block text-center">
-                                            <img className="img-fluid" src={product.image} alt={product.name} />
+                                            <img className="img-fluid" src={product.imageUrl} alt={product.name} />
                                         </Link>
                                     </div>
                                 </div>
@@ -186,7 +152,7 @@ const ListView = ({ products, addToCart }: GridViewProps) => {
                                     <div className="pr-lg-10">
                                         <div className="mb-2">
                                             <Link to="#" className="font-size-12 text-gray-5">
-                                                {product.category}
+                                                {product.subCategory.name}
                                             </Link>
                                         </div>
                                         <h5 className="mb-2 product-item__title">
@@ -197,29 +163,6 @@ const ListView = ({ products, addToCart }: GridViewProps) => {
                                         <div className="prodcut-price mb-2 d-md-none">
                                             <div className="text-gray-100">${product.price.toFixed(2)}</div>
                                         </div>
-                                        <div className="mb-3 d-none d-md-block">
-                                            <a className="d-inline-flex align-items-center small font-size-14" href="#">
-                                                <div className="text-warning mr-2">
-                                                    {[...Array(5)].map((_, i) => (
-                                                        <small
-                                                            key={i}
-                                                            className={
-                                                                i < product.rating
-                                                                    ? "fas fa-star"
-                                                                    : "far fa-star text-muted"
-                                                            }></small>
-                                                    ))}
-                                                </div>
-                                                <span className="text-secondary">({product.reviews})</span>
-                                            </a>
-                                        </div>
-                                        <ul className="font-size-12 p-0 text-gray-110 mb-4 d-none d-md-block">
-                                            {product.features?.map((feature, i) => (
-                                                <li key={i} className="line-clamp-1 mb-1 list-bullet">
-                                                    {feature}
-                                                </li>
-                                            ))}
-                                        </ul>
                                     </div>
                                 </div>
                                 <div className="product-item__footer col-md-3 d-md-block">
@@ -259,7 +202,7 @@ const ListSmallView = ({ products, addToCart }: GridViewProps) => {
                                 <div className="product-item__header col-6 col-md-2">
                                     <div className="mb-2">
                                         <Link to="#" className="d-block text-center">
-                                            <img className="img-fluid" src={product.image} alt={product.name} />
+                                            <img className="img-fluid" src={product.imageUrl} alt={product.name} />
                                         </Link>
                                     </div>
                                 </div>
@@ -267,7 +210,7 @@ const ListSmallView = ({ products, addToCart }: GridViewProps) => {
                                     <div className="pr-lg-10">
                                         <div className="mb-2">
                                             <Link to="#" className="font-size-12 text-gray-5">
-                                                {product.category}
+                                                {product.subCategory.name}
                                             </Link>
                                         </div>
                                         <h5 className="mb-2 product-item__title">
@@ -277,29 +220,6 @@ const ListSmallView = ({ products, addToCart }: GridViewProps) => {
                                         </h5>
                                         <div className="prodcut-price d-md-none">
                                             <div className="text-gray-100">${product.price.toFixed(2)}</div>
-                                        </div>
-                                        <ul className="font-size-12 p-0 text-gray-110 mb-4 d-none d-md-block">
-                                            {product.features?.map((feature, i) => (
-                                                <li key={i} className="line-clamp-1 mb-1 list-bullet">
-                                                    {feature}
-                                                </li>
-                                            ))}
-                                        </ul>
-                                        <div className="mb-3 d-none d-md-block">
-                                            <a className="d-inline-flex align-items-center small font-size-14" href="#">
-                                                <div className="text-warning mr-2">
-                                                    {[...Array(5)].map((_, i) => (
-                                                        <small
-                                                            key={i}
-                                                            className={
-                                                                i < product.rating
-                                                                    ? "fas fa-star"
-                                                                    : "far fa-star text-muted"
-                                                            }></small>
-                                                    ))}
-                                                </div>
-                                                <span className="text-secondary">({product.reviews})</span>
-                                            </a>
                                         </div>
                                     </div>
                                 </div>
