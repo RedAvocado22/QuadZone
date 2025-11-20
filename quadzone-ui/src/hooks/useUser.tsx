@@ -53,7 +53,20 @@ const UserProvider = ({ children }: UserProviderProps) => {
             toast.success("Login successful!");
             return true;
         } catch (err: any) {
-            const msg = err.response?.data?.message || "Please check your email and password.";
+            let msg = "Please check your email and password.";
+            switch (err.response?.status) {
+                case 401:
+                    msg = "Incorrect email or password.";
+                    break;
+                case 404:
+                    msg = "Account does not exist.";
+                    break;
+                case 403:
+                    msg = "Account not active! Check your email for the activation link.";
+                    break;
+                default:
+                    msg = err.response?.data?.message || msg;
+            }
             toast.error(msg);
             return false;
         }
