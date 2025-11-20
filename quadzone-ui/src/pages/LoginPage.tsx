@@ -5,13 +5,12 @@ import { activateAccount, forgotPassword } from "../api/auth";
 import { toast } from "react-toastify";
 import { useFormik } from "formik";
 import * as yup from "yup";
-import { yupEmail, yupPassword } from "../utils/Validation";
+import { yupEmail } from "../utils/Validation";
 import Swal from "sweetalert2";
 
 const loginSchema = yup
     .object({
-        email: yupEmail,
-        password: yupPassword
+        email: yupEmail
     })
     .required();
 
@@ -30,21 +29,27 @@ export default function LoginPage() {
     useEffect(() => {
         if (token) {
             activateAccount(token)
-                .then((success) => {
-                    if (success) {
-                        Swal.fire({
-                            icon: "success",
-                            title: "Account activated",
-                            text: "Activate account successfully. Please login."
-                        }).then(() => {
-                            navigate("/login", { replace: true });
-                        });
-                    } else {
+                .then(() => {
+                    Swal.fire({
+                        icon: "success",
+                        title: "Account activated",
+                        text: "Your account has been activated successfully. Please login."
+                    }).then(() => {
                         navigate("/login", { replace: true });
-                    }
+                    });
                 })
-                .catch(() => {
-                    navigate("/login", { replace: true });
+                .catch((err) => {
+                    const msg = err.response?.data?.message || "Activation failed or link expired.";
+
+                    const isExpired = msg.toLowerCase().includes("expired");
+
+                    Swal.fire({
+                        icon: isExpired ? "info" : "error",
+                        title: isExpired ? "Link Expired" : "Activation Failed",
+                        text: msg
+                    }).then(() => {
+                        navigate("/login", { replace: true });
+                    });
                 });
         }
     }, [token, navigate]);
@@ -57,18 +62,14 @@ export default function LoginPage() {
         },
         validationSchema: loginSchema,
         onSubmit: async (values, { resetForm }) => {
-            try {
-                const ok = await login({
-                    email: values.email,
-                    password: values.password
-                });
-                if (ok) {
-                    resetForm();
-                    navigate("/");
-                }
-            } catch {
-                // console.error("Login error:", err);
-                toast.error("Login failed. Please check your credentials.");
+            const success = await login({
+                email: values.email,
+                password: values.password
+            });
+
+            if (success) {
+                resetForm();
+                navigate("/");
             }
         }
     });
@@ -88,7 +89,7 @@ export default function LoginPage() {
                 } else {
                     toast.error("Failed to send reset link. Please try again.");
                 }
-            } catch (err) {
+            } catch {
                 toast.error("Failed to send reset link. Please try again.");
             }
         }
