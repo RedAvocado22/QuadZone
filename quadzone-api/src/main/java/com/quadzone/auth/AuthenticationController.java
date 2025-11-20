@@ -5,7 +5,6 @@ import com.quadzone.auth.dto.AuthenticationRequest;
 import com.quadzone.auth.dto.AuthenticationResponse;
 import com.quadzone.auth.dto.RegisterRequest;
 import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -31,11 +30,9 @@ public class AuthenticationController {
 
     @PostMapping("/authenticate")
     public ResponseEntity<AuthenticationResponse> authenticate(
-            //Add valid
-            @RequestBody AuthenticationRequest request,
-            HttpServletResponse response
+            @RequestBody AuthenticationRequest request
     ) {
-        return ResponseEntity.ok(authenticationService.authenticate(request, response));
+        return ResponseEntity.ok(authenticationService.authenticate(request));
     }
 
     @PostMapping("/refresh")

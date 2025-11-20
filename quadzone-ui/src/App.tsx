@@ -44,7 +44,7 @@ function App() {
                         <Route index element={<HomePage />} />
                         <Route path="demo" element={<DemoPage />} />
                         <Route path="/login" element={<LoginPage />} />
-                        <Route path="/activate/:token" element={<LoginPage />} />
+                        <Route path="/activate/:token" element={<HomePage />} />
                         <Route path="/register" element={<RegisterPage />} />
                         <Route path="/product/:id" element={<ProductDetailPage />} />
                         {/* Cart - accessible to everyone (guest and authenticated) */}
