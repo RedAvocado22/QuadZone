@@ -5,9 +5,10 @@ export interface Product {
     brand: string;
     price: number;
     imageUrl: string;
-    quantity: number;
+    createdAt:Date;
     subCategory: SubCategory;
     category: Category;
+    isActive:boolean;
 }
 
 // Detailed product (ProductDetailsResponse from backend)
@@ -15,6 +16,7 @@ export interface ProductDetails extends Product {
     modelNumber: string;
     description: string[];
     weight: number;
+    quantity: number;
     reviews: Review[];
 }
 

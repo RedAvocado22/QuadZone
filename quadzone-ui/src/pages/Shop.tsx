@@ -9,79 +9,69 @@ import type { Product } from "../types/Product";
 import type { ViewMode, SortOption } from "../types/shop";
 
 const Shop: React.FC = () => {
-    const [products, setProducts] = useState<Product[]>([]);
+    // Loading & error
     const [loading, setLoading] = useState<boolean>(true);
     const [error, setError] = useState<string | null>(null);
+
+    // UI controls
     const [viewMode, setViewMode] = useState<ViewMode>("grid");
     const [sortBy, setSortBy] = useState<SortOption>("default");
     const [itemsPerPage, setItemsPerPage] = useState<number>(20);
     const [currentPage, setCurrentPage] = useState<number>(1);
-    const [totalPages, setTotalPages] = useState<number>(1);
-    const [totalElements, setTotalElements] = useState<number>(0);
     const [sidebarOpen, setSidebarOpen] = useState<boolean>(false);
-    
-    // Filter state
+
+    // Filters
     const [minPrice, setMinPrice] = useState<number | undefined>(undefined);
     const [maxPrice, setMaxPrice] = useState<number | undefined>(undefined);
     const [selectedBrand, setSelectedBrand] = useState<string | undefined>(undefined);
     const [selectedCategory, setSelectedCategory] = useState<number | undefined>(undefined);
     const [selectedSubcategory, setSelectedSubcategory] = useState<number | undefined>(undefined);
+    const handleApplyFilters = ({
+        brands,
+        priceRange
+    }: {
+        brands: string[];
+        priceRange: { min: number; max: number } | null;
+    }) => {
+        setSelectedBrand(brands.length === 1 ? brands[0] : undefined); // fallback if your API supports only one
+        // OR better: modify your backend to accept brand[] → then send brands directly
 
-    // Convert SortOption to API sortBy format
-    const getSortByParam = (sort: SortOption): string => {
-        const sortMap: Record<SortOption, string> = {
-            default: "",
-            popularity: "popularity:desc",
-            rating: "rating:desc",
-            latest: "createdDate:desc",
-            "price-low": "price:asc",
-            "price-high": "price:desc"
-        };
-        return sortMap[sort];
-    };
-
-    // Handler functions
-    const handlePriceFilter = (range: { min: number; max: number }) => {
-        setMinPrice(range.min);
-        setMaxPrice(range.max);
+        setMinPrice(priceRange?.min);
+        setMaxPrice(priceRange?.max);
         setCurrentPage(1);
     };
 
-    const handleBrandFilter = (brand: string) => {
-        setSelectedBrand(brand === selectedBrand ? undefined : brand);
-        setCurrentPage(1);
-    };
+    // Data states
+    const [allProducts, setAllProducts] = useState<Product[]>([]); // Full filtered list from server
+    const [displayedProducts, setDisplayedProducts] = useState<Product[]>([]); // Sorted + paginated
 
-    const handleCategoryFilter = (categoryId: number, subcategoryId?: number) => {
-        setSelectedCategory(categoryId);
-        setSelectedSubcategory(subcategoryId);
-        setCurrentPage(1);
-    };
+    // Total count for UI
+    const totalElements = allProducts.length;
+    const totalPages = Math.ceil(totalElements / itemsPerPage);
 
-    const handleSortChange = (newSort: SortOption) => {
-        setSortBy(newSort);
-        setCurrentPage(1);
-    };
-
+    // ──────────────────────────────
+    // 1. Fetch filtered products (only when filters change)
+    // ──────────────────────────────
     useEffect(() => {
         const fetchProducts = async () => {
             setLoading(true);
             try {
                 setError(null);
-                // Fetch products with filters
+
                 const response = await getProducts({
-                    page: currentPage - 1,
-                    size: itemsPerPage,
+                    page: 0,
+                    size: 9999, // Get as many as reasonable (adjust if needed)
                     brand: selectedBrand,
                     categoryId: selectedCategory,
                     subcategoryId: selectedSubcategory,
-                    minPrice: minPrice,
-                    maxPrice: maxPrice,
-                    sortBy: getSortByParam(sortBy)
+                    minPrice,
+                    maxPrice
+                    // No sortBy → we sort locally
                 });
-                setProducts(response.content || []);
-                setTotalPages(response.totalPages);
-                setTotalElements(response.totalElements);
+
+                const products = response.content || [];
+                setAllProducts(products);
+                setCurrentPage(1); // Reset page on filter change
             } catch (err) {
                 setError("Failed to load products. Please try again later.");
                 console.error("Error fetching products:", err);
@@ -89,9 +79,66 @@ const Shop: React.FC = () => {
                 setLoading(false);
             }
         };
-        fetchProducts();
-    }, [currentPage, itemsPerPage, selectedBrand, selectedCategory, selectedSubcategory, minPrice, maxPrice, sortBy]);
 
+        fetchProducts();
+    }, [selectedBrand, selectedCategory, selectedSubcategory, minPrice, maxPrice]);
+
+    // ──────────────────────────────
+    // 2. Sort + paginate locally (instant!)
+    // ──────────────────────────────
+    useEffect(() => {
+        let sorted = [...allProducts];
+
+        switch (sortBy) {
+            case "popularity":
+                // If you have popularity field, use it; otherwise fallback
+                sorted.sort((a, b) => b.id - a.id); // or add popularity field later
+                break;
+            case "latest":
+                sorted.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+                break;
+            case "price-low":
+                sorted.sort((a, b) => a.price - b.price);
+                break;
+            case "price-high":
+                sorted.sort((a, b) => b.price - a.price);
+                break;
+            case "default":
+            default:
+                // Keep original server order
+                break;
+        }
+
+        const start = (currentPage - 1) * itemsPerPage;
+        const end = start + itemsPerPage;
+        setDisplayedProducts(sorted.slice(start, end));
+    }, [allProducts, sortBy, currentPage, itemsPerPage]);
+
+    // ──────────────────────────────
+    // Handlers
+    // ──────────────────────────────
+    const handlePriceFilter = (range: { min: number; max: number }) => {
+        setMinPrice(range.min);
+        setMaxPrice(range.max);
+    };
+
+    const handleBrandFilter = (brand: string) => {
+        setSelectedBrand((prev) => (prev === brand ? undefined : brand));
+    };
+
+    const handleCategoryFilter = (categoryId: number, subcategoryId?: number) => {
+        setSelectedCategory(categoryId);
+        setSelectedSubcategory(subcategoryId);
+    };
+
+    const handleSortChange = (newSort: SortOption) => {
+        setSortBy(newSort);
+        setCurrentPage(1);
+    };
+
+    // ──────────────────────────────
+    // Render
+    // ──────────────────────────────
     if (loading) {
         return (
             <div className="text-center py-5">
@@ -103,44 +150,37 @@ const Shop: React.FC = () => {
     }
 
     if (error) {
-        return (
-            <div className="alert alert-danger text-center" role="alert">
-                {error}
-            </div>
-        );
+        return <div className="alert alert-danger text-center">{error}</div>;
     }
 
     return (
         <>
-            {/* Breadcrumb */}
             <ShopBreadcrumb />
 
             <div className="container">
                 <div className="row mb-8">
-                    {/* Sidebar */}
                     <ShopSidebar
                         isOpen={sidebarOpen}
                         onClose={() => setSidebarOpen(false)}
-                        onPriceFilter={handlePriceFilter}
-                        onBrandFilter={handleBrandFilter}
-                        onCategoryFilter={handleCategoryFilter}
+                        onApplyFilters={({ brands, priceRange, categoryId, subcategoryId }) => {
+                            setSelectedBrand(brands.length > 0 ? brands.join(",") : undefined);
+                            setMinPrice(priceRange?.min);
+                            setMaxPrice(priceRange?.max);
+                            setSelectedCategory(categoryId);
+                            setSelectedSubcategory(subcategoryId);
+                            setCurrentPage(1);
+                        }}
                     />
 
-                    {/* Main Content */}
                     <div className="col-xl-9 col-wd-9gdot5">
-                        {/* Shop Control Bar Title */}
                         <div className="flex-center-between mb-3">
                             <h3 className="font-size-25 mb-0">Shop</h3>
                             <p className="font-size-14 text-gray-90 mb-0">
-                                Showing {(currentPage - 1) * itemsPerPage + 1}–{Math.min(
-                                    currentPage * itemsPerPage,
-                                    totalElements
-                                )}{" "}
-                                of {totalElements} results
+                                Showing {totalElements === 0 ? 0 : (currentPage - 1) * itemsPerPage + 1}–
+                                {Math.min(currentPage * itemsPerPage, totalElements)} of {totalElements} results
                             </p>
                         </div>
 
-                        {/* Shop Control Bar */}
                         <ShopControlBar
                             viewMode={viewMode}
                             onViewModeChange={setViewMode}
@@ -154,17 +194,17 @@ const Shop: React.FC = () => {
                             onToggleSidebar={() => setSidebarOpen(!sidebarOpen)}
                         />
 
-                        {/* Product Grid */}
-                        <ProductGrid products={products} viewMode={viewMode} />
+                        <ProductGrid products={displayedProducts} viewMode={viewMode} />
 
-                        {/* Pagination */}
-                        <ShopPagination
-                            currentPage={currentPage}
-                            totalPages={totalPages}
-                            totalItems={totalElements}
-                            itemsPerPage={itemsPerPage}
-                            onPageChange={setCurrentPage}
-                        />
+                        {totalPages > 1 && (
+                            <ShopPagination
+                                currentPage={currentPage}
+                                totalPages={totalPages}
+                                totalItems={totalElements}
+                                itemsPerPage={itemsPerPage}
+                                onPageChange={setCurrentPage}
+                            />
+                        )}
                     </div>
                 </div>
             </div>
