@@ -149,6 +149,9 @@ public class AuthenticationService {
                 throw new SuspendedAccountException("User account is suspended.");
             }
 
+            if (user.getStatus() == UserStatus.ACTIVE) {
+                throw new InactiveAccountException("User account is active.");
+            }
             user.setStatus(UserStatus.ACTIVE);
             userRepository.save(user);
 
