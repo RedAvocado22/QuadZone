@@ -34,7 +34,7 @@ const UserProvider = ({ children }: UserProviderProps) => {
             setUser(resp.data);
         } catch {
             setUser(null);
-            localStorage.removeItem("access_token");
+            await cookieStore.delete("access_token");
         }
     };
 
@@ -48,7 +48,8 @@ const UserProvider = ({ children }: UserProviderProps) => {
                 return false;
             }
 
-            localStorage.setItem("access_token", token);
+            await cookieStore.set("access_token", token);
+
             await fetchCurrentUser();
             toast.success("Login successful!");
             return true;
@@ -62,6 +63,9 @@ const UserProvider = ({ children }: UserProviderProps) => {
                     case 404:
                         msg = "Account does not exist.";
                         break;
+                    case 403:
+                        msg = "Account not active! Check your email for the activation link.";
+                        break;
                     default:
                         msg = err.response?.data?.message || msg;
                 }
@@ -74,7 +78,7 @@ const UserProvider = ({ children }: UserProviderProps) => {
     };
 
     const logout = async () => {
-        localStorage.removeItem("access_token");
+        await cookieStore.delete("access_token");
         setUser(null);
 
         try {
@@ -90,7 +94,7 @@ const UserProvider = ({ children }: UserProviderProps) => {
 
     useEffect(() => {
         const checkAuthStatus = async () => {
-            const accessToken = localStorage.getItem("access_token");
+            const accessToken = await cookieStore.get("access_token");
 
             if (!accessToken) {
                 setUser(null);

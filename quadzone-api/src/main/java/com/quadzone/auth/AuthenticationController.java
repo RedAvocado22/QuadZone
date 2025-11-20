@@ -1,5 +1,6 @@
 package com.quadzone.auth;
 
+import com.quadzone.auth.dto.ActivateAccountRequest;
 import com.quadzone.auth.dto.AuthenticationRequest;
 import com.quadzone.auth.dto.AuthenticationResponse;
 import com.quadzone.auth.dto.RegisterRequest;
@@ -18,7 +19,6 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 public class AuthenticationController {
 
-    //thêm active link qua mail, thêm forget-password, thêm email sender
     private final AuthenticationService authenticationService;
 
     @PostMapping("/register")
@@ -43,5 +43,11 @@ public class AuthenticationController {
             HttpServletRequest request
     ) {
         return ResponseEntity.ok(authenticationService.refreshToken(request));
+    }
+
+    @PostMapping("/activate")
+    public ResponseEntity<AuthenticationResponse> activateAccount(@Valid @RequestBody ActivateAccountRequest req) {
+        authenticationService.activateAccount(req);
+        return ResponseEntity.ok().build();
     }
 }
