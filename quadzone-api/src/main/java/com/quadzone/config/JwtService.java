@@ -31,11 +31,11 @@ public class JwtService {
 
 
     public String extractUsername(String token) {
-        return extractClaim(token, Claims::getSubject, getAccessSignKey());
+        return extractClaim(token, Claims::getSubject);
     }
 
     public String extractUsernameFromRefreshToken(String token) {
-        return extractClaim(token, Claims::getSubject, getRefreshSignKey());
+        return extractClaim(token, Claims::getSubject);
     }
 
     public String generateToken(UserDetails userDetails) {
@@ -48,17 +48,17 @@ public class JwtService {
 
     public boolean validateToken(String token, UserDetails userDetails) {
         final String username = extractUsername(token);
-        return (username.equals(userDetails.getUsername()) && !isTokenExpired(token, getAccessSignKey()));
+        return (username.equals(userDetails.getUsername()) && !isTokenExpired(token));
     }
 
     public boolean validateRefreshToken(String token, UserDetails userDetails) {
         final String username = extractUsernameFromRefreshToken(token);
-        return (username.equals(userDetails.getUsername()) && !isTokenExpired(token, getRefreshSignKey()));
+        return (username.equals(userDetails.getUsername()) && !isTokenExpired(token));
     }
 
 
-    private <T> T extractClaim(String token, Function<Claims, T> claimsResolver, SecretKey key) {
-        final Claims claims = extractAllClaims(token, key);
+    private <T> T extractClaim(String token, Function<Claims, T> claimsResolver) {
+        final Claims claims = extractAllClaims(token);
         return claimsResolver.apply(claims);
     }
 
@@ -78,17 +78,17 @@ public class JwtService {
                 .compact();
     }
 
-    private boolean isTokenExpired(String token, SecretKey key) {
-        return extractExpiration(token, key).before(new Date());
+    public boolean isTokenExpired(String token) {
+        return extractExpiration(token).before(new Date());
     }
 
-    private Date extractExpiration(String token, SecretKey key) {
-        return extractClaim(token, Claims::getExpiration, key);
+    private Date extractExpiration(String token) {
+        return extractClaim(token, Claims::getExpiration);
     }
 
-    private Claims extractAllClaims(String token, SecretKey key) {
+    private Claims extractAllClaims(String token) {
         return Jwts.parser()
-                .verifyWith(key)
+                .verifyWith(getAccessSignKey())
                 .build()
                 .parseSignedClaims(token)
                 .getPayload();

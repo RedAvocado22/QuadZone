@@ -44,6 +44,7 @@ function App() {
                         <Route index element={<HomePage />} />
                         <Route path="demo" element={<DemoPage />} />
                         <Route path="/login" element={<LoginPage />} />
+                        <Route path="/activate/:token" element={<LoginPage />} />
                         <Route path="/register" element={<RegisterPage />} />
                         <Route path="/product/:id" element={<ProductDetailPage />} />
                         <Route path="/about-us" element={<AboutUsPage />} />

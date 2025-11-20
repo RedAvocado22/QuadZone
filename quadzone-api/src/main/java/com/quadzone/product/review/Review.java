@@ -38,7 +38,7 @@ public class Review {
 
     @Column(name = "created_at", updatable = false)
     private final LocalDateTime createdAt = LocalDateTime.now();
-
+    
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "product_id", nullable = false)
     private Product product;
