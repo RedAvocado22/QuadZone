@@ -1,4 +1,4 @@
-import React from 'react';
+import * as React from 'react';
 import type { Theme, CSSObject } from '@mui/material/styles';
 
 import GlobalStyles from '@mui/material/GlobalStyles';
