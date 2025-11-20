@@ -1,10 +1,10 @@
 package com.quadzone.auth;
 
+import com.quadzone.auth.dto.ActivateAccountRequest;
 import com.quadzone.auth.dto.AuthenticationRequest;
 import com.quadzone.auth.dto.AuthenticationResponse;
 import com.quadzone.auth.dto.RegisterRequest;
 import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -18,7 +18,6 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 public class AuthenticationController {
 
-    //thêm active link qua mail, thêm forget-password, thêm email sender
     private final AuthenticationService authenticationService;
 
     @PostMapping("/register")
@@ -31,11 +30,9 @@ public class AuthenticationController {
 
     @PostMapping("/authenticate")
     public ResponseEntity<AuthenticationResponse> authenticate(
-            //Add valid
-            @RequestBody AuthenticationRequest request,
-            HttpServletResponse response
+            @RequestBody AuthenticationRequest request
     ) {
-        return ResponseEntity.ok(authenticationService.authenticate(request, response));
+        return ResponseEntity.ok(authenticationService.authenticate(request));
     }
 
     @PostMapping("/refresh")
@@ -43,5 +40,11 @@ public class AuthenticationController {
             HttpServletRequest request
     ) {
         return ResponseEntity.ok(authenticationService.refreshToken(request));
+    }
+
+    @PostMapping("/activate")
+    public ResponseEntity<AuthenticationResponse> activateAccount(@Valid @RequestBody ActivateAccountRequest req) {
+        authenticationService.activateAccount(req);
+        return ResponseEntity.ok().build();
     }
 }

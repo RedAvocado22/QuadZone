@@ -21,14 +21,13 @@ public class JwtService {
     private String ACCESS_TOKEN_SECRET;
 
     @Value("${spring.application.security.jwt.expiration}")
-    private long accessTokenExpirationMs; // 5 minutes
+    private long accessTokenExpirationMs;
 
     @Value("${spring.application.security.jwt.refresh-token.secret}")
     private String REFRESH_TOKEN_SECRET;
 
     @Value("${spring.application.security.jwt.refresh-token.expiration}")
-    private long refreshTokenExpirationMs; // 1 day
-
+    private long refreshTokenExpirationMs;
 
     public String extractUsername(String token) {
         return extractClaim(token, Claims::getSubject, getAccessSignKey());
@@ -56,7 +55,6 @@ public class JwtService {
         return (username.equals(userDetails.getUsername()) && !isTokenExpired(token, getRefreshSignKey()));
     }
 
-
     private <T> T extractClaim(String token, Function<Claims, T> claimsResolver, SecretKey key) {
         final Claims claims = extractAllClaims(token, key);
         return claimsResolver.apply(claims);
@@ -78,7 +76,7 @@ public class JwtService {
                 .compact();
     }
 
-    private boolean isTokenExpired(String token, SecretKey key) {
+    public boolean isTokenExpired(String token, SecretKey key) {
         return extractExpiration(token, key).before(new Date());
     }
 

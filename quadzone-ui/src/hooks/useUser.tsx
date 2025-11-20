@@ -1,5 +1,4 @@
-import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
-import { isAxiosError } from "axios";
+import { createContext, useContext, useEffect, useState, useCallback, type ReactNode } from "react";
 import { toast } from "react-toastify";
 import { useNavigate } from "react-router-dom";
 import type { User } from "../types/User";
@@ -28,52 +27,39 @@ const UserProvider = ({ children }: UserProviderProps) => {
     const [ready, setReady] = useState(false);
     const navigate = useNavigate();
 
-    const fetchCurrentUser = async () => {
+    const fetchCurrentUser = useCallback(async () => {
         try {
             const resp = await API.get("/users/me");
             setUser(resp.data);
         } catch {
             setUser(null);
-            localStorage.removeItem("access_token");
         }
-    };
+    }, []);
 
     const login = async (payload: LoginRequest): Promise<boolean> => {
         try {
             const resp = await API.post("/auth/authenticate", payload);
-
             const token = resp.data.access_token;
+
             if (!token) {
-                toast.error("Login failed. No token received from server.");
+                toast.error("Login failed. No token received.");
                 return false;
             }
 
             localStorage.setItem("access_token", token);
+
             await fetchCurrentUser();
+
             toast.success("Login successful!");
             return true;
-        } catch (err) {
-            let msg = "Please check your email and password.";
-            if (isAxiosError(err)) {
-                switch (err.response?.status) {
-                    case 401:
-                        msg = "Incorrect email or password.";
-                        break;
-                    case 404:
-                        msg = "Account does not exist.";
-                        break;
-                    default:
-                        msg = err.response?.data?.message || msg;
-                }
-            } else {
-                console.error((err as Error).message);
-            }
+        } catch (err: any) {
+            const msg = err.response?.data?.message || "Please check your email and password.";
             toast.error(msg);
             return false;
         }
     };
 
-    const logout = async () => {
+    const logout = useCallback(async () => {
         localStorage.removeItem("access_token");
         setUser(null);
 
@@ -81,33 +67,31 @@ const UserProvider = ({ children }: UserProviderProps) => {
             await API.post("/auth/logout");
             toast.success("Logout successful!");
         } catch (err) {
-            console.error("Server logout failed, but user is logged out locally:", err);
-            toast.success("Logout successful!");
+            console.error("Logout error", err);
         }
 
         navigate("/", { replace: true });
-    };
+    }, [navigate]);
 
     useEffect(() => {
-        const checkAuthStatus = async () => {
-            const accessToken = localStorage.getItem("access_token");
+        let isMounted = true;
 
-            if (!accessToken) {
-                setUser(null);
-                setReady(true);
-                return;
+        const initAuth = async () => {
+            if (localStorage.getItem("access_token")) {
+                await fetchCurrentUser();
             }
 
-            try {
-                await fetchCurrentUser();
-                setReady(true);
-            } catch {
+            if (isMounted) {
                 setReady(true);
             }
         };
 
-        checkAuthStatus();
-    }, []);
+        initAuth();
+
+        return () => {
+            isMounted = false;
+        };
+    }, [fetchCurrentUser]);
 
     const value = {
         user,
