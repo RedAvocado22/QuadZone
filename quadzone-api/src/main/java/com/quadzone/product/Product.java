@@ -1,18 +1,20 @@
 package com.quadzone.product;
 
+import com.quadzone.order.OrderItem;
 import com.quadzone.product.category.sub_category.SubCategory;
 import com.quadzone.product.dto.ProductUpdateRequest;
+import com.quadzone.review.Review;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "product")
-@Data
+@Getter
+@Setter
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
@@ -20,64 +22,56 @@ public class Product {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "product_id")
     private Long id;
 
-    @Column(name = "product_name", nullable = false, length = 200)
+    @Column(nullable = false)
     private String name;
 
-    @Column(length = 100)
+    @Column
     private String brand;
 
-    @Column(name = "model_number", length = 100)
+    @Column(name = "model_number")
     private String modelNumber;
+
+    @Column
+    private String color;
 
     @Column(columnDefinition = "TEXT")
     private String description;
 
-    @Column(name = "quantity", nullable = false, columnDefinition = "INT DEFAULT 0")
-    private Integer quantity;
+    @Column(nullable = false)
+    private Double price;
 
-    @Column(nullable = false, columnDefinition = "DECIMAL(8,2)")
-    private double price;
+    @Column(name = "cost_price")
+    private Double costPrice;
 
-    @Column(name = "cost_price", columnDefinition = "DECIMAL(8,2)")
-    private double costPrice;
+    @Column
+    private Double weight;
 
-    @Column(name = "weight", columnDefinition = "DECIMAL(8,2)")
-    private double weight;
+    @Column(name = "stock_quantity", nullable = false)
+    private Integer stock;
 
-//    @Column(length = 50)
-//    private String dimensions;
-
-//    @Column(columnDefinition = "TEXT")
-//    private String specifications;
-
-//    @Column(name = "warranty_period_months")
-//    private Integer warrantyPeriodMonths;
-
-    @Column(length = 50)
-    private String color;
-
-//    @Column(name = "storage_capacity", length = 50)
-//    private String storageCapacity;
-//
-//    @Column(name = "energy_rating", length = 20)
-//    private String energyRating;
-
-    @Column(name = "image_url", length = 255)
+    @Column(name = "image_url")
     private String imageUrl;
+
+    @Column(name = "created_at", updatable = false)
+    private final LocalDateTime createdAt = LocalDateTime.now();
+
+    @Column(name = "updated_at")
+    private LocalDateTime updatedAt;
 
     @Column(name = "is_active")
     private boolean isActive;
 
-    //join bang review
-    @Column(name = "created_at", nullable = false)
-    private final LocalDateTime createdAt = LocalDateTime.now();
-
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "subcategory_id", nullable = false)
     private SubCategory subCategory;
+
+    @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Review> reviews = new ArrayList<>();
+
+    @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<OrderItem> orderItems = new ArrayList<>();
 
     public void updateFrom(ProductUpdateRequest request) {
         if (request.name() != null) {
@@ -93,7 +87,7 @@ public class Product {
             this.setDescription(request.description());
         }
         if (request.quantity() != null) {
-            this.setQuantity(request.quantity());
+            this.setStock(request.quantity());
         }
         if (request.price() != null) {
             this.setPrice(request.price());
@@ -113,5 +107,10 @@ public class Product {
         if (request.subCategory() != null) {
             this.setSubCategory(request.subCategory());
         }
+    }
+
+    @PreUpdate
+    public void onUpdate() {
+        updatedAt = LocalDateTime.now();
     }
 }

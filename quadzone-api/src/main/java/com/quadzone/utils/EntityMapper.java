@@ -1,13 +1,14 @@
 package com.quadzone.utils;
 
 import com.quadzone.product.Product;
+import com.quadzone.product.dto.ProductDetailsResponse;
 import com.quadzone.product.dto.ProductResponse;
+import com.quadzone.review.Review;
+import com.quadzone.review.dto.ReviewResponse;
 import com.quadzone.user.User;
 import com.quadzone.user.dto.CurrentUserResponse;
 import com.quadzone.user.dto.UserResponse;
 import org.springframework.stereotype.Component;
-import com.quadzone.review.dto.ReviewDTO;
-import com.quadzone.review.Review;
 
 @Component
 public class EntityMapper {
@@ -23,7 +24,10 @@ public class EntityMapper {
         return ProductResponse.from(product);
     }
 
-    public ReviewDTO toReviewDTO(Review review) {
-        return ReviewDTO.from(review);
+    public ReviewResponse toReviewResponse(Review review) {
+        return ReviewResponse.from(review);
+    }
+    public ProductDetailsResponse toProductDetailsResponse(Product product) {
+        return ProductDetailsResponse.from(product);
     }
 }

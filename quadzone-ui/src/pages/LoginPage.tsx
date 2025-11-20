@@ -1,11 +1,12 @@
-import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import { useUser } from "../hooks/useUser";
-import { forgotPassword } from "../api/auth";
+import { activateAccount, forgotPassword } from "../api/auth";
 import { toast } from "react-toastify";
 import { useFormik } from "formik";
 import * as yup from "yup";
 import { yupEmail, yupPassword } from "../utils/Validation";
+import Swal from "sweetalert2";
 
 const loginSchema = yup
     .object({
@@ -22,10 +23,31 @@ const forgotPasswordSchema = yup
 
 export default function LoginPage() {
     const { login } = useUser();
+    const { token } = useParams();
+    const [loginView, setLoginView] = useState<"login" | "forgot">("login");
     const navigate = useNavigate();
 
-    // State to control the login tab's view: 'login' or 'forgot'
-    const [loginView, setLoginView] = useState<"login" | "forgot">("login");
+    useEffect(() => {
+        if (token) {
+            activateAccount(token)
+                .then((success) => {
+                    if (success) {
+                        Swal.fire({
+                            icon: "success",
+                            title: "Account activated",
+                            text: "Activate account successfully. Please login."
+                        }).then(() => {
+                            navigate("/login", { replace: true });
+                        });
+                    } else {
+                        navigate("/login", { replace: true });
+                    }
+                })
+                .catch(() => {
+                    navigate("/login", { replace: true });
+                });
+        }
+    }, [token, navigate]);
 
     const loginFormik = useFormik({
         initialValues: {
@@ -44,14 +66,13 @@ export default function LoginPage() {
                     resetForm();
                     navigate("/");
                 }
-            } catch (err) {
+            } catch {
                 // console.error("Login error:", err);
                 toast.error("Login failed. Please check your credentials.");
             }
         }
     });
 
-    // --- Forgot Password Formik Instance ---
     const forgotFormik = useFormik({
         initialValues: {
             email: ""
@@ -68,7 +89,6 @@ export default function LoginPage() {
                     toast.error("Failed to send reset link. Please try again.");
                 }
             } catch (err) {
-                // console.error("Forgot password error:", err);
                 toast.error("Failed to send reset link. Please try again.");
             }
         }

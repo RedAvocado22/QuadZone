@@ -25,9 +25,7 @@ import java.util.List;
 public class SecurityConfiguration {
 
     private static final String[] WHITE_LIST = {
-            "/api/v1/auth/register",
-            "/api/v1/auth/authenticate",
-            "/api/v1/auth/refresh", // <-- ADD THIS
+            "/api/v1/auth/**",
             "/v3/api-docs/**",
             "/swagger-ui.html",
             "/swagger-ui/**",
@@ -37,7 +35,7 @@ public class SecurityConfiguration {
 
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
     private final AuthenticationProvider authenticationProvider;
-    private final LogoutHandler logoutHandler; // This is your LogoutService
+    private final LogoutHandler logoutHandler;
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -61,7 +59,7 @@ public class SecurityConfiguration {
                 )
                 .build();
     }
-    
+
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();

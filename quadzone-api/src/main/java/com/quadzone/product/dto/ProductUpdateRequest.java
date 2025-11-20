@@ -8,9 +8,9 @@ public record ProductUpdateRequest(
         String modelNumber,
         String description,
         Integer quantity,
-        Double price,     // Must be Double, not double, toProduct allow null
-        Double costPrice, // Must be Double
-        Double weight,    // Must be Double
+        Double price,
+        Double costPrice,
+        Double weight,
         String color,
         String imageUrl,
         SubCategory subCategory

@@ -3,6 +3,7 @@ package com.quadzone.product;
 import com.quadzone.exception.product.ProductNotFoundException;
 import com.quadzone.global.dto.PagedResponse;
 import com.quadzone.product.category.sub_category.SubCategoryRepository;
+import com.quadzone.product.dto.ProductDetailsResponse;
 import com.quadzone.product.dto.ProductRegisterRequest;
 import com.quadzone.product.dto.ProductResponse;
 import com.quadzone.product.dto.ProductUpdateRequest;
@@ -27,18 +28,32 @@ public class ProductService {
 
     public Page<ProductResponse> getProducts(Pageable pageable, String query) {
         Page<Product> products;
-        if (query != null && !query.isBlank()) {
-            products = productRepository.search(query.trim(), pageable);
-        } else {
-            products = productRepository.findAll(pageable);
-        }
+        products = productRepository.search(query, pageable);
         return products.map(objectMapper::toProductResponse);
     }
 
-    public ProductResponse getProduct(Long id) {
+    public ProductDetailsResponse getProducts(Long id) {
         Product product = productRepository.findById(id)
                 .orElseThrow(() -> new ProductNotFoundException(id));
-        return objectMapper.toProductResponse(product);
+        return objectMapper.toProductDetailsResponse(product);
+    }
+
+    public Page<ProductResponse> getFeaturedProducts(Pageable pageable) {
+        Page<Product> products;
+        products = productRepository.findFeaturedProducts(pageable);
+        return products.map(objectMapper::toProductResponse);
+    }
+
+    public Page<ProductResponse> getBestSellers(Pageable pageable) {
+        Page<Product> products;
+        products = productRepository.findBestSellingProducts(pageable);
+        return products.map(objectMapper::toProductResponse);
+    }
+
+    public Page<ProductResponse> getArrivals(Pageable pageable) {
+        Page<Product> products;
+        products = productRepository.findNewArrivalProducts(pageable);
+        return products.map(objectMapper::toProductResponse);
     }
 
     public ProductResponse createProduct(ProductRegisterRequest request) {
@@ -63,8 +78,6 @@ public class ProductService {
         }
         productRepository.deleteById(id);
     }
-
-    // Admin methods
     @Transactional(readOnly = true)
     public PagedResponse<ProductResponse> findProducts(int page, int size, String search) {
         Pageable pageable = PageRequest.of(Math.max(page, 0), Math.max(size, 1), Sort.by(Sort.Direction.DESC, "createdAt"));
@@ -87,12 +100,10 @@ public class ProductService {
                 resultPage.getSize()
         );
     }
-
     @Transactional(readOnly = true)
     public ProductResponse findByIdForAdmin(Long id) {
         return productRepository.findById(id)
                 .map(objectMapper::toProductResponse)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Product not found: " + id));
     }
-
 }

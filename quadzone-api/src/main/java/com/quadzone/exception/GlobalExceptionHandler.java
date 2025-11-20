@@ -1,7 +1,9 @@
 package com.quadzone.exception;
 
 import com.quadzone.exception.product.ProductNotFoundException;
+import com.quadzone.exception.user.InactiveAccountException;
 import com.quadzone.exception.user.UserAlreadyExistsException;
+import com.quadzone.exception.user.UserNotExistsException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -77,6 +79,16 @@ public class GlobalExceptionHandler {
         body.put("message", ex.getMessage());
 
         return new ResponseEntity<>(body, HttpStatus.CONFLICT);
+    }
+
+    @ExceptionHandler(UserNotExistsException.class)
+    public ResponseEntity<String> handleUserNotExistsException(UserNotExistsException ex) {
+        return new ResponseEntity<>(ex.getMessage(), HttpStatus.NOT_FOUND);
+    }
+
+    @ExceptionHandler(InactiveAccountException.class)
+    public ResponseEntity<String> handleUserNotExistsException(InactiveAccountException ex) {
+        return new ResponseEntity<>(ex.getMessage(), HttpStatus.FORBIDDEN);
     }
 
     /**

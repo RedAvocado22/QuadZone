@@ -2,24 +2,24 @@ package com.quadzone.user;
 
 import com.quadzone.auth.token.Token;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-@Entity
-@Table(name = "_user")
-@Data
+@Getter
+@Setter
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@ToString(exclude = {"tokens"})
+@Entity
+@Table(name = "_user")
 public class User implements UserDetails {
 
     @Id
@@ -42,15 +42,28 @@ public class User implements UserDetails {
     @Column(name = "role")
     private UserRole role;
 
-    @Column(name = "created_at", nullable = false)
+    @Enumerated(EnumType.STRING)
+    @Column
+    private UserStatus status;
+
+    @Column(name = "created_at", nullable = false, updatable = false)
     private final LocalDateTime createdAt = LocalDateTime.now();
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Token> tokens;
+    private List<Token> tokens = new ArrayList<>();
 
     public String getFullName() {
         return firstName + " " + lastName;
     }
+
+    public void addToken(Token token) {
+        if (tokens == null) {
+            tokens = new ArrayList<>();
+        }
+        tokens.add(token);
+        token.setUser(this);
+    }
+
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {

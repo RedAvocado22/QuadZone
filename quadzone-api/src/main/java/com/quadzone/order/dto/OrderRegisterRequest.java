@@ -5,7 +5,6 @@ import com.quadzone.order.OrderStatus;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.PositiveOrZero;
 
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 public record OrderRegisterRequest(
@@ -13,20 +12,20 @@ public record OrderRegisterRequest(
         Long userId,
 
         @PositiveOrZero(message = "Subtotal must be positive or zero")
-        BigDecimal subtotal,
+        Double subtotal,
 
         @PositiveOrZero(message = "Tax amount must be positive or zero")
-        BigDecimal taxAmount,
+        Double taxAmount,
 
         @PositiveOrZero(message = "Shipping cost must be positive or zero")
-        BigDecimal shippingCost,
+        Double shippingCost,
 
         @PositiveOrZero(message = "Discount amount must be positive or zero")
-        BigDecimal discountAmount,
+        Double discountAmount,
 
         @NotNull(message = "Total amount is required")
         @PositiveOrZero(message = "Total amount must be positive or zero")
-        BigDecimal totalAmount,
+        Double totalAmount,
 
         OrderStatus orderStatus,
 
@@ -36,10 +35,10 @@ public record OrderRegisterRequest(
     public static Order toOrder(OrderRegisterRequest request, com.quadzone.user.User user) {
         Order order = new Order();
         order.setOrderDate(LocalDateTime.now());
-        order.setSubtotal(request.subtotal() != null ? request.subtotal() : BigDecimal.ZERO);
-        order.setTaxAmount(request.taxAmount() != null ? request.taxAmount() : BigDecimal.ZERO);
-        order.setShippingCost(request.shippingCost() != null ? request.shippingCost() : BigDecimal.ZERO);
-        order.setDiscountAmount(request.discountAmount() != null ? request.discountAmount() : BigDecimal.ZERO);
+        order.setSubtotal(request.subtotal() != null ? request.subtotal() : 0);
+        order.setTaxAmount(request.taxAmount() != null ? request.taxAmount() : 0);
+        order.setShippingCost(request.shippingCost() != null ? request.shippingCost() : 0);
+        order.setDiscountAmount(request.discountAmount() != null ? request.discountAmount() : 0);
         order.setTotalAmount(request.totalAmount());
         order.setOrderStatus(request.orderStatus() != null ? request.orderStatus() : OrderStatus.PENDING);
         order.setNotes(request.notes());

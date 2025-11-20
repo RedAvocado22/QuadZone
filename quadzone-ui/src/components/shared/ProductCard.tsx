@@ -24,8 +24,8 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
                 <div className="product-item__inner px-wd-4 p-2 p-md-3">
                     <div className="product-item__body pb-xl-2">
                         <div className="mb-2">
-                            <Link to={`/subCategory/${product.subCategoryId}`} className="font-size-12 text-gray-5">
-                                {product.subCategoryName || "Products"}
+                            <Link to={`/subCategory/${product.subCategory.id}`} className="font-size-12 text-gray-5">
+                                {product.subCategory.name || "Products"}
                             </Link>
                         </div>
 
@@ -40,11 +40,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
                                 <img
                                     className="img-fluid"
                                     style={{ width: "160px", height: "150px", objectFit: "cover" }}
-                                    src={
-                                        product.image
-                                            ? `http://localhost:8080/api/v1/public/images/${product.image}`
-                                            : defaultImages.product
-                                    }
+                                    src={product.imageUrl ? product.imageUrl : defaultImages.product}
                                     alt={product.name}
                                 />
                             </Link>

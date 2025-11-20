@@ -1,67 +1,56 @@
 package com.quadzone.global;
 
-import com.quadzone.product.dto.ProductResponse;
+import com.quadzone.global.dto.HomeResponse;
 import com.quadzone.product.ProductService;
-import com.quadzone.review.dto.ReviewDTO;
-import com.quadzone.review.ReviewService;
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.validation.constraints.Max;
-import jakarta.validation.constraints.Min;
+import com.quadzone.product.category.CategoryRepository;
+import com.quadzone.product.category.CategoryService;
+import com.quadzone.product.category.dto.CategoryResponse;
+import com.quadzone.product.dto.ProductDetailsResponse;
+import com.quadzone.product.dto.ProductResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1/public")
 @RequiredArgsConstructor
-@CrossOrigin(origins = "http://localhost:5173")
-@Tag(name = "Public API", description = "Public API")
 public class PublicController {
 
-    private final ReviewService reviewService;
     private final ProductService productService;
+    private final CategoryRepository categoryRepository;
+    private final CategoryService categoryService;
 
-    @GetMapping("products/{productId}/reviews")
-    @Operation(summary = "List reviews for a product")
-    public ResponseEntity<Page<ReviewDTO>> listReviews(
-            @PathVariable("productId") Long productId,
-            @RequestParam(defaultValue = "0") @Min(0) int page,
-            @RequestParam(defaultValue = "10") @Min(1) @Max(100) int size) {
+    @GetMapping()
+    public ResponseEntity<HomeResponse> getHome() {
+        Page<ProductResponse> featured = productService.getFeaturedProducts(PageRequest.of(0, 8));
+        Page<ProductResponse> bestSellers = productService.getBestSellers(PageRequest.of(0, 8));
+        Page<ProductResponse> newArrivals = productService.getArrivals(PageRequest.of(0, 8));
 
-        Pageable pageable = PageRequest.of(page, size);
-        Page<ReviewDTO> reviews = reviewService.getReviewsByProduct(productId, pageable);
-        return ResponseEntity.ok(reviews);
+        List<CategoryResponse> categories = categoryService.findAll();
+
+        return ResponseEntity.ok(new HomeResponse(categories, featured, bestSellers, newArrivals));
     }
 
-    @GetMapping("products")
-    @Operation(summary = "List products", description = "Get a paginated list of products with optional search")
-    @ApiResponse(responseCode = "200", description = "Successful operation")
+    @GetMapping("/products")
     public ResponseEntity<Page<ProductResponse>> listProducts(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
-            @RequestParam(required = false) String q) {
+            @RequestParam(required = false) String q,
+            @RequestParam(defaultValue = "id") String sort) {
         Pageable pageable = PageRequest.of(page, size);
         Page<ProductResponse> products = productService.getProducts(pageable, q);
         return ResponseEntity.ok(products);
     }
 
-    @GetMapping("products/{id}")
-    @Operation(summary = "Get product by ID", description = "Retrieve a single product by its ID")
-    @ApiResponse(responseCode = "200", description = "Product found")
-    @ApiResponse(responseCode = "404", description = "Product not found")
-    public ResponseEntity<ProductResponse> getProduct(@PathVariable Long id) {
+    @GetMapping("/products/{id}")
+    public ResponseEntity<ProductDetailsResponse> getProduct(@PathVariable Long id) {
         try {
-            ProductResponse product = productService.getProduct(id);
+            ProductDetailsResponse product = productService.getProducts(id);
             return ResponseEntity.ok(product);
         } catch (RuntimeException e) {
             return ResponseEntity.notFound().build();

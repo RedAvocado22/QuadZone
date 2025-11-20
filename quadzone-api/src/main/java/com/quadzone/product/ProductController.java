@@ -22,7 +22,7 @@ public class ProductController {
 
     private final ProductService productService;
 
-    @GetMapping("/admin")
+    @GetMapping
     @Operation(summary = "Get all products (Admin)", description = "Get all products with pagination and search")
     @ApiResponse(responseCode = "200", description = "Products returned")
     public ResponseEntity<PagedResponse<ProductResponse>> getProducts(
@@ -33,20 +33,19 @@ public class ProductController {
         return ResponseEntity.ok(productService.findProducts(page, size, search));
     }
 
-    @GetMapping("/admin/{id}")
+    @GetMapping("/{id}")
     @Operation(summary = "Get product by ID (Admin)", description = "Get a product by ID for admin")
     @ApiResponse(responseCode = "200", description = "Product returned")
     @ApiResponse(responseCode = "404", description = "Product not found")
     public ResponseEntity<ProductResponse> getProduct(@PathVariable Long id) {
         return ResponseEntity.ok(productService.findByIdForAdmin(id));
     }
-
-    @PostMapping("/admin")
-    @Operation(summary = "Create product (Admin)", description = "Create a new product for admin")
+    @PostMapping
+    @Operation(summary = "Create product", description = "Create a new product")
     @ApiResponse(responseCode = "201", description = "Product created")
     @ApiResponse(responseCode = "400", description = "Invalid input")
-    public ResponseEntity<ProductResponse> createProduct(@Valid @RequestBody ProductRegisterRequest productRegisterRequest) {
-        ProductResponse createdProduct = productService.createProduct(productRegisterRequest);
+    public ResponseEntity<ProductResponse> createProduct(@Valid @RequestBody ProductRegisterRequest productDTO) {
+        ProductResponse createdProduct = productService.createProduct(productDTO);
         return ResponseEntity.status(HttpStatus.CREATED).body(createdProduct);
     }
 
@@ -55,9 +54,9 @@ public class ProductController {
     @ApiResponse(responseCode = "200", description = "Product updated")
     @ApiResponse(responseCode = "404", description = "Product not found")
     @ApiResponse(responseCode = "400", description = "Invalid input")
-    public ResponseEntity<ProductResponse> updateProduct(@PathVariable Long id, @Valid @RequestBody ProductUpdateRequest productUpdateRequest) {
+    public ResponseEntity<ProductResponse> updateProduct(@PathVariable Long id, @Valid @RequestBody ProductUpdateRequest productDTO) {
         try {
-            ProductResponse updatedProduct = productService.updateProduct(id, productUpdateRequest);
+            ProductResponse updatedProduct = productService.updateProduct(id, productDTO);
             return ResponseEntity.ok(updatedProduct);
         } catch (RuntimeException e) {
             return ResponseEntity.notFound().build();
