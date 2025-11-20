@@ -1,54 +1,35 @@
 package com.quadzone.product.dto;
 
 import com.quadzone.product.Product;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.PositiveOrZero;
+import com.quadzone.product.category.Category;
+import com.quadzone.product.category.sub_category.SubCategory;
 import lombok.Builder;
-
-import java.time.LocalDateTime;
 
 @Builder
 public record ProductResponse(
         Long id,
-
-        @NotBlank
         String name,
         String brand,
         String modelNumber,
         String description,
-
-        @PositiveOrZero
         double price,
         String imageUrl,
         Integer quantity,
-        boolean isActive,
-        Long subCategoryId,
-        String subCategoryName,
-        LocalDateTime createdAt
-
+        SubCategory subCategory,
+        Category category
 ) {
     public static ProductResponse from(Product product) {
-        Long subCategoryId = null;
-        String subCategoryName = null;
-
-        if (product.getSubCategory() != null) {
-            subCategoryId = product.getSubCategory().getSubcategoryId();
-            subCategoryName = product.getSubCategory().getSubcategoryName();
-        }
-        return ProductResponse.builder()
-                .id(product.getId())
-                .name(product.getName())
-                .brand(product.getBrand())
-                .modelNumber(product.getModelNumber())
-                .description(product.getDescription())
-                .price(product.getPrice())
-                .imageUrl(product.getImageUrl())
-                .quantity(product.getQuantity())
-                .isActive(product.isActive())
-                .subCategoryId(subCategoryId)
-                .subCategoryName(subCategoryName)
-                .createdAt(product.getCreatedAt())
-                .build();
+        return new ProductResponse(
+                product.getId(),
+                product.getName(),
+                product.getBrand(),
+                product.getModelNumber(),
+                product.getDescription(),
+                product.getPrice(),
+                product.getImageUrl(),
+                product.getStock(),
+                product.getSubCategory(),
+                product.getSubCategory().getCategory()
+        );
     }
-
 }

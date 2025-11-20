@@ -1,100 +1,148 @@
+SET FOREIGN_KEY_CHECKS = 0;
 
--- Categories (5)
-INSERT INTO category (category_id, name, is_active, image_url) VALUES
-  (1, 'Phones & Accessories', 1, '/images/electronics.jpg'),
-  (2, 'Computers & Laptops', 1, '/images/laptops.jpg'),
-  (3, 'Home Appliances', 1, '/images/home_appliances.jpg'),
-  (4, 'Audio Devices', 1, '/images/audio.jpg'),
-  (5, 'Gaming Equipment', 1, '/images/gaming.jpg');
+INSERT INTO _user (id, email, password, first_name, last_name, role, created_at, status)
+VALUES
+    (1, 'customer@example.com', '$2a$10$slYQmyNdGzTn7ZLBXBChFOC9f6kFjAqPhccnP6DxlWXx2lPk1C3G6', 'John', 'Doe', 'CUSTOMER', NOW(), 'ACTIVE'),
+    (2, 'admin@example.com', '$2a$10$slYQmyNdGzTn7ZLBXBChFOC9f6kFjAqPhccnP6DxlWXx2lPk1C3G6', 'Test', 'Admin', 'ADMIN', NOW(), 'ACTIVE'),
+    (3, 'staff@example.com', '$2a$10$slYQmyNdGzTn7ZLBXBChFOC9f6kFjAqPhccnP6DxlWXx2lPk1C3G6', 'Test', 'Staff', 'STAFF', NOW(),'ACTIVE'),
+    (4, 'shipper@example.com', '$2a$10$slYQmyNdGzTn7ZLBXBChFOC9f6kFjAqPhccnP6DxlWXx2lPk1C3G6', 'Test', 'Shipper', 'SHIPPER', NOW(), 'ACTIVE'),
+    (5, 'an.nguyen@example.com', '$2a$10$slYQmyNdGzTn7ZLBXBChFOC9f6kFjAqPhccnP6DxlWXx2lPk1C3G6', 'Anna', 'Smith', 'CUSTOMER', NOW(), 'ACTIVE'),
+    (6, 'binh.le@example.com', '$2a$10$slYQmyNdGzTn7ZLBXBChFOC9f6kFjAqPhccnP6DxlWXx2lPk1C3G6', 'Ben', 'Lee', 'CUSTOMER', NOW(), 'ACTIVE'),
+    (7, 'chi.pham@example.com', '$2a$10$slYQmyNdGzTn7ZLBXBChFOC9f6kFjAqPhccnP6DxlWXx2lPk1C3G6', 'Chloe', 'Pham', 'CUSTOMER', NOW(), 'ACTIVE'),
+    (8, 'dung.tran@example.com', '$2a$10$slYQmyNdGzTn7ZLBXBChFOC9f6kFjAqPhccnP6DxlWXx2lPk1C3G6', 'David', 'Tran', 'CUSTOMER', NOW(), 'ACTIVE');
+-- password:Abc1234@
+INSERT INTO category (id, name, is_active, image_url)
+VALUES
+    (1, 'Electronics', true, 'https://example.com/images/electronics.jpg'),
+    (2, 'Software & Services', true, 'https://example.com/images/software.jpg'),
+    (3, 'Home & Smart Devices', true, 'https://example.com/images/smarthome.jpg'),
+    (4, 'Components & DIY', true, 'https://example.com/images/components.jpg');
 
--- Subcategories (7)
-INSERT INTO sub_category (subcategory_id, subcategory_name, description, is_active, category_id) VALUES
-  (1, 'Smartphones', 'Modern smart mobile phones', 1, 1),
-  (2, 'Phone Accessories', 'Cases, chargers, headphones', 1, 1),
-  (3, 'Laptops', 'Laptops for work and study', 1, 2),
-  (4, 'PC & Components', 'Desktops and computer parts', 1, 2),
-  (5, 'Small Home Appliances', 'Blenders, rice cookers, mini fridges', 1, 3),
-  (6, 'Headphones & Speakers', 'Personal audio devices', 1, 4),
-  (7, 'Consoles & Accessories', 'Gaming consoles and controllers', 1, 5);
+INSERT INTO sub_category (id, name, description, is_active, category_id)
+VALUES
+    (1, 'Laptops', 'Powerful laptops for work and play.', true, 1),
+    (2, 'Smartphones', 'The latest mobile technology.', true, 1),
+    (3, 'Audio', 'Speakers, headphones, and more.', true, 1),
+    (4, 'Cameras', 'Digital cameras and camcorders.', true, 1),
+    (5, 'Peripherals', 'Printers, monitors, and accessories.', true, 1),
+    (6, 'Gaming', 'Consoles and gaming accessories.', true, 1),
+    (7, 'Tablets', 'Portable tablets for work and play.', true, 1),
+    -- Software & Services (category_id 2)
+    (8, 'Operating Systems', 'Software to run your computer and devices.', true, 2),
+    (9, 'Security & Antivirus', 'Protect your data and devices from threats.', true, 2),
+    (10, 'Creative Software', 'Tools for design, video, and audio editing.', true, 2),
 
--- Products (15)
-INSERT INTO product (product_id, product_name, brand, model_number, description, quantity, price, cost_price, weight, image_url, is_active, created_at, subcategory_id) VALUES
-  (1, 'Galaxy S25 VN', 'Samsung', 'S25-VN', 'Vietnam edition, large battery', 120, 999.99, 650.00, 0.18, 'galaxy_s25.jpg', 1, NOW(), 1),
-  (2, 'iPhone 15', 'Apple', 'IPH15', 'OLED display, excellent camera', 80, 1199.99, 800.00, 0.17, 'iphone15.jpg', 1, NOW(), 1),
-  (3, 'Xiaomi Redmi Note 14', 'Xiaomi', 'RN14', 'Affordable with long battery life', 200, 199.99, 120.00, 0.19, 'redmi_note14.jpg', 1, NOW(), 1),
-  (4, '65W Fast Charger', 'Baseus', 'BS-65W', 'Fast charger for phones and laptops', 300, 29.99, 12.00, 0.05, 'charger_65w.jpg', 1, NOW(), 2),
-  (5, 'Clear Protective Case', 'Memumi', 'CASE-TP', 'Shock-resistant TPU clear case', 500, 5.99, 1.50, 0.02, 'case_clear.jpg', 1, NOW(), 2),
-  (6, 'ThinkPad X14', 'Lenovo', 'TP-X14', 'Lightweight business laptop', 40, 899.99, 600.00, 1.25, 'thinkpad_x14.jpg', 1, NOW(), 3),
-  (7, 'MacBook Air 15', 'Apple', 'MBA-15', 'M-series chip, ultra thin', 25, 1299.99, 900.00, 1.2, 'macbook_air15.jpg', 1, NOW(), 3),
-  (8, 'GTX Graphics Card', 'NVIDIA', 'GTX-1660', 'Mid-range gaming GPU', 15, 249.99, 160.00, 0.7, 'gpu_gtx.jpg', 1, NOW(), 4),
-  (9, '1.8L Rice Cooker', 'Electrolux', 'RC-18', 'Family-size rice cooker', 60, 49.99, 30.00, 2.5, 'rice_cooker.jpg', 1, NOW(), 5),
-  (10, 'Blender', 'Philips', 'BL-400', 'Multi-purpose blender', 90, 39.99, 20.00, 3.0, 'blender.jpg', 1, NOW(), 5),
-  (11, 'Bluetooth ANC Headphones', 'Sony', 'WH-1000XM5', 'Active noise cancellation', 70, 299.99, 180.00, 0.25, 'sony_wh1000xm5.jpg', 1, NOW(), 6),
-  (12, 'Portable Bluetooth Speaker', 'JBL', 'CHARGE-5', 'Long battery life & powerful sound', 85, 149.99, 90.00, 1.1, 'jbl_charge5.jpg', 1, NOW(), 6),
-  (13, 'PlayStation 5', 'Sony', 'PS5-DIG', 'Next-gen gaming console', 30, 499.99, 350.00, 4.5, 'ps5.jpg', 1, NOW(), 7),
-  (14, 'Pro Controller', 'Sony', 'DS5-PRO', 'Premium wireless controller', 120, 69.99, 40.00, 0.4, 'dualshock5_pro.jpg', 1, NOW(), 7),
-  (15, 'SSD 1TB NVMe', 'Samsung', 'EVO-1TB', 'High-speed NVMe solid state drive', 150, 119.99, 70.00, 0.05, 'ssd_1tb.jpg', 1, NOW(), 4);
+    -- Home & Smart Devices (category_id 3)
+    (11, 'Smart Lighting', 'App-controlled bulbs and light strips.', true, 3),
+    (12, 'Smart Security', 'Cameras and alarm systems for home monitoring.', true, 3),
+    (13, 'Voice Assistants', 'Smart speakers and displays.', true, 3),
 
--- Users (5)
-INSERT INTO _user (id, email, password, first_name, last_name, role, created_at) VALUES
-  (1, 'admin@quadzone.vn', 'adminpass', 'Admin', 'QuadZone', 'ADMIN', NOW()),
-  (2, 'nguyen.van.a@example.com', 'custpass1', 'Nguyen', 'A', 'CUSTOMER', NOW()),
-  (3, 'tran.thi.b@example.com', 'custpass2', 'Tran', 'B', 'CUSTOMER', NOW()),
-  (4, 'le.van.c@example.com', 'custpass3', 'Le', 'C', 'CUSTOMER', NOW()),
-  (5, 'pham.staff@example.com', 'staffpass', 'Pham', 'Staff', 'STAFF', NOW()),
-  (6, 'dinh.shipper@example.com','shipperypass','Dinh', 'Shipper', 'SHIPPER', NOW());
+    -- Components & DIY (category_id 4)
+    (14, 'Processors & CPUs', 'The brain of your computer.', true, 4),
+    (15, 'Memory (RAM)', 'High-speed memory modules.', true, 4),
+    (16, 'Storage (SSD\HDD)', 'Drives for all your data needs.', true, 4);
 
--- Carts
-INSERT INTO cart (id, created_at, customer_id, updated_at) VALUES
-  (1, NOW(), 2, NULL),
-  (2, NOW(), 3, NULL),
-  (3, NOW(), 4, NULL),
-  (4, NOW(), 5, NULL);
+INSERT INTO product (id, name, brand, model_number, color, description, price, cost_price, weight, stock_quantity, image_url, created_at, is_active, subcategory_id)
+VALUES
+    (1, 'Wireless Egg Speaker', 'QuadZone', 'QZ-SPK-EGG', 'White', '360-degree sound in a stunning design.', 249.99, 150.00, 1.5, 50, '/src/assets/img/212X200/img1.jpg', DATE_SUB(NOW(), INTERVAL 10 DAY), true, 3),
+    (2, 'Convertible Laptop 14"', 'QuadZone', 'QZ-LP-CV14', 'Silver', 'A versatile 2-in-1 laptop for productivity.', 1099.50, 700.00, 1.8, 150, '/src/assets/img/212X200/img2.jpg', DATE_SUB(NOW(), INTERVAL 12 DAY), true, 1),
+    (3, 'Rose Gold Headphones', 'QuadZone Beats', 'QZ-HP-RG', 'Rose Gold', 'Wireless over-ear headphones with noise cancelling.', 129.99, 50.00, 0.4, 500, '/src/assets/img/212X200/img3.jpg', DATE_SUB(NOW(), INTERVAL 30 DAY), true, 3),
+    (4, 'Smartphone 6S', 'Apple', 'QZ-PH-6S', 'Gold', '["6.1-inch Full HD+ Display","128GB Internal Storage","8GB RAM for smooth multitasking","48MP AI Triple Camera System","5000mAh Battery with Fast Charging","Dual SIM + 5G Connectivity","Face Unlock & In-Display Fingerprint Sensor"]', 699.00, 400.00, 0.14, 80, '/src/assets/img/212X200/img4.jpg', DATE_SUB(NOW(), INTERVAL 5 DAY), true, 2),
+    (5, 'Digital Camera Mint', 'Samsung', 'QZ-CAM-M', 'Mint Blue', 'A sleek point-and-shoot camera with 20MP.', 299.00, 200.00, 0.3, 75, '/src/assets/img/212X200/img5.jpg', DATE_SUB(NOW(), INTERVAL 8 DAY), true, 4),
+    (6, 'All-in-One Inkjet Printer', 'HP', 'QZ-PRN-CL', 'White', 'High-quality color printing for your home office.', 179.99, 100.00, 5.5, 200, '/src/assets/img/212X200/img6.jpg', DATE_SUB(NOW(), INTERVAL 25 DAY), true, 5),
+    (7, 'Gaming Console White', 'Sony', 'QZ-PS4-WHT', 'White Marble', 'Special edition gaming console.', 399.99, 280.00, 2.8, 300, '/src/assets/img/212X200/img7.jpg', DATE_SUB(NOW(), INTERVAL 30 DAY), true, 6),
+    (8, 'HD Camcorder', 'Generic', 'QZ-VID-HDW', 'White', 'Capture all your moments in high definition.', 149.99, 80.00, 0.6, 120, '/src/assets/img/212X200/img8.jpg', DATE_SUB(NOW(), INTERVAL 15 DAY), true, 4),
+    (9, 'Tablet Mini', 'Apple', 'QZ-TAB-MGL', 'Gold', 'A powerful tablet in a compact 7.9-inch size.', 429.00, 300.00, 0.3, 50, '/src/assets/img/212X200/img9.jpg', DATE_SUB(NOW(), INTERVAL 7 DAY), true, 7),
+    (10, 'Tablet Pro 10-inch', 'Samsung', 'QZ-TAB-P10', 'White', 'A large display tablet perfect for media.', 349.50, 220.00, 0.5, 250, '/src/assets/img/212X200/img10.jpg', DATE_SUB(NOW(), INTERVAL 20 DAY), true, 7),
+    -- Software & Services (category_id 2)
+    (11, 'Pro Video Editor License', 'EditMaster', 'EM-PRO-VID', 'Digital', '1-year license for professional video editing suite.', 199.99, 50.00, 0.0, 999, '/src/assets/img/212X200/img11.jpg', DATE_SUB(NOW(), INTERVAL 3 DAY), true, 10),
+    (12, 'Ultimate Security Suite', 'GuardDog', 'GD-SEC-ULT', 'Digital', 'Lifetime license for 5-device comprehensive security.', 49.99, 15.00, 0.0, 800, '/src/assets/img/212X200/img12.jpg', DATE_SUB(NOW(), INTERVAL 1 DAY), true, 9),
 
--- Cart items
-INSERT INTO cart_item (id, quantity, added_at, cart_id, product_id) VALUES
-  (1, 1, NOW(), 1, 1),
-  (2, 2, NOW(), 1, 5),
-  (3, 1, NOW(), 2, 6),
-  (4, 1, NOW(), 3, 11),
-  (5, 3, NOW(), 4, 14);
+    -- Home & Smart Devices (category_id 3)
+    (13, 'Smart Speaker Mini', 'QuadZone', 'QZ-SMT-SPKM', 'Charcoal', 'Compact smart speaker with voice assistant integration.', 49.00, 25.00, 0.25, 400, '/src/assets/img/212X200/img13.jpg', DATE_SUB(NOW(), INTERVAL 6 DAY), true, 13),
+    (14, 'Outdoor Smart Cam Pro', 'SenseHome', 'SH-CAM-OUT', 'Black', 'Weatherproof outdoor camera with night vision and motion alerts.', 159.50, 80.00, 0.5, 120, '/src/assets/img/212X200/img14.jpg', DATE_SUB(NOW(), INTERVAL 14 DAY), true, 12),
+    (15, 'E27 Smart Light Bulb', 'Lumi', 'LM-BULB-CLR', 'White', 'Color-changing smart bulb (E27 base) compatible with all major assistants.', 24.99, 10.00, 0.1, 750, '/src/assets/img/212X200/img15.jpg', DATE_SUB(NOW(), INTERVAL 9 DAY), true, 11),
 
--- Orders
-INSERT INTO orders (id, order_date, subtotal, tax_amount, shipping_cost, discount_amount, total_amount, user_id, address, notes, order_status) VALUES
-  (1, NOW(), 999.99, 0.00, 10.00, 0.00, 1009.99, 2, 'Hanoi, Hoan Kiem', 'Deliver during business hours', 'PENDING'),
-  (2, NOW(), 1199.99, 0.00, 15.00, 50.00, 1364.99, 3, 'Hanoi, Ba Dinh', 'Gift wrap please', 'PENDING'),
-  (3, NOW(), 49.99, 0.00, 5.00, 0.00, 54.99, 4, 'Hanoi, Tay Ho', '', 'PENDING'),
-  (4, NOW(), 299.99, 0.00, 10.00, 0.00, 309.99, 2, 'Hanoi, Cau Giay', 'Deliver outside regular hours', 'PENDING'),
-  (5, NOW(), 499.99, 0.00, 20.00, 0.00, 519.99, 5, 'Hanoi, Hoa Lac', 'Please deliver quickly if possible', 'PENDING');
+    -- Components & DIY (category_id 4)
+    (16, 'M.2 NVMe SSD 1TB', 'Velocity', 'VEL-SSD-1TB', 'Black', 'High-speed 1TB M.2 solid-state drive.', 99.99, 60.00, 0.05, 180, '/src/assets/img/212X200/img16.jpg', DATE_SUB(NOW(), INTERVAL 2 DAY), true, 16),
+    (17, 'DDR4 32GB (2x16GB) Kit', 'HyperData', 'HD-RAM-32', 'Red', '32GB kit of performance DDR4 desktop memory.', 119.00, 75.00, 0.1, 100, '/src/assets/img/212X200/img17.jpg', DATE_SUB(NOW(), INTERVAL 18 DAY), true, 15),
+    (18, 'Intel Core i7 Processor', 'Intel', 'i7-14700K', 'Grey', 'Latest generation high-performance desktop CPU.', 389.00, 280.00, 0.08, 60, '/src/assets/img/212X200/img18.jpg', DATE_SUB(NOW(), INTERVAL 4 DAY), true, 14);
 
--- Order items
-INSERT INTO order_item (id, quantity, unit_price, sub_total, order_id, product_id) VALUES
-  (1, 1, 999.99, 999.99, 1, 1),
-  (2, 1, 1199.99, 1199.99, 2, 2),
-  (3, 1, 49.99, 49.99, 3, 9),
-  (4, 1, 299.99, 299.99, 4, 11),
-  (5, 1, 499.99, 499.99, 5, 13);
 
--- Payments
-INSERT INTO payment (id, order_id, transaction_id, amount, payment_method, payment_status, payment_date, created_at) VALUES
-  (1, 1, 'TXN-VN-0001', 1009.99, 'CREDIT_CARD', 'COMPLETED', NOW(), NOW()),
-  (2, 2, 'TXN-VN-0002', 1364.99, 'BANK_TRANSFER', 'COMPLETED', NOW(), NOW()),
-  (3, 3, 'TXN-VN-0003', 54.99, 'CASH_ON_DELIVERY', 'PENDING', NULL, NOW()),
-  (4, 4, 'TXN-VN-0004', 309.99, 'CREDIT_CARD', 'COMPLETED', NOW(), NOW()),
-  (5, 5, 'TXN-VN-0005', 519.99, 'CREDIT_CARD', 'COMPLETED', NOW(), NOW());
+INSERT INTO cart (id, customer_id, created_at, updated_at)
+VALUES
+    (1, 1, DATE_SUB(NOW(), INTERVAL 1 DAY), NOW()),
+    (2, 6, DATE_SUB(NOW(), INTERVAL 2 HOUR), NOW());
 
--- Deliveries
-INSERT INTO deliveries (id, order_id, staff_id, carrier, delivery_status, tracking_number, delivery_notes, estimated_delivery_date, actual_delivery_date, signature_required, created_at, updated_at) VALUES
-  (1, 1, 5, 'GiaoHangNhanh', 'SHIPPED', 'GHN-VN-1001', 'Call before delivery', CURDATE() + INTERVAL 2 DAY, NULL, 1, NOW(), NULL),
-  (2, 2, 5, 'VNPost', 'SHIPPED', 'VNP-VN-2002', 'Allow inspection before receiving', CURDATE() + INTERVAL 3 DAY, NULL, 1, NOW(), NULL),
-  (3, 3, 5, 'GHN', 'PENDING', 'GHN-VN-3003', NULL, CURDATE() + INTERVAL 5 DAY, NULL, 1, NOW(), NULL),
-  (4, 4, 5, 'GHTK', 'SHIPPED', 'GHTK-VN-4004', 'Deliver during business hours', CURDATE() + INTERVAL 1 DAY, NULL, 1, NOW(), NULL),
-  (5, 5, 5, 'GiaoHangNhanh', 'SHIPPED', 'GHN-VN-5005', 'Confirm before delivery', CURDATE() + INTERVAL 4 DAY, NULL, 1, NOW(), NULL);
+INSERT INTO cart_item (id, quantity, added_at, cart_id, product_id)
+VALUES
+    (1, 1, DATE_SUB(NOW(), INTERVAL 1 DAY), 1, 1),
+    (2, 2, DATE_SUB(NOW(), INTERVAL 3 HOUR), 1, 7),
+    (3, 1, DATE_SUB(NOW(), INTERVAL 2 HOUR), 2, 9);
 
--- Reviews
-INSERT INTO review (id, rating, created_at, customer_id, order_id, product_id, review_title, review_text, updated_at) VALUES
-  (1, 5, NOW(), 2, 1, 1, 'Very satisfied', 'Smooth performance, great battery. Fast delivery.', NULL),
-  (2, 4, NOW(), 3, 2, 2, 'Great product', 'Good performance, gets slightly warm under heavy use.', NULL),
-  (3, 5, NOW(), 4, 3, 9, 'Good rice cooker', 'Cooks well and easy to use.', NULL),
-  (4, 4, NOW(), 2, 4, 11, 'Great sound', 'Excellent noise cancellation and comfortable.', NULL),
-  (5, 5, NOW(), 5, 5, 13, 'PS5 is awesome', 'Brand new and runs very well.', NULL);
+INSERT INTO orders (id, order_date, subtotal, tax_amount, shipping_cost, discount_amount, total_amount, order_status, notes, address, user_id)
+VALUES
+    (1, DATE_SUB(NOW(), INTERVAL 10 DAY), 699.00, 55.92, 15.00, 0.00, 769.92, 'COMPLETED', 'Please leave at the front door.', '123 Main St, HCMC', 1),
+    (2, DATE_SUB(NOW(), INTERVAL 8 DAY), 479.98, 38.40, 15.00, 0.00, 533.38, 'COMPLETED', 'Fast delivery.', '456 Oak Ave, Hanoi', 5),
+    (3, DATE_SUB(NOW(), INTERVAL 7 DAY), 1099.50, 87.96, 15.00, 100.00, 1102.46, 'PROCESSING', 'Used 100 voucher.', '789 Pine Blvd, Da Nang', 6),
+    (4, DATE_SUB(NOW(), INTERVAL 6 DAY), 179.99, 14.40, 15.00, 0.00, 209.39, 'PENDING', 'Awaiting confirmation.', '101 Maple Rd, Hanoi', 7),
+    (5, DATE_SUB(NOW(), INTERVAL 5 DAY), 428.99, 34.32, 15.00, 0.00, 478.31, 'COMPLETED', 'Loyal customer.', '123 Main St, HCMC', 1),
+    (6, DATE_SUB(NOW(), INTERVAL 4 DAY), 429.00, 34.32, 15.00, 0.00, 478.32, 'CANCELLED', 'Customer cancelled.', '202 Birch Ln, HCMC', 8),
+    (7, DATE_SUB(NOW(), INTERVAL 3 DAY), 349.50, 27.96, 15.00, 0.00, 392.46, 'COMPLETED', '', '456 Oak Ave, Hanoi', 5),
+    (8, DATE_SUB(NOW(), INTERVAL 2 DAY), 279.98, 22.40, 15.00, 5.00, 312.38, 'PENDING', '', '789 Pine Blvd, Da Nang', 6),
+    (9, DATE_SUB(NOW(), INTERVAL 1 DAY), 179.99, 14.40, 15.00, 0.00, 209.39, 'PROCESSING', 'Urgent delivery.', '123 Main St, HCMC', 1),
+    (10, DATE_SUB(NOW(), INTERVAL 1 DAY), 249.99, 20.00, 0.00, 20.00, 249.99, 'COMPLETED', 'Free shipping, 20 discount.', '101 Maple Rd, Hanoi', 7),
+    (11, DATE_SUB(NOW(), INTERVAL 12 HOUR), 399.99, 32.00, 15.00, 0.00, 446.99, 'PENDING', '', '456 Oak Ave, Hanoi', 5),
+    (12, DATE_SUB(NOW(), INTERVAL 6 HOUR), 309.98, 24.80, 15.00, 0.00, 349.78, 'COMPLETED', 'Deliver during business hours.', '789 Pine Blvd, Da Nang', 6);
+
+INSERT INTO order_items (id, quantity, price_at_purchase, order_id, product_id)
+VALUES
+    (1, 1, 699.00, 1, 4),
+    (2, 1, 129.99, 2, 3),
+    (3, 1, 399.99, 2, 7),
+    (4, 1, 1099.50, 3, 2),
+    (5, 1, 179.99, 4, 6),
+    (6, 1, 129.99, 5, 3),
+    (7, 1, 299.00, 5, 5),
+    (8, 1, 429.00, 6, 9),
+    (9, 1, 349.50, 7, 10),
+    (10, 1, 149.99, 8, 8),
+    (11, 1, 129.99, 8, 3),
+    (12, 1, 179.99, 9, 6),
+    (13, 1, 249.99, 10, 1),
+    (14, 1, 399.99, 11, 7),
+    (15, 1, 129.99, 12, 3),
+    (16, 1, 179.99, 12, 6);
+
+INSERT INTO payment (id, order_id, amount, payment_method, payment_status, transaction_id, payment_date, created_at)
+VALUES
+    (1, 1, 769.92, 'CREDIT_CARD', 'COMPLETED', 'txn_mysql_123456789', DATE_SUB(NOW(), INTERVAL 10 DAY), DATE_SUB(NOW(), INTERVAL 10 DAY)),
+    (2, 2, 533.38, 'CASH_ON_DELIVERY', 'COMPLETED', 'txn_mysql_234567890', DATE_SUB(NOW(), INTERVAL 8 DAY), DATE_SUB(NOW(), INTERVAL 8 DAY)),
+    (3, 3, 1102.46, 'BANK_TRANSFER', 'COMPLETED', 'txn_mysql_345678901', DATE_SUB(NOW(), INTERVAL 7 DAY), DATE_SUB(NOW(), INTERVAL 7 DAY)),
+    (4, 5, 478.31, 'CREDIT_CARD', 'COMPLETED', 'txn_mysql_456789012', DATE_SUB(NOW(), INTERVAL 5 DAY), DATE_SUB(NOW(), INTERVAL 5 DAY)),
+    (5, 7, 392.46, 'CASH_ON_DELIVERY', 'COMPLETED', 'txn_mysql_567890123', DATE_SUB(NOW(), INTERVAL 3 DAY), DATE_SUB(NOW(), INTERVAL 3 DAY)),
+    (6, 9, 209.39, 'CREDIT_CARD', 'COMPLETED', 'txn_mysql_678901234', DATE_SUB(NOW(), INTERVAL 1 DAY), DATE_SUB(NOW(), INTERVAL 1 DAY)),
+    (7, 10, 249.99, 'BANK_TRANSFER', 'COMPLETED', 'txn_mysql_789012345', DATE_SUB(NOW(), INTERVAL 1 DAY), DATE_SUB(NOW(), INTERVAL 1 DAY)),
+    (8, 12, 349.78, 'CASH_ON_DELIVERY', 'COMPLETED', 'txn_mysql_890123456', DATE_SUB(NOW(), INTERVAL 6 HOUR), DATE_SUB(NOW(), INTERVAL 6 HOUR));
+
+INSERT INTO deliveries (id, tracking_number, carrier, delivery_status, estimated_delivery_date, actual_delivery_date, delivery_notes, signature_required, order_id, staff_id, created_at)
+VALUES
+    (1, '1Z999ABC1234567890', 'QuadZone Express', 'DELIVERED', DATE_SUB(NOW(), INTERVAL 9 DAY), DATE_SUB(NOW(), INTERVAL 9 DAY), 'Delivered.', true, 1, 3, DATE_SUB(NOW(), INTERVAL 10 DAY)),
+    (2, '1Z999ABC1234567891', 'GHTK', 'DELIVERED', DATE_SUB(NOW(), INTERVAL 7 DAY), DATE_SUB(NOW(), INTERVAL 7 DAY), 'Delivered.', false, 2, 3, DATE_SUB(NOW(), INTERVAL 8 DAY)),
+    (3, '1Z999ABC1234567892', 'Vietel Post', 'SHIPPED', DATE_SUB(NOW(), INTERVAL 5 DAY), null, 'On the way.', true, 3, 3, DATE_SUB(NOW(), INTERVAL 7 DAY)),
+    (4, '1Z999ABC1234567893', 'QuadZone Express', 'DELIVERED', DATE_SUB(NOW(), INTERVAL 4 DAY), DATE_SUB(NOW(), INTERVAL 4 DAY), 'Delivered.', true, 5, 3, DATE_SUB(NOW(), INTERVAL 5 DAY)),
+    (5, '1Z999ABC1234567894', 'GHTK', 'DELIVERED', DATE_SUB(NOW(), INTERVAL 2 DAY), DATE_SUB(NOW(), INTERVAL 2 DAY), 'Delivery successful.', false, 7, 3, DATE_SUB(NOW(), INTERVAL 3 DAY)),
+    (6, '1Z999ABC1234567895', 'QuadZone Express', 'OUT_FOR_DELiVERY', DATE_SUB(NOW(), INTERVAL 0 DAY), null, 'Out for delivery.', true, 9, 3, DATE_SUB(NOW(), INTERVAL 1 DAY)),
+    (7, '1Z999ABC1234567896', 'QuadZone Express', 'DELIVERED', DATE_SUB(NOW(), INTERVAL 0 DAY), DATE_SUB(NOW(), INTERVAL 0 DAY), 'Delivered.', true, 10, 3, DATE_SUB(NOW(), INTERVAL 1 DAY)),
+    (8, '1Z999ABC1234567897', 'GHTK', 'DELIVERED', DATE_SUB(NOW(), INTERVAL 0 DAY), DATE_SUB(NOW(), INTERVAL 0 DAY), 'Delivered.', false, 12, 3, DATE_SUB(NOW(), INTERVAL 6 HOUR));
+
+INSERT INTO review (id, rating, review_title, text, created_at, product_id, customer_id, order_item_id)
+VALUES
+    (1, 5, 'Best Phone!', 'This phone is amazing! Works perfectly.', DATE_SUB(NOW(), INTERVAL 9 DAY), 4, 1, 1),
+    (2, 4, 'Good Headphones', 'Nice sound, good quality. Will buy again.', DATE_SUB(NOW(), INTERVAL 7 DAY), 3, 5, 2),
+    (3, 5, 'Great Camera for Travel', 'Light, reliable, and takes great photos.', DATE_SUB(NOW(), INTERVAL 4 DAY), 5, 1, 7),
+    (4, 3, 'Okay tablet for the price', 'The screen is decent, but the battery life is a bit short.', DATE_SUB(NOW(), INTERVAL 2 DAY), 10, 5, 9),
+    (5, 5, 'Amazing Sound!', 'This speaker has incredible sound for its size. Worth every penny.', DATE_SUB(NOW(), INTERVAL 0 DAY), 1, 7, 13),
+    (6, 4, 'Sleek Printer', 'Love the design and it prints fast. Setup was easy.', DATE_SUB(NOW(), INTERVAL 0 DAY), 6, 6, 16);
+
+SET FOREIGN_KEY_CHECKS = 1;

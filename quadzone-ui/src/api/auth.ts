@@ -17,8 +17,6 @@ export interface RegisterRequest {
  */
 export const register = async (req: RegisterRequest): Promise<any | null> => {
     try {
-        // console.log("Sending register request:", req);
-        // The backend expects: firstname, lastname, email, password, confirm_password (with underscore!)
         const payload = {
             firstname: req.firstName,
             lastname: req.lastName,
@@ -47,7 +45,6 @@ export const register = async (req: RegisterRequest): Promise<any | null> => {
 export const activateAccount = async (token: string): Promise<boolean> => {
     try {
         await API.post("/auth/activate", { token });
-
         return true;
     } catch (err) {
         if (axios.isAxiosError(err)) {
@@ -57,7 +54,6 @@ export const activateAccount = async (token: string): Promise<boolean> => {
                 text: err.response?.data?.message || "An error occurred while activating account."
             });
         }
-        console.error(err);
         return false;
     }
 };

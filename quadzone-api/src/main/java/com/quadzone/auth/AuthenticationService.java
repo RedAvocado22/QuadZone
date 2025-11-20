@@ -1,20 +1,22 @@
 package com.quadzone.auth;
 
+import com.quadzone.auth.dto.ActivateAccountRequest;
 import com.quadzone.auth.dto.AuthenticationRequest;
 import com.quadzone.auth.dto.AuthenticationResponse;
 import com.quadzone.auth.dto.RegisterRequest;
 import com.quadzone.auth.token.Token;
 import com.quadzone.auth.token.TokenRepository;
 import com.quadzone.config.JwtService;
+import com.quadzone.exception.user.*;
 import com.quadzone.user.User;
 import com.quadzone.user.UserRepository;
 import com.quadzone.user.UserRole;
+import com.quadzone.user.UserStatus;
+import com.quadzone.utils.email.EmailSenderService;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpHeaders;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -32,11 +34,13 @@ public class AuthenticationService {
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
     private final AuthenticationManager authenticationManager;
+    private final EmailSenderService emailSenderService;
 
-    @Value("${spring.application.security.jwt.refresh-token.expiration}")
-    private long refreshTokenExpirationMs;
+    public void register(RegisterRequest request) {
+        userRepository.findByEmail(request.email()).ifPresent(user -> {
+            throw new UserAlreadyExistsException(String.format("User with email %s is already exists.", request.email()));
+        });
 
-    public AuthenticationResponse register(RegisterRequest request, HttpServletResponse response) {
         if (!request.password().equals(request.confirm_password())) {
             throw new IllegalArgumentException("Passwords do not match");
         }
@@ -47,20 +51,31 @@ public class AuthenticationService {
                 .email(request.email())
                 .password(passwordEncoder.encode(request.password()))
                 .role(UserRole.CUSTOMER)
+                .status(UserStatus.UNACTIVE)
                 .build();
 
-        var savedUser = userRepository.save(user);
+        userRepository.save(user);
+        var accessToken = jwtService.generateToken(user);
+        emailSenderService.sendAccountActivationEmail(user.getEmail(), accessToken);
+    }
+
+    public AuthenticationResponse authenticate(AuthenticationRequest request, HttpServletResponse response) {
+        var user = userRepository.findByEmail(request.email()).orElseThrow(
+                () -> new UserNotExistsException(String.format("User with email %s is not exists!", request.email()))
+        );
+
+        if (user.getStatus() == UserStatus.SUSPENDED) {
+            throw new SuspendedAccountException("User account is suspended.");
+        }
 
         var accessToken = jwtService.generateToken(user);
         var refreshToken = jwtService.generateRefreshToken(user);
 
-        saveUserToken(savedUser, refreshToken);
-        setRefreshTokenCookie(response, refreshToken);
+        if (user.getStatus() == UserStatus.UNACTIVE) {
+            emailSenderService.sendAccountActivationEmail(user.getEmail(), accessToken);
+            throw new InactiveAccountException("User account is not activated. Check email.");
+        }
 
-        return new AuthenticationResponse(accessToken);
-    }
-
-    public AuthenticationResponse authenticate(AuthenticationRequest request, HttpServletResponse response) {
         authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
                         request.email(),
@@ -68,14 +83,16 @@ public class AuthenticationService {
                 )
         );
 
-        var user = userRepository.findByEmail(request.email()).orElseThrow();
-        var accessToken = jwtService.generateToken(user);
-        var refreshToken = jwtService.generateRefreshToken(user);
-
         revokeAllUserTokens(user);
         saveUserToken(user, refreshToken);
 
-        setRefreshTokenCookie(response, refreshToken);
+        Cookie cookie = new Cookie("refresh_token", refreshToken);
+        cookie.setHttpOnly(true);
+        cookie.setSecure(true);
+        cookie.setPath("/");
+        cookie.setMaxAge(7 * 24 * 60 * 60);
+
+        response.addCookie(cookie);
 
         return new AuthenticationResponse(accessToken);
     }
@@ -122,7 +139,7 @@ public class AuthenticationService {
     private void saveUserToken(User user, String jwtToken) {
         var token = Token.builder()
                 .user(user)
-                .token(jwtToken) // This is now the REFRESH token
+                .token(jwtToken)
                 .revoked(false)
                 .build();
         tokenRepository.save(token);
@@ -139,14 +156,27 @@ public class AuthenticationService {
         tokenRepository.saveAll(validUserTokens);
     }
 
-    private void setRefreshTokenCookie(HttpServletResponse response, String refreshToken) {
-        Cookie cookie = new Cookie("refresh_token", refreshToken);
-        cookie.setHttpOnly(true);
+    public void activateAccount(ActivateAccountRequest req) {
+        String email = jwtService.extractUsername(req.token());
+        if (email == null) {
+            throw new InvalidTokenException("Invalid token");
+        }
 
-        cookie.setSecure(false);
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new UsernameNotFoundException(
+                        String.format("User with email %s does not exists.", email))
+                );
 
-        cookie.setPath("/");
-        cookie.setMaxAge((int) (refreshTokenExpirationMs / 1000));
-        response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
+        if (user.getStatus() == UserStatus.SUSPENDED) {
+            throw new SuspendedAccountException("User account is suspended.");
+        }
+
+        if (jwtService.isTokenExpired(req.token())) {
+            emailSenderService.sendAccountActivationEmail(user.getEmail(), jwtService.generateToken(user));
+            throw new InvalidTokenException("Activation link is expired. Check email.");
+        }
+
+        user.setStatus(UserStatus.ACTIVE);
+        userRepository.save(user);
     }
 }

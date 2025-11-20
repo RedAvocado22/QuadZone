@@ -6,7 +6,6 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Getter
@@ -14,8 +13,6 @@ import java.time.LocalDateTime;
 @Entity
 @Table(name = "deliveries")
 public class Delivery {
-    @Column(name = "created_at", updatable = false)
-    private final LocalDateTime createdAt = LocalDateTime.now();
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -31,7 +28,7 @@ public class Delivery {
     private DeliveryStatus deliveryStatus = DeliveryStatus.PENDING;
 
     @Column(name = "estimated_delivery_date")
-    private LocalDate estimatedDeliveryDate;
+    private LocalDateTime estimatedDeliveryDate;
 
     @Column(name = "actual_delivery_date")
     private LocalDateTime actualDeliveryDate;
@@ -44,6 +41,9 @@ public class Delivery {
 
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
+
+    @Column(name = "created_at", updatable = false)
+    private final LocalDateTime createdAt = LocalDateTime.now();
 
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "order_id", nullable = false, unique = true)

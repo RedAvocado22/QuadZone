@@ -2,15 +2,13 @@ package com.quadzone.order.dto;
 
 import com.quadzone.order.Order;
 import com.quadzone.order.OrderStatus;
-
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 public record OrderResponse(
         Long id,
         String orderNumber,
         String customerName,
-        BigDecimal totalAmount,
+        Double totalAmount,
         OrderStatus status,
         LocalDateTime orderDate,
         int itemsCount

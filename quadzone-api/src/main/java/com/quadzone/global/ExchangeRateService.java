@@ -12,7 +12,6 @@ public class ExchangeRateService {
 
     private static final Logger logger = LoggerFactory.getLogger(ExchangeRateService.class);
     
-    // Fallback rate nếu API bị lỗi (tỷ giá tương đối ổn định)
     private static final Double FALLBACK_USD_TO_VND = 25000.0;
 
     private final RestTemplate restTemplate;

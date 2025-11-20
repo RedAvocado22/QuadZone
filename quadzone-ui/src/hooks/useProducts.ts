@@ -22,16 +22,19 @@ export const useProducts = (page = 0, size = 20, query?: string) => {
                     name: product.name,
                     price: product.price,
                     quantity: product.quantity,
-                    image: product.imageUrl,
+                    description: product.description,
+                    imageUrl: product.imageUrl,
                     category: {
+                        id: product.subCategoryId || 0,
+                        name: product.subCategoryName || "Unknown"
+                    },
+                    subCategory: {
                         id: product.subCategoryId || 0,
                         name: product.subCategoryName || "Unknown"
                     },
                     brand: product.brand,
                     modelNumber: product.modelNumber,
                     isActive: product.isActive,
-                    subCategoryId: product.subCategoryId,
-                    subCategoryName: product.subCategoryName,
                     createdAt: product.createdAt
                 }));
                 setProducts(mappedProducts);
