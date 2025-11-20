@@ -9,6 +9,8 @@
  * Copyright 2011-2019 Twitter, Inc.
  * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
  */
+ @import '@fortawesome/fontawesome-free/css/all.min.css';
+
 :root {
     --blue: #0062bd;
     --indigo: #2d1582;

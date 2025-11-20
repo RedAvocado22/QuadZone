@@ -36,7 +36,7 @@ const CartPage = () => {
                 {items.length === 0 ? (
                     <div className="text-center py-5">
                         <h3 className="mb-4">Your cart is empty</h3>
-                        <Link to="/" className="btn btn-primary">
+                        <Link to="/shop" className="btn btn-primary">
                             Continue Shopping
                         </Link>
                     </div>

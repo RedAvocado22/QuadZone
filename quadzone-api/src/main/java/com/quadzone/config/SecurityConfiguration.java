@@ -44,6 +44,7 @@ public class SecurityConfiguration {
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(authorize -> authorize
                         .requestMatchers(WHITE_LIST).permitAll()
+                        .requestMatchers("/api/v1/cart/**").authenticated()
                         .requestMatchers("/api/v*/staff/**").hasAuthority(UserRole.STAFF.name())
                         .requestMatchers("/api/v*/admin/**").hasAuthority(UserRole.ADMIN.name())
                         .anyRequest().authenticated()

@@ -2,3 +2,7 @@
 /.idea/
 /quadzone-ui/MOCK_DATA_GUIDE.md
 /.vscode/settings.json
+TODO.md
+.github/copilot-instructions.md
+PRICE_FILTER_INTEGRATION.md
+*.md

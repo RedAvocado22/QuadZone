@@ -58,29 +58,15 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
                                 </a>
                             </div>
                         </div>
-
-                        {product.rating && (
-                            <div className="text-warning mb-2">
-                                {[...Array(5)].map((_, i) => (
-                                    <small
-                                        key={i}
-                                        className={
-                                            i < Math.floor(product.rating ?? 0)
-                                                ? "fas fa-star"
-                                                : "far fa-star text-muted"
-                                        }></small>
-                                ))}
-                            </div>
-                        )}
                     </div>
 
-                    <div className="product-item__footer">
+                    {/* <div className="product-item__footer">
                         <div className="border-top pt-2 flex-center-between flex-wrap">
                             <Link to="/compare" className="text-gray-6 font-size-13">
                                 <i className="ec ec-compare mr-1 font-size-15"></i> Compare
                             </Link>
                         </div>
-                    </div>
+                    </div> */}
                 </div>
             </div>
         </div>

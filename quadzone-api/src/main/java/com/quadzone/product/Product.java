@@ -1,5 +1,6 @@
 package com.quadzone.product;
 
+import com.quadzone.cart.CartItem;
 import com.quadzone.order.OrderItem;
 import com.quadzone.product.category.sub_category.SubCategory;
 import com.quadzone.product.dto.ProductUpdateRequest;
@@ -72,6 +73,9 @@ public class Product {
 
     @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<OrderItem> orderItems = new ArrayList<>();
+
+    @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<CartItem> cartItems = new ArrayList<>();
 
     public void updateFrom(ProductUpdateRequest request) {
         if (request.name() != null) {

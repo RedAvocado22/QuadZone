@@ -1,7 +1,8 @@
 package com.quadzone.product.dto;
 
 import com.quadzone.product.Product;
-import com.quadzone.product.category.dto.CategoryResponse;
+import com.quadzone.product.category.dto.CategoryNameResponse;
+
 import com.quadzone.product.category.sub_category.dto.SubCategoryResponse;
 
 public record ProductResponse(
@@ -12,8 +13,7 @@ public record ProductResponse(
         String imageUrl,
         Integer quantity,
         SubCategoryResponse subCategory,
-        CategoryResponse category
-) {
+        CategoryNameResponse category) {
     public static ProductResponse from(Product product) {
         return new ProductResponse(
                 product.getId(),
@@ -23,7 +23,6 @@ public record ProductResponse(
                 product.getImageUrl(),
                 product.getStock(),
                 SubCategoryResponse.from(product.getSubCategory()),
-                CategoryResponse.from(product.getSubCategory().getCategory())
-        );
+                CategoryNameResponse.from(product.getSubCategory().getCategory()));
     }
 }
