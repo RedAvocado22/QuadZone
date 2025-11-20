@@ -36,6 +36,7 @@ VALUES
     (9, 'Tablet Mini', 'Apple', 'QZ-TAB-MGL', 'Gold', 'A powerful tablet in a compact 7.9-inch size.', 429.00, 300.00, 0.3, 50, '/src/assets/img/212X200/img9.jpg', DATE_SUB(NOW(), INTERVAL 7 DAY), true, 7),
     (10, 'Tablet Pro 10-inch', 'Samsung', 'QZ-TAB-P10', 'White', 'A large display tablet perfect for media.', 349.50, 220.00, 0.5, 250, '/src/assets/img/212X200/img10.jpg', DATE_SUB(NOW(), INTERVAL 20 DAY), true, 7);
 
+
 INSERT INTO cart (id, customer_id, created_at, updated_at)
 VALUES
     (1, 1, DATE_SUB(NOW(), INTERVAL 1 DAY), NOW()),

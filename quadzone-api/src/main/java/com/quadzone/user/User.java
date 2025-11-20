@@ -7,6 +7,7 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -45,6 +46,24 @@ public class User implements UserDetails {
     @Enumerated(EnumType.STRING)
     @Column
     private UserStatus status;
+
+    @Column(name = "phone_number")
+    private String phoneNumber;
+
+    @Column(name = "address")
+    private String address;
+
+    @Column(name = "city")
+    private String city;
+
+    @Column(name = "dateOfBirth")
+    private LocalDate dateOfBirth;
+
+    @Column(name = "avatarUrl")
+    private String avatarUrl;
+
+    @Column(name = "updatedAt")
+    private LocalDateTime updatedAt;
 
     @Column(name = "created_at", nullable = false, updatable = false)
     private final LocalDateTime createdAt = LocalDateTime.now();

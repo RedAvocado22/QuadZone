@@ -13,13 +13,13 @@ public record ProductDetailsResponse(
         String brand,
         String modelNumber,
         String description,
+        double weight,
         double price,
         String imageUrl,
         Integer quantity,
         SubCategoryResponse subCategory,
         CategoryResponse category,
-        List<ReviewResponse> reviews
-) {
+        List<ReviewResponse> reviews) {
     public static ProductDetailsResponse from(Product product) {
         return new ProductDetailsResponse(
                 product.getId(),
@@ -27,13 +27,13 @@ public record ProductDetailsResponse(
                 product.getBrand(),
                 product.getModelNumber(),
                 product.getDescription(),
+                product.getWeight(),
                 product.getPrice(),
                 product.getImageUrl(),
                 product.getStock(),
                 SubCategoryResponse.from(product.getSubCategory()),
                 CategoryResponse.from(product.getSubCategory().getCategory()),
-                //convert list review to list review response
-                product.getReviews().stream().map(ReviewResponse::from).toList()
-        );
+                // convert list review to list review response
+                product.getReviews().stream().map(ReviewResponse::from).toList());
     }
 }

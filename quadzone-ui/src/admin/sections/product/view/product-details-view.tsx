@@ -92,7 +92,9 @@ export function ProductDetailsView() {
             <Box sx={{ display: 'flex', gap: 3 }}>
               <Box
                 component="img"
-                src={product.coverUrl || '/assets/images/product/product-1.webp'}
+                src={product.coverUrl
+                ? `http://localhost:8080/api/v1/public/images/${product.coverUrl}`
+                : "/assets/img/default-product.png"}
                 alt={product.name}
                 sx={{
                   width: 300,
