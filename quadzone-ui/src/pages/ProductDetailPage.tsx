@@ -1,13 +1,13 @@
 import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { useCart } from "../contexts/CartContext";
-import type { Product } from "../types/Product";
+import type { ProductDetails } from "../types/Product";
 import API from "@/api/base";
 import { toast } from "react-toastify";
 
 const ProductDetailPage = () => {
     const { id } = useParams();
-    const [product, setProduct] = useState<Product | null>(null);
+    const [product, setProduct] = useState<ProductDetails | null>(null);
     const [loading, setLoading] = useState(true);
     const { addToCart } = useCart();
 
