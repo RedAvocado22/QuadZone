@@ -2,6 +2,7 @@ package com.quadzone.product.category;
 
 import com.quadzone.exception.category.CategoryNotFoundException;
 import com.quadzone.global.dto.PagedResponse;
+import com.quadzone.admin.dto.CategoryAdminResponse;
 import com.quadzone.product.category.dto.CategoryRegisterRequest;
 import com.quadzone.product.category.dto.CategoryResponse;
 import com.quadzone.product.category.dto.CategoryUpdateRequest;
@@ -88,5 +89,49 @@ public class CategoryService {
                 .map(CategoryResponse::from)
                 .toList();
     }
-}
 
+    // Admin methods with admin DTOs
+    @Transactional(readOnly = true)
+    public PagedResponse<CategoryAdminResponse> findCategoriesForAdmin(int page, int size, String search) {
+        Pageable pageable = PageRequest.of(Math.max(page, 0), Math.max(size, 1), Sort.by(Sort.Direction.ASC, "name"));
+
+        Page<Category> resultPage;
+        if (search != null && !search.isBlank()) {
+            resultPage = categoryRepository.search(search.trim(), pageable);
+        } else {
+            resultPage = categoryRepository.findAll(pageable);
+        }
+
+        var categories = resultPage.stream()
+                .map(CategoryAdminResponse::from)
+                .toList();
+
+        return new PagedResponse<>(
+                categories,
+                resultPage.getTotalElements(),
+                resultPage.getNumber(),
+                resultPage.getSize()
+        );
+    }
+
+    @Transactional(readOnly = true)
+    public CategoryAdminResponse findByIdForAdmin(Long id) {
+        return categoryRepository.findById(id)
+                .map(CategoryAdminResponse::from)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Category not found: " + id));
+    }
+
+    public CategoryAdminResponse createCategoryForAdmin(CategoryRegisterRequest request) {
+        Category category = CategoryRegisterRequest.toCategory(request);
+        return CategoryAdminResponse.from(categoryRepository.save(category));
+    }
+
+    public CategoryAdminResponse updateCategoryForAdmin(Long id, CategoryUpdateRequest request) {
+        Category category = categoryRepository.findById(id)
+                .orElseThrow(() -> new CategoryNotFoundException(id));
+
+        category.updateFrom(request);
+
+        return CategoryAdminResponse.from(categoryRepository.save(category));
+    }
+}
