@@ -1,23 +1,12 @@
 import API from "./base";
+import type { PublicProductDTO } from "./types";
 
-export interface ProductDTO {
-    id: number;
-    name: string;
-    brand?: string;
-    modelNumber?: string;
-    description?: string;
-    price: number;
-    priceVND:number;
-    imageUrl?: string;
-    quantity: number;
-    isActive: boolean;
-    subCategoryId?: number;
-    subCategoryName?: string;
-    createdAt: string;
-}
+// Re-export for convenience
+export type { PublicProductDTO as ProductDTO } from "./types";
 
+// ProductResponse for public API endpoint (may differ from admin endpoint)
 export interface ProductResponse {
-    content: ProductDTO[];
+    content: PublicProductDTO[];
     pageable: {
         pageNumber: number;
         pageSize: number;
@@ -59,7 +48,7 @@ export const getProducts = async (page = 0, size = 20, query?: string): Promise<
     return response.data;
 };
 
-export const getProduct = async (id: number): Promise<ProductDTO> => {
-    const response = await API.get<ProductDTO>(`/public/products/${id}`);
+export const getProduct = async (id: number): Promise<PublicProductDTO> => {
+    const response = await API.get<PublicProductDTO>(`/public/products/${id}`);
     return response.data;
 };

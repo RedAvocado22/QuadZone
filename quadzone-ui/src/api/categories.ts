@@ -1,45 +1,9 @@
 import API from "./base";
+import type { CategoryResponse, PagedResponse } from "./types";
 
-// ----------------------------------------------------------------------
-
-export interface Category {
-  id: string;
-  name: string;
-  description?: string;
-  status: 'active' | 'inactive';
-  productCount: number;
-  createdAt: string;
-  imageUrl?: string | null;
-}
-
-export interface CategoriesResponse {
-  data: Category[];
-  total: number;
-  page: number;
-  pageSize: number;
-}
-
-// ----------------------------------------------------------------------
-
-interface CategoryDto {
-  id: number;
-  name: string;
-  active: boolean;
-  productCount: number;
-  imageUrl: string | null;
-}
-
-function mapCategoryToFrontend(dto: CategoryDto): Category {
-  return {
-    id: String(dto.id),
-    name: dto.name,
-    status: dto.active ? 'active' : 'inactive',
-    productCount: dto.productCount ?? 0,
-    createdAt: '',
-    description: '',
-    imageUrl: dto.imageUrl ?? null,
-  };
-}
+// Re-export for convenience
+export type { CategoryResponse as Category } from "./types";
+export type { PagedResponse as CategoriesResponse } from "./types";
 
 export const categoriesApi = {
   getAll: async (params: {
@@ -48,59 +12,46 @@ export const categoriesApi = {
     search?: string;
     sortBy?: string;
     sortOrder?: 'asc' | 'desc';
-  } = {}): Promise<CategoriesResponse> => {
+  } = {}): Promise<PagedResponse<CategoryResponse>> => {
     const { page = 0, pageSize = 10, search = '' } = params;
-    
+
     const queryParams = new URLSearchParams({
       page: page.toString(),
       size: pageSize.toString(),
       search,
     });
-    
-    const response = await API.get<{
-      data: CategoryDto[];
-      total: number;
-      page: number;
-      pageSize: number;
-    }>(`/categories/admin?${queryParams.toString()}`);
 
-    const payload = response.data;
-
-    return {
-      data: (payload.data ?? []).map(mapCategoryToFrontend),
-      total: payload.total ?? 0,
-      page: payload.page ?? page,
-      pageSize: payload.pageSize ?? pageSize,
-    };
+    const response = await API.get<PagedResponse<CategoryResponse>>(`/admin/categories?${queryParams.toString()}`);
+    return response.data;
   },
 
-  getById: async (id: string): Promise<Category> => {
-    const response = await API.get<CategoryDto>(`/categories/admin/${id}`);
-    return mapCategoryToFrontend(response.data);
+  getById: async (id: string | number): Promise<CategoryResponse> => {
+    const response = await API.get<CategoryResponse>(`/admin/categories/${id}`);
+    return response.data;
   },
 
-  create: async (category: Omit<Category, 'id'>): Promise<Category> => {
+  create: async (category: Omit<CategoryResponse, 'id' | 'productCount'>): Promise<CategoryResponse> => {
     const requestBody = {
       name: category.name,
-      active: category.status === 'active',
+      active: category.active ?? true,
       imageUrl: category.imageUrl || '',
     };
 
-    const response = await API.post<CategoryDto>('/categories/admin', requestBody);
-    return mapCategoryToFrontend(response.data);
+    const response = await API.post<CategoryResponse>('/admin/categories', requestBody);
+    return response.data;
   },
 
-  update: async (id: string, category: Partial<Category>): Promise<Category> => {
+  update: async (id: string | number, category: Partial<Omit<CategoryResponse, 'id' | 'productCount'>>): Promise<CategoryResponse> => {
     const requestBody: any = {};
     if (category.name !== undefined) requestBody.name = category.name;
-    if (category.status !== undefined) requestBody.active = category.status === 'active';
+    if (category.active !== undefined) requestBody.active = category.active;
     if (category.imageUrl !== undefined) requestBody.imageUrl = category.imageUrl;
 
-    const response = await API.put<CategoryDto>(`/categories/${id}`, requestBody);
-    return mapCategoryToFrontend(response.data);
+    const response = await API.put<CategoryResponse>(`/admin/categories/${id}`, requestBody);
+    return response.data;
   },
 
-  delete: async (id: string): Promise<void> => {
-    await API.delete(`/categories/${id}`);
+  delete: async (id: string | number): Promise<void> => {
+    await API.delete(`/admin/categories/${id}`);
   },
 };
