@@ -1,20 +1,22 @@
-import { Suspense, lazy } from "react";
-import { Routes, Route, Outlet } from "react-router-dom";
+import { Suspense, lazy, useEffect } from "react";
+import { Routes, Route, Outlet, useLocation } from "react-router-dom";
 import CartPage from "./pages/CartPage";
 import UserProvider from "./hooks/useUser";
 import { CartProvider } from "./contexts/CartContext";
 import { CurrencyProvider } from "./contexts/CurrencyContext";
+import { ThemeProvider } from "./theme/theme-provider";
 import HomePage from "./pages/HomePage";
 import { ToastContainer } from "react-toastify";
 import DemoPage from "./components/demo/DemoPage";
 import Layout from "./components/layout/Layout";
 import LoginPage from "./pages/LoginPage";
 import RegisterPage from "./pages/RegisterPage";
+import ResetPasswordPage from "./pages/ResetPasswordPage";
 import ProductDetailPage from "./pages/ProductDetailPage";
 import CheckoutPage from "@/pages/CheckoutPage.tsx";
+import "src/assets/css/global.css";
 
-const AdminApp = lazy(() => import("./AdminApp"));
-const AdminRoutes = lazy(() => import("./AdminRoutes"));
+const AdminRoutes = lazy(() => import("./routing/AdminRoutes"));
 
 const SiteLayout = () => (
     <Layout>
@@ -22,22 +24,32 @@ const SiteLayout = () => (
     </Layout>
 );
 
+// Scroll to top on route change
+function useScrollToTop() {
+    const location = useLocation();
+
+    useEffect(() => {
+        window.scrollTo(0, 0);
+    }, [location.pathname]);
+}
+
 function App() {
+    useScrollToTop();
+
     return (
-        <UserProvider>
-            <CurrencyProvider>
-                <CartProvider>
-                    <Routes>
-                    <Route
-                        path="/admin/*"
-                        element={
-                            <Suspense fallback={<div>Loading admin...</div>}>
-                                <AdminApp>
+        <ThemeProvider>
+            <UserProvider>
+                <CurrencyProvider>
+                    <CartProvider>
+                        <Routes>
+                        <Route
+                            path="/admin/*"
+                            element={
+                                <Suspense fallback={<div>Loading admin...</div>}>
                                     <AdminRoutes />
-                                </AdminApp>
-                            </Suspense>
-                        }
-                    />
+                                </Suspense>
+                            }
+                        />
 
                     <Route element={<SiteLayout />}>
                         {/* Public Routes */}
@@ -46,6 +58,7 @@ function App() {
                         <Route path="/login" element={<LoginPage />} />
                         <Route path="/activate/:token" element={<HomePage />} />
                         <Route path="/register" element={<RegisterPage />} />
+                        <Route path="/reset-password/:token" element={<ResetPasswordPage />} />
                         <Route path="/product/:id" element={<ProductDetailPage />} />
                         {/* Cart - accessible to everyone (guest and authenticated) */}
                         <Route path="cart" element={<CartPage />} />
@@ -55,11 +68,12 @@ function App() {
                         {/* <Route path="unauthorized" element={<Unauthorized />} />
                         <Route path="*" element={<NotFound />} /> */}
                     </Route>
-                    </Routes>
-                    <ToastContainer position="top-right" style={{ zIndex: 999999 }} />
-                </CartProvider>
-            </CurrencyProvider>
-        </UserProvider>
+                        </Routes>
+                        <ToastContainer position="top-right" style={{ zIndex: 999999 }} />
+                    </CartProvider>
+                </CurrencyProvider>
+            </UserProvider>
+        </ThemeProvider>
     );
 }
 
