@@ -1,7 +1,7 @@
 package com.quadzone.order;
 
 import com.quadzone.product.Product;
-import com.quadzone.product.review.Review;
+import com.quadzone.review.Review;
 import jakarta.persistence.*;
 import lombok.*;
 

@@ -1,6 +1,8 @@
 package com.quadzone.product;
 
+import com.quadzone.admin.dto.ProductAdminResponse;
 import com.quadzone.exception.product.ProductNotFoundException;
+import com.quadzone.global.dto.PagedResponse;
 import com.quadzone.product.category.sub_category.SubCategoryRepository;
 import com.quadzone.product.dto.ProductDetailsResponse;
 import com.quadzone.product.dto.ProductRegisterRequest;
@@ -9,9 +11,13 @@ import com.quadzone.product.dto.ProductUpdateRequest;
 import com.quadzone.utils.EntityMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.server.ResponseStatusException;
 
 @Service
 @RequiredArgsConstructor
@@ -72,5 +78,80 @@ public class ProductService {
             throw new ProductNotFoundException(id);
         }
         productRepository.deleteById(id);
+    }
+
+    @Transactional(readOnly = true)
+    public PagedResponse<ProductResponse> findProducts(int page, int size, String search) {
+        Pageable pageable = PageRequest.of(Math.max(page, 0), Math.max(size, 1), Sort.by(Sort.Direction.DESC, "createdAt"));
+
+        Page<Product> resultPage;
+        if (search != null && !search.isBlank()) {
+            resultPage = productRepository.search(search.trim(), pageable);
+        } else {
+            resultPage = productRepository.findAll(pageable);
+        }
+
+        var products = resultPage.stream()
+                .map(objectMapper::toProductResponse)
+                .toList();
+
+        return new PagedResponse<>(
+                products,
+                resultPage.getTotalElements(),
+                resultPage.getNumber(),
+                resultPage.getSize()
+        );
+    }
+
+    @Transactional(readOnly = true)
+    public ProductResponse findByIdForAdmin(Long id) {
+        return productRepository.findById(id)
+                .map(objectMapper::toProductResponse)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Product not found: " + id));
+    }
+
+    // Admin methods with admin DTOs
+    @Transactional(readOnly = true)
+    public PagedResponse<ProductAdminResponse> findProductsForAdmin(int page, int size, String search) {
+        Pageable pageable = PageRequest.of(Math.max(page, 0), Math.max(size, 1), Sort.by(Sort.Direction.DESC, "createdAt"));
+
+        Page<Product> resultPage;
+        if (search != null && !search.isBlank()) {
+            resultPage = productRepository.search(search.trim(), pageable);
+        } else {
+            resultPage = productRepository.findAll(pageable);
+        }
+
+        var products = resultPage.stream()
+                .map(ProductAdminResponse::from)
+                .toList();
+
+        return new PagedResponse<>(
+                products,
+                resultPage.getTotalElements(),
+                resultPage.getNumber(),
+                resultPage.getSize()
+        );
+    }
+
+    @Transactional(readOnly = true)
+    public ProductAdminResponse findByIdForAdminWithDetails(Long id) {
+        return productRepository.findById(id)
+                .map(ProductAdminResponse::from)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Product not found: " + id));
+    }
+
+    public ProductAdminResponse createProductForAdmin(ProductRegisterRequest request) {
+        Product product = ProductRegisterRequest.toProduct(request);
+        return ProductAdminResponse.from(productRepository.save(product));
+    }
+
+    public ProductAdminResponse updateProductForAdmin(Long id, ProductUpdateRequest request) {
+        Product product = productRepository.findById(id)
+                .orElseThrow(() -> new ProductNotFoundException(id));
+
+        product.updateFrom(request);
+
+        return ProductAdminResponse.from(productRepository.save(product));
     }
 }

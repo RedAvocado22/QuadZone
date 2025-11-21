@@ -1,5 +1,4 @@
 import { Link, useNavigate } from "react-router-dom";
-import { useUser } from "../hooks/useUser";
 import { register } from "../api/auth";
 import { toast } from "react-toastify";
 import { useFormik } from "formik";
@@ -34,7 +33,7 @@ export default function RegisterPage() {
         validationSchema: registerSchema,
         onSubmit: async (values, { resetForm }) => {
             try {
-                const respData = await register({
+                await register({
                     email: values.email,
                     password: values.password,
                     firstName: values.firstName,
@@ -42,13 +41,15 @@ export default function RegisterPage() {
                     confirmPassword: values.confirmPassword
                 });
 
-                if (respData) {
-                    toast.success("Registration successful! Please log in.");
-                    resetForm();
-                    navigate("/login");
-                }
-            } catch {
-                toast.error("An unexpected error occurred during registration.");
+                toast.success("Registration successful! Please check your email to active the account.");
+                resetForm();
+                navigate("/login");
+            } catch (err: any) {
+                const errorMsg =
+                    err.response?.data?.message ||
+                    err.response?.data ||
+                    "An unexpected error occurred during registration.";
+                toast.error(errorMsg);
             }
         }
     });

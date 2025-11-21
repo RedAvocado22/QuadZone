@@ -1,9 +1,12 @@
-import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
-import { isAxiosError } from "axios";
+import { createContext, useContext, useEffect, useState, useCallback, type ReactNode } from "react";
 import { toast } from "react-toastify";
 import { useNavigate } from "react-router-dom";
-import type { User } from "../types/User";
+import type { CurrentUser } from "../api/users";
 import API from "../api/base";
+
+// ----------------------------------------------------------------------
+
+export type UserRole = 'ADMIN' | 'STAFF' | 'CUSTOMER' | 'SHIPPER';
 
 export interface LoginRequest {
     email: string;
@@ -11,10 +14,19 @@ export interface LoginRequest {
 }
 
 interface UserContextType {
-    user: User | null;
+    user: CurrentUser | null;
+    loading: boolean;
+    error: Error | null;
     login: (payload: LoginRequest) => Promise<boolean>;
     logout: () => void;
     refreshUser: () => Promise<void>;
+    // Role checking helpers
+    hasRole: (role: UserRole | UserRole[]) => boolean;
+    isAdmin: boolean;
+    isStaff: boolean;
+    isCustomer: boolean;
+    isShipper: boolean;
+    role: UserRole | null;
 }
 
 const UserContext = createContext<UserContextType | null>(null);
@@ -24,100 +36,132 @@ type UserProviderProps = {
 };
 
 const UserProvider = ({ children }: UserProviderProps) => {
-    const [user, setUser] = useState<User | null>(null);
+    const [user, setUser] = useState<CurrentUser | null>(null);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<Error | null>(null);
     const [ready, setReady] = useState(false);
     const navigate = useNavigate();
 
-    const fetchCurrentUser = async () => {
+    const fetchCurrentUser = useCallback(async () => {
         try {
-            const resp = await API.get("/users/me");
+            setLoading(true);
+            setError(null);
+            const resp = await API.get<CurrentUser>("/users/me");
             setUser(resp.data);
-        } catch {
+        } catch (err) {
+            const error = err instanceof Error ? err : new Error('Failed to fetch current user');
+            setError(error);
             setUser(null);
-            await cookieStore.delete("access_token");
+        } finally {
+            setLoading(false);
         }
-    };
+    }, []);
 
     const login = async (payload: LoginRequest): Promise<boolean> => {
         try {
             const resp = await API.post("/auth/authenticate", payload);
+            const { access_token, refresh_token } = resp.data;
 
-            const token = resp.data.access_token;
-            if (!token) {
-                toast.error("Login failed. No token received from server.");
+            if (!access_token) {
+                toast.error("Login failed. No token received.");
                 return false;
             }
 
-            await cookieStore.set("access_token", token);
+            localStorage.setItem("access_token", access_token);
+            // Store refresh token if provided
+            if (refresh_token) {
+                localStorage.setItem("refresh_token", refresh_token);
+            }
 
             await fetchCurrentUser();
+
             toast.success("Login successful!");
             return true;
-        } catch (err) {
+        } catch (err: any) {
             let msg = "Please check your email and password.";
-            if (isAxiosError(err)) {
-                switch (err.response?.status) {
-                    case 401:
-                        msg = "Incorrect email or password.";
-                        break;
-                    case 404:
-                        msg = "Account does not exist.";
-                        break;
-                    case 403:
-                        msg = "Account not active! Check your email for the activation link.";
-                        break;
-                    default:
-                        msg = err.response?.data?.message || msg;
-                }
-            } else {
-                console.error((err as Error).message);
+            switch (err.response?.status) {
+                case 401:
+                    msg = "Incorrect email or password.";
+                    break;
+                case 404:
+                    msg = "Account does not exist.";
+                    break;
+                case 403:
+                    msg = "Account not active! Check your email for the activation link.";
+                    break;
+                default:
+                    msg = err.response?.data?.message || msg;
             }
             toast.error(msg);
             return false;
         }
     };
 
-    const logout = async () => {
-        await cookieStore.delete("access_token");
+    const logout = useCallback(async () => {
+        localStorage.removeItem("access_token");
+        localStorage.removeItem("refresh_token");
         setUser(null);
 
         try {
             await API.post("/auth/logout");
             toast.success("Logout successful!");
         } catch (err) {
-            console.error("Server logout failed, but user is logged out locally:", err);
-            toast.success("Logout successful!");
+            console.error("Logout error", err);
         }
 
         navigate("/", { replace: true });
-    };
+    }, [navigate]);
 
     useEffect(() => {
-        const checkAuthStatus = async () => {
-            const accessToken = await cookieStore.get("access_token");
+        let isMounted = true;
 
-            if (!accessToken) {
-                setUser(null);
-                setReady(true);
-                return;
+        const initAuth = async () => {
+            if (localStorage.getItem("access_token")) {
+                await fetchCurrentUser();
+            } else {
+                // If no token, set loading to false immediately
+                setLoading(false);
             }
 
-            try {
-                await fetchCurrentUser();
-                setReady(true);
-            } catch {
+            if (isMounted) {
                 setReady(true);
             }
         };
 
-        checkAuthStatus();
-    }, []);
+        initAuth();
+
+        return () => {
+            isMounted = false;
+        };
+    }, [fetchCurrentUser]);
+
+    // Role checking helpers
+    const hasRole = useCallback((role: UserRole | UserRole[]): boolean => {
+        if (!user) return false;
+        if (Array.isArray(role)) {
+            return role.includes(user.role as UserRole);
+        }
+        return user.role === role;
+    }, [user]);
+
+    const isAdmin = hasRole('ADMIN');
+    const isStaff = hasRole(['ADMIN', 'STAFF']);
+    const isCustomer = hasRole('CUSTOMER');
+    const isShipper = hasRole('SHIPPER');
 
     const value = {
         user,
+        loading,
+        error,
         login,
         logout,
-        refreshUser: fetchCurrentUser
+        refreshUser: fetchCurrentUser,
+        hasRole,
+        isAdmin,
+        isStaff,
+        isCustomer,
+        isShipper,
+        role: (user?.role as UserRole) || null,
     };
 
     return <UserContext.Provider value={value}>{ready ? children : null}</UserContext.Provider>;

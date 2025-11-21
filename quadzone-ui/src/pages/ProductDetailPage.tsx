@@ -1,28 +1,31 @@
 import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { useCart } from "../contexts/CartContext";
-import type { Product } from "../types/Product";
-import API from "@/api/base";
+import type { ProductDetailsResponse } from "../api/types";
+import { getProduct } from "../api/products";
 import { toast } from "react-toastify";
 
 const ProductDetailPage = () => {
     const { id } = useParams();
-    const [product, setProduct] = useState<Product | null>(null);
+    const [product, setProduct] = useState<ProductDetailsResponse | null>(null);
     const [loading, setLoading] = useState(true);
     const { addToCart } = useCart();
 
     useEffect(() => {
-        const response = API.get("/public/products/" + id);
-        console.log(response);
-
-        try {
-            response.then((res) => {
-                setProduct(res.data);
+        if (!id) return;
+        const loadProduct = async () => {
+            try {
+                const data = await getProduct(Number(id));
+                // Map PublicProductDTO to ProductDetailsResponse structure if needed
+                // For now, we'll use it directly
+                setProduct(data as any);
                 setLoading(false);
-            });
-        } catch {
-            toast.error("Failed to load product details. Please try again later.");
-        }
+            } catch {
+                toast.error("Failed to load product details. Please try again later.");
+                setLoading(false);
+            }
+        };
+        loadProduct();
     }, [id]);
 
     if (loading) return <div className="text-center py-5">Loading product details...</div>;
@@ -39,12 +42,12 @@ const ProductDetailPage = () => {
                             Home
                         </Link>
                     </li>
-                    {product.subCategory.id && (
+                    {product.subCategoryId && (
                         <li className="breadcrumb-item">
                             <Link
-                                to={`/subCategory/${product.subCategory.id}`}
+                                to={`/subCategory/${product.subCategoryId}`}
                                 className="text-muted text-decoration-none">
-                                {product.subCategory.name}
+                                {product.subCategoryName || "Category"}
                             </Link>
                         </li>
                     )}
@@ -126,7 +129,7 @@ const ProductDetailPage = () => {
                 <div className="tab-content p-4 border border-top-0 rounded-bottom shadow-sm">
                     {/* 📄 Description */}
                     <div className="tab-pane fade show active" id="description" role="tabpanel">
-                        {product.isActive ? (
+                        {!product.isActive ? (
                             <p>This product is currently unavailable.</p>
                         ) : (
                             <p>
@@ -142,27 +145,8 @@ const ProductDetailPage = () => {
                     <div className="tab-pane fade" id="review" role="tabpanel">
                         <div className="mb-3">
                             <h5 className="fw-bold">Customer Reviews</h5>
-                            {product.reviews && product.reviews.length > 0 ? (
-                                <ul className="list-group list-group-flush">
-                                    {product.reviews.map((rev) => (
-                                        <li key={rev.id} className="list-group-item">
-                                            <div className="d-flex justify-content-between">
-                                                <strong>{rev.userName || "Anonymous"}</strong>
-                                                <small className="text-muted">
-                                                    {rev.createdAt ? new Date(rev.createdAt).toLocaleDateString() : ""}
-                                                </small>
-                                            </div>
-                                            <div className="text-warning small">
-                                                {"★".repeat(rev.rating)}
-                                                {"☆".repeat(5 - rev.rating)}
-                                            </div>
-                                            <p className="mb-0">{rev.text}</p>
-                                        </li>
-                                    ))}
-                                </ul>
-                            ) : (
-                                <p className="text-muted small">No reviews yet. Be the first to review this product!</p>
-                            )}
+                            {/* Reviews will be available when using ProductDetailsResponse */}
+                            <p className="text-muted small">No reviews yet. Be the first to review this product!</p>
                         </div>
 
                         {/* Add Review

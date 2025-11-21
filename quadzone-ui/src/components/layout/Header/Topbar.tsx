@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import { useUser } from "../../../hooks/useUser";
+import CurrencyToggle from "./CurrencyToggle";
 
 const Topbar = () => {
     const { user, logout } = useUser();
@@ -32,16 +33,7 @@ const Topbar = () => {
                             </li>
                             <li className="list-inline-item mr-0 u-header-topbar__nav-item u-header-topbar__nav-item-border u-header-topbar__nav-item-no-border u-header-topbar__nav-item-border-single">
                                 <div className="d-flex align-items-center">
-                                    <div className="position-relative">
-                                        <a
-                                            className="dropdown-nav-link dropdown-toggle d-flex align-items-center u-header-topbar__nav-link font-weight-normal"
-                                            href="#"
-                                            onClick={(e) => e.preventDefault()}>
-                                            <span className="d-none d-sm-inline-flex align-items-center">
-                                                <i className="ec ec-dollar mr-1"></i> Dollar (US)
-                                            </span>
-                                        </a>
-                                    </div>
+                                    <CurrencyToggle />
                                 </div>
                             </li>
 
@@ -53,9 +45,7 @@ const Topbar = () => {
                                         <Link to="/my-account" className="u-header-topbar__nav-link">
                                             <i className="ec ec-user mr-1"></i>
                                             Hi,{" "}
-                                            {user && user.firstName
-                                                ? `${user.firstName} ${user.lastName}`
-                                                : "My Account"}
+                                            {user ? `${user.firstName} ${user.lastName}`.trim() : "My Account"}
                                         </Link>
                                     </li>
                                     <li className="list-inline-item mr-0 u-header-topbar__nav-item u-header-topbar__nav-item-border">

@@ -1,8 +1,11 @@
 import { Link } from "react-router-dom";
 import { useCart } from "../../contexts/CartContext";
+import { useCurrency } from "../../contexts/CurrencyContext";
+import { fCurrency } from "../../utils/formatters";
 
 const CartIcon = () => {
     const { totalItems, totalPrice } = useCart();
+    const { currency, convertPrice } = useCurrency();
 
     return (
         <li className="col pr-xl-0 px-2 px-sm-3">
@@ -17,7 +20,7 @@ const CartIcon = () => {
                     {totalItems}
                 </span>
                 <span className="d-none d-xl-block font-weight-bold font-size-16 text-gray-90 ml-3">
-                    ${totalPrice.toFixed(2)}
+                    {fCurrency(convertPrice(totalPrice), { currency })}
                 </span>
             </Link>
         </li>
