@@ -135,6 +135,11 @@ const FooterNav = () => {
                                 <h6 className="mb-3 font-weight-bold">Customer Care</h6>
                                 <ul className="list-group list-group-flush list-group-borderless mb-0 list-group-transparent">
                                     <li>
+                                        <Link className="list-group-item list-group-item-action" to="/about-us">
+                                            About Us
+                                        </Link>
+                                    </li>
+                                    <li>
                                         <Link className="list-group-item list-group-item-action" to="/account">
                                             My Account
                                         </Link>
