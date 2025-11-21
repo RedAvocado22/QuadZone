@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
-import { useRouter } from 'src/routes/hooks';
+import { useRouter } from 'src/routing/hooks';
 
 import Box from '@mui/material/Box';
 import Card from '@mui/material/Card';
@@ -12,7 +12,7 @@ import Alert from '@mui/material/Alert';
 
 import { DashboardContent } from 'src/layouts/dashboard';
 import { productsApi } from 'src/api/productsAdmin';
-import { fCurrency } from 'src/utils/format-number';
+import { fCurrency } from 'src/utils/formatters';
 import { useCurrency } from 'src/contexts/CurrencyContext';
 import { Label } from 'src/components/label';
 import { ColorPreview } from 'src/components/color-utils';
@@ -33,7 +33,12 @@ export function ProductDetailsView() {
       setLoading(true);
       setError(null);
       try {
-        const data = await productsApi.getById(id);
+        const productId = Number(id);
+        if (isNaN(productId)) {
+          setError('Invalid product ID');
+          return;
+        }
+        const data = await productsApi.getById(productId);
         setProduct(data);
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to load product');
@@ -94,7 +99,7 @@ export function ProductDetailsView() {
             <Box sx={{ display: 'flex', gap: 3 }}>
               <Box
                 component="img"
-                src={product.coverUrl || '/assets/images/product/product-1.webp'}
+                src={product.imageUrl || '/assets/images/product/product-1.webp'}
                 alt={product.name}
                 sx={{
                   width: 300,
@@ -108,13 +113,13 @@ export function ProductDetailsView() {
                   <Typography variant="h5" gutterBottom>
                     {product.name}
                   </Typography>
-                  {product.status && (
+                  {!product.isActive && (
                     <Label
                       variant="inverted"
-                      color={(product.status === 'sale' && 'error') || 'info'}
+                      color="error"
                       sx={{ mt: 1 }}
                     >
-                      {product.status}
+                      Locked
                     </Label>
                   )}
                 </Box>
@@ -124,29 +129,16 @@ export function ProductDetailsView() {
                     Price
                   </Typography>
                   <Typography variant="h6">
-                    {product.priceSale && (
-                      <Typography
-                        component="span"
-                        variant="body1"
-                        sx={{
-                          color: 'text.disabled',
-                          textDecoration: 'line-through',
-                          mr: 1,
-                        }}
-                      >
-                        {fCurrency(convertPrice(product.priceSale), { currency })}
-                      </Typography>
-                    )}
                     {fCurrency(convertPrice(product.price), { currency })}
                   </Typography>
                 </Box>
 
-                {product.colors && product.colors.length > 0 && (
+                {product.color && (
                   <Box>
                     <Typography variant="body2" color="text.secondary" gutterBottom>
-                      Colors
+                      Color
                     </Typography>
-                    <ColorPreview colors={product.colors} />
+                    <ColorPreview colors={[product.color]} />
                   </Box>
                 )}
 
@@ -166,4 +158,3 @@ export function ProductDetailsView() {
     </DashboardContent>
   );
 }
-

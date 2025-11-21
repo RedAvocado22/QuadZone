@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
-import { useRouter } from 'src/routes/hooks';
+import { useRouter } from 'src/routing/hooks';
 
 import Box from '@mui/material/Box';
 import Card from '@mui/material/Card';

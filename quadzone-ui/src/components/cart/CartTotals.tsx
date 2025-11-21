@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useCart } from "../../contexts/CartContext";
 import { useCurrency } from "../../contexts/CurrencyContext";
-import { fCurrency } from "../../utils/format-number";
+import { fCurrency } from "../../utils/formatters";
 
 const CartTotals = () => {
     const { totalPrice } = useCart();

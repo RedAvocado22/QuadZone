@@ -12,7 +12,7 @@ import CircularProgress from '@mui/material/CircularProgress';
 
 import { useUsers } from 'src/hooks/useUsers';
 import { DashboardContent } from 'src/layouts/dashboard';
-import { useRouter } from 'src/routes/hooks';
+import { useRouter } from 'src/routing/hooks';
 import { usersApi } from 'src/api/users';
 
 import { Iconify } from 'src/components/iconify';
@@ -68,12 +68,12 @@ export function UserView() {
     const sorted = [...users].sort((a, b) => {
       const aValue = a[table.orderBy as keyof typeof a];
       const bValue = b[table.orderBy as keyof typeof b];
-      
+
       if (aValue === undefined || bValue === undefined) return 0;
-      
+
       const aStr = String(aValue).toLowerCase();
       const bStr = String(bValue).toLowerCase();
-      
+
       if (table.order === 'asc') {
         return aStr.localeCompare(bStr);
       }

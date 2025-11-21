@@ -1,4 +1,6 @@
-import { useState, useEffect, useRef } from 'react';
+import { useEffect, useRef } from 'react';
+import { useFormik } from 'formik';
+import * as yup from 'yup';
 
 import Box from '@mui/material/Box';
 import Card from '@mui/material/Card';
@@ -19,61 +21,103 @@ import { Iconify } from 'src/components/iconify';
 import { DashboardContent } from 'src/layouts/dashboard';
 import { productsApi, type Product } from 'src/api/productsAdmin';
 import { uploadApi } from 'src/api/upload';
+import { yupName, yupPrice, yupUrl, yupOptionalNumber } from 'src/utils/Validation';
 
 // ----------------------------------------------------------------------
 
 interface ProductEditFormProps {
-  productId: string;
+  productId: string | number;
   onSuccess?: () => void;
   onCancel?: () => void;
 }
 
+interface FormValues {
+  name: string;
+  price: number;
+  priceSale: number | null;
+  coverUrl: string;
+  status: string;
+  description: string;
+  imageMethod: 'url' | 'upload';
+}
+
+const productEditSchema = yup.object({
+  name: yupName,
+  price: yupPrice,
+  priceSale: yupOptionalNumber,
+  coverUrl: yupUrl,
+  status: yup.string(),
+  description: yup.string().nullable(),
+  imageMethod: yup.string().oneOf(['url', 'upload']).required(),
+});
+
 export function ProductEditForm({ productId, onSuccess, onCancel }: ProductEditFormProps) {
-  const [loading, setLoading] = useState(false);
-  const [loadingProduct, setLoadingProduct] = useState(true);
-  const [uploading, setUploading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [imageMethod, setImageMethod] = useState<'url' | 'upload'>('url');
-  const [previewUrl, setPreviewUrl] = useState<string>('');
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const [formData, setFormData] = useState<Omit<Product, 'id'>>({
-    name: '',
-    price: 0,
-    priceSale: null,
-    coverUrl: '',
-    colors: [],
-    status: '',
-    description: '',
+  const formik = useFormik<FormValues>({
+    initialValues: {
+      name: '',
+      price: 0,
+      priceSale: null,
+      coverUrl: '',
+      status: '',
+      description: '',
+      imageMethod: 'url',
+    },
+    validationSchema: productEditSchema,
+    enableReinitialize: true,
+    onSubmit: async (values, { setSubmitting, setStatus }) => {
+      try {
+        const id = typeof productId === 'string' ? Number(productId) : productId;
+        if (isNaN(id)) {
+          formik.setStatus('Invalid product ID');
+          return;
+        }
+        const productData = {
+          name: values.name,
+          price: values.price,
+          imageUrl: values.coverUrl || '',
+          description: values.description || '',
+          status: values.status || '',
+        } as Partial<Product> & { status?: string };
+
+        await productsApi.update(id, productData);
+
+        if (onSuccess) {
+          onSuccess();
+        }
+      } catch (error: any) {
+        const errorMessage = error?.response?.data?.message || error?.message || 'Failed to update product';
+        setStatus(errorMessage);
+      } finally {
+        setSubmitting(false);
+      }
+    },
   });
 
+  // Load product data
   useEffect(() => {
     const loadProduct = async () => {
-      setLoadingProduct(true);
-      setError(null);
       try {
-        const product = await productsApi.getById(productId);
-        setFormData({
+        const id = typeof productId === 'string' ? Number(productId) : productId;
+        if (isNaN(id)) {
+          formik.setStatus('Invalid product ID');
+          return;
+        }
+        const product = await productsApi.getById(id);
+        const imageMethod = product.imageUrl?.startsWith('data:') ? 'upload' : 'url';
+
+        formik.setValues({
           name: product.name || '',
           price: product.price || 0,
-          priceSale: product.priceSale ?? null,
-          coverUrl: product.coverUrl || '',
-          colors: product.colors || [],
-          status: product.status || '',
+          priceSale: null,
+          coverUrl: product.imageUrl || '',
+          status: product.isActive ? '' : 'locked',
           description: product.description || '',
+          imageMethod,
         });
-        if (product.coverUrl) {
-          setPreviewUrl(product.coverUrl);
-          if (product.coverUrl.startsWith('data:')) {
-            setImageMethod('upload');
-          } else {
-            setImageMethod('url');
-          }
-        }
-      } catch (err) {
-        setError(err instanceof Error ? err.message : 'Failed to load product');
-      } finally {
-        setLoadingProduct(false);
+      } catch (error: any) {
+        formik.setStatus(error?.message || 'Failed to load product');
       }
     };
 
@@ -82,25 +126,13 @@ export function ProductEditForm({ productId, onSuccess, onCancel }: ProductEditF
     }
   }, [productId]);
 
-  const handleChange = (field: keyof typeof formData) => (
-    event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement> | { target: { value: unknown } }
-  ) => {
-    const value = event.target.value;
-    setFormData((prev) => ({
-      ...prev,
-      [field]: value,
-    }));
-    setError(null);
-  };
-
   const handleImageMethodChange = (
     _event: React.MouseEvent<HTMLElement>,
     newMethod: 'url' | 'upload' | null
   ) => {
     if (newMethod !== null) {
-      setImageMethod(newMethod);
-      setPreviewUrl('');
-      setFormData((prev) => ({ ...prev, coverUrl: '' }));
+      formik.setFieldValue('imageMethod', newMethod);
+      formik.setFieldValue('coverUrl', '');
     }
   };
 
@@ -109,65 +141,39 @@ export function ProductEditForm({ productId, onSuccess, onCancel }: ProductEditF
     if (!file) return;
 
     if (!file.type.startsWith('image/')) {
-      setError('Please select an image file');
+      formik.setFieldError('coverUrl', 'Please select an image file');
       return;
     }
 
     if (file.size > 5 * 1024 * 1024) {
-      setError('Image size should be less than 5MB');
+      formik.setFieldError('coverUrl', 'Image size must be less than 5MB');
       return;
     }
 
-    setUploading(true);
-    setError(null);
-
+    formik.setSubmitting(true);
     try {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setPreviewUrl(reader.result as string);
-      };
-      reader.readAsDataURL(file);
-
-      const uploadResult = await uploadApi.uploadImage(file);
-      setFormData((prev) => ({ ...prev, coverUrl: uploadResult.url }));
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to upload image');
+      const result = await uploadApi.uploadImage(file);
+      formik.setFieldValue('coverUrl', result.url);
+      formik.setFieldError('coverUrl', undefined);
+    } catch (error: any) {
+      formik.setFieldError('coverUrl', error?.message || 'Failed to upload image');
     } finally {
-      setUploading(false);
+      formik.setSubmitting(false);
     }
   };
 
   const handleRemoveImage = () => {
-    setPreviewUrl('');
-    setFormData((prev) => ({ ...prev, coverUrl: '' }));
+    formik.setFieldValue('coverUrl', '');
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
     }
   };
 
-  const handleSubmit = async (event: React.FormEvent) => {
-    event.preventDefault();
-    setError(null);
+  const previewUrl = formik.values.coverUrl && formik.values.imageMethod === 'upload'
+    ? formik.values.coverUrl
+    : '';
 
-    if (!formData.name || !formData.price) {
-      setError('Please fill in all required fields');
-      return;
-    }
-
-    setLoading(true);
-    try {
-      await productsApi.update(productId, formData);
-      if (onSuccess) {
-        onSuccess();
-      }
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to update product');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  if (loadingProduct) {
+  if (formik.values.name === '' && !formik.status) {
     return (
       <DashboardContent>
         <Box sx={{ display: 'flex', justifyContent: 'center', p: 3 }}>
@@ -188,41 +194,59 @@ export function ProductEditForm({ productId, onSuccess, onCancel }: ProductEditF
         </Box>
 
         <Card sx={{ p: 3 }}>
-          <form onSubmit={handleSubmit}>
+          <form onSubmit={formik.handleSubmit}>
             <Stack spacing={3}>
-              {error && <Alert severity="error">{error}</Alert>}
+              {formik.status && (
+                <Alert severity="error" onClose={() => formik.setStatus(null)}>
+                  {formik.status}
+                </Alert>
+              )}
 
               <TextField
                 fullWidth
                 label="Product Name"
+                name="name"
                 required
-                value={formData.name}
-                onChange={handleChange('name')}
+                value={formik.values.name}
+                onChange={formik.handleChange}
+                onBlur={formik.handleBlur}
+                error={!!(formik.touched.name && formik.errors.name)}
+                helperText={formik.touched.name && formik.errors.name}
               />
 
               <Box sx={{ display: 'flex', gap: 2 }}>
                 <TextField
                   fullWidth
                   label="Price"
+                  name="price"
                   type="number"
                   required
-                  value={formData.price || ''}
-                  onChange={handleChange('price')}
+                  value={formik.values.price || ''}
+                  onChange={(e) => formik.setFieldValue('price', parseFloat(e.target.value) || 0)}
+                  onBlur={formik.handleBlur}
+                  error={!!(formik.touched.price && formik.errors.price)}
+                  helperText={formik.touched.price && formik.errors.price}
                 />
                 <TextField
                   fullWidth
                   label="Sale Price (optional)"
+                  name="priceSale"
                   type="number"
-                  value={formData.priceSale || ''}
-                  onChange={handleChange('priceSale')}
+                  value={formik.values.priceSale || ''}
+                  onChange={(e) => formik.setFieldValue('priceSale', e.target.value ? parseFloat(e.target.value) : null)}
+                  onBlur={formik.handleBlur}
+                  error={!!(formik.touched.priceSale && formik.errors.priceSale)}
+                  helperText={formik.touched.priceSale && formik.errors.priceSale}
                 />
               </Box>
 
               <FormControl fullWidth>
                 <InputLabel>Status</InputLabel>
                 <Select
-                  value={formData.status || ''}
-                  onChange={handleChange('status')}
+                  name="status"
+                  value={formik.values.status}
+                  onChange={formik.handleChange}
+                  onBlur={formik.handleBlur}
                   label="Status"
                 >
                   <MenuItem value="">None</MenuItem>
@@ -234,10 +258,14 @@ export function ProductEditForm({ productId, onSuccess, onCancel }: ProductEditF
               <TextField
                 fullWidth
                 label="Description"
+                name="description"
                 multiline
                 rows={4}
-                value={formData.description || ''}
-                onChange={handleChange('description')}
+                value={formik.values.description}
+                onChange={formik.handleChange}
+                onBlur={formik.handleBlur}
+                error={!!(formik.touched.description && formik.errors.description)}
+                helperText={formik.touched.description && formik.errors.description}
               />
 
               <Box>
@@ -245,7 +273,7 @@ export function ProductEditForm({ productId, onSuccess, onCancel }: ProductEditF
                   Product Image
                 </Typography>
                 <ToggleButtonGroup
-                  value={imageMethod}
+                  value={formik.values.imageMethod}
                   exclusive
                   onChange={handleImageMethodChange}
                   aria-label="image method"
@@ -259,12 +287,16 @@ export function ProductEditForm({ productId, onSuccess, onCancel }: ProductEditF
                   </ToggleButton>
                 </ToggleButtonGroup>
 
-                {imageMethod === 'url' ? (
+                {formik.values.imageMethod === 'url' ? (
                   <TextField
                     fullWidth
                     label="Image URL"
-                    value={formData.coverUrl || ''}
-                    onChange={handleChange('coverUrl')}
+                    name="coverUrl"
+                    value={formik.values.coverUrl}
+                    onChange={formik.handleChange}
+                    onBlur={formik.handleBlur}
+                    error={!!(formik.touched.coverUrl && formik.errors.coverUrl)}
+                    helperText={formik.touched.coverUrl && formik.errors.coverUrl}
                     placeholder="https://example.com/image.jpg"
                   />
                 ) : (
@@ -279,12 +311,13 @@ export function ProductEditForm({ productId, onSuccess, onCancel }: ProductEditF
                     <Button
                       variant="outlined"
                       onClick={() => fileInputRef.current?.click()}
-                      disabled={uploading}
+                      disabled={formik.isSubmitting}
                       sx={{ mr: 2 }}
+                      startIcon={formik.isSubmitting ? <CircularProgress size={16} /> : undefined}
                     >
-                      {uploading ? 'Uploading...' : 'Choose Image'}
+                      {formik.isSubmitting ? 'Uploading...' : 'Choose Image'}
                     </Button>
-                    {previewUrl && (
+                    {formik.values.coverUrl && (
                       <Button
                         variant="outlined"
                         color="error"
@@ -293,6 +326,11 @@ export function ProductEditForm({ productId, onSuccess, onCancel }: ProductEditF
                       >
                         Remove
                       </Button>
+                    )}
+                    {formik.errors.coverUrl && (
+                      <Typography variant="caption" color="error" sx={{ display: 'block', mt: 1 }}>
+                        {formik.errors.coverUrl}
+                      </Typography>
                     )}
                     {previewUrl && (
                       <Box
@@ -312,11 +350,16 @@ export function ProductEditForm({ productId, onSuccess, onCancel }: ProductEditF
               </Box>
 
               <Box sx={{ display: 'flex', gap: 2, justifyContent: 'flex-end' }}>
-                <Button variant="outlined" onClick={onCancel} disabled={loading}>
+                <Button variant="outlined" onClick={onCancel} disabled={formik.isSubmitting}>
                   Cancel
                 </Button>
-                <Button type="submit" variant="contained" disabled={loading}>
-                  {loading ? <CircularProgress size={24} /> : 'Update Product'}
+                <Button
+                  type="submit"
+                  variant="contained"
+                  disabled={formik.isSubmitting}
+                  startIcon={formik.isSubmitting ? <CircularProgress size={20} /> : <Iconify icon="solar:check-circle-bold" />}
+                >
+                  {formik.isSubmitting ? 'Updating...' : 'Update Product'}
                 </Button>
               </Box>
             </Stack>
@@ -326,4 +369,3 @@ export function ProductEditForm({ productId, onSuccess, onCancel }: ProductEditF
     </DashboardContent>
   );
 }
-

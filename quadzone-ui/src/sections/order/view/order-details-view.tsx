@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
-import { useRouter } from 'src/routes/hooks';
+import { useRouter } from 'src/routing/hooks';
 
 import Box from '@mui/material/Box';
 import Card from '@mui/material/Card';
@@ -13,7 +13,7 @@ import Alert from '@mui/material/Alert';
 import { DashboardContent } from 'src/layouts/dashboard';
 import { ordersApi } from 'src/api/orders';
 import { Label } from 'src/components/label';
-import { fCurrency } from 'src/utils/format-number';
+import { fCurrency } from 'src/utils/formatters';
 
 // ----------------------------------------------------------------------
 

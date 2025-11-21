@@ -1,6 +1,7 @@
 import { useState, useCallback } from 'react';
 
 import Box from '@mui/material/Box';
+import Card from '@mui/material/Card';
 import Grid from '@mui/material/Grid';
 import Button from '@mui/material/Button';
 import Pagination from '@mui/material/Pagination';
@@ -9,7 +10,7 @@ import CircularProgress from '@mui/material/CircularProgress';
 
 import { useProducts as useAdminProducts } from 'src/hooks/useProductsAdmin';
 import { DashboardContent } from 'src/layouts/dashboard';
-import { useRouter } from 'src/routes/hooks';
+import { useRouter } from 'src/routing/hooks';
 import { productsApi } from 'src/api/productsAdmin';
 
 import { ProductItem } from '../product-item';
@@ -17,6 +18,7 @@ import { ProductSort } from '../product-sort';
 import { ProductFilters } from '../product-filters';
 
 import { Iconify } from 'src/components/iconify';
+import { PostSearch } from '../../blog/post-search';
 
 import type { FiltersProps } from '../product-filters';
 
@@ -67,12 +69,14 @@ export function ProductsView() {
   const [sortBy, setSortBy] = useState('featured');
   const [page, setPage] = useState(0);
   const [openFilter, setOpenFilter] = useState(false);
+  const [search, setSearch] = useState('');
   const [filters, setFilters] = useState<FiltersProps>(defaultFilters);
 
   // Fetch products from API
   const { products, loading, error, total, refetch } = useAdminProducts({
     page,
     pageSize: 12,
+    search,
     category: filters.category,
     price: filters.price,
     gender: filters.gender,
@@ -102,6 +106,11 @@ export function ProductsView() {
     setPage(newPage - 1);
   }, []);
 
+  const handleSearch = useCallback((searchValue: string) => {
+    setSearch(searchValue);
+    setPage(0);
+  }, []);
+
   const canReset = Object.keys(filters).some(
     (key) => filters[key as keyof FiltersProps] !== defaultFilters[key as keyof FiltersProps]
   );
@@ -112,15 +121,15 @@ export function ProductsView() {
     router.push('/admin/products/create');
   }, [router]);
 
-  const handleViewDetails = useCallback((id: string) => {
+  const handleViewDetails = useCallback((id: number) => {
     router.push(`/admin/products/${id}`);
   }, [router]);
 
-  const handleEdit = useCallback((id: string) => {
+  const handleEdit = useCallback((id: number) => {
     router.push(`/admin/products/${id}/edit`);
   }, [router]);
 
-  const handleLock = useCallback(async (id: string) => {
+  const handleLock = useCallback(async (id: number) => {
     if (window.confirm('Are you sure you want to lock this product?')) {
       try {
         await productsApi.update(id, { status: 'locked' as any });
@@ -132,7 +141,7 @@ export function ProductsView() {
     }
   }, [refetch]);
 
-  const handleUnlock = useCallback(async (id: string) => {
+  const handleUnlock = useCallback(async (id: number) => {
     if (window.confirm('Are you sure you want to unlock this product?')) {
       try {
         await productsApi.update(id, { status: '' as any });
@@ -146,109 +155,126 @@ export function ProductsView() {
 
   return (
     <DashboardContent>
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 5 }}>
-        <Typography variant="h4">
+      <Box
+        sx={{
+          mb: 5,
+          display: 'flex',
+          alignItems: 'center',
+        }}
+      >
+        <Typography variant="h4" sx={{ flexGrow: 1 }}>
           Products
         </Typography>
         <Button
           variant="contained"
+          color="inherit"
           startIcon={<Iconify icon="mingcute:add-line" />}
           onClick={handleCreateProduct}
         >
           New Product
         </Button>
       </Box>
-      <Box
-        sx={{
-          mb: 5,
-          display: 'flex',
-          alignItems: 'center',
-          flexWrap: 'wrap-reverse',
-          justifyContent: 'flex-end',
-        }}
-      >
+      <Card>
         <Box
           sx={{
-            my: 1,
-            gap: 1,
-            flexShrink: 0,
+            mb: 3,
+            p: 3,
             display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            flexWrap: 'wrap',
+            gap: 2,
           }}
         >
-          <ProductFilters
-            canReset={canReset}
-            filters={filters}
-            onSetFilters={handleSetFilters}
-            openFilter={openFilter}
-            onOpenFilter={handleOpenFilter}
-            onCloseFilter={handleCloseFilter}
-            onResetFilter={() => setFilters(defaultFilters)}
-            options={{
-              genders: GENDER_OPTIONS,
-              categories: CATEGORY_OPTIONS,
-              ratings: RATING_OPTIONS,
-              price: PRICE_OPTIONS,
-              colors: COLOR_OPTIONS,
+          <PostSearch onSearch={handleSearch} />
+          <Box
+            sx={{
+              my: 1,
+              gap: 1,
+              flexShrink: 0,
+              display: 'flex',
             }}
-          />
+          >
+            <ProductFilters
+              canReset={canReset}
+              filters={filters}
+              onSetFilters={handleSetFilters}
+              openFilter={openFilter}
+              onOpenFilter={handleOpenFilter}
+              onCloseFilter={handleCloseFilter}
+              onResetFilter={() => setFilters(defaultFilters)}
+              options={{
+                genders: GENDER_OPTIONS,
+                categories: CATEGORY_OPTIONS,
+                ratings: RATING_OPTIONS,
+                price: PRICE_OPTIONS,
+                colors: COLOR_OPTIONS,
+              }}
+            />
 
-          <ProductSort
-            sortBy={sortBy}
-            onSort={handleSort}
-            options={[
-              { value: 'featured', label: 'Featured' },
-              { value: 'newest', label: 'Newest' },
-              { value: 'priceDesc', label: 'Price: High-Low' },
-              { value: 'priceAsc', label: 'Price: Low-High' },
-            ]}
-          />
+            <ProductSort
+              sortBy={sortBy}
+              onSort={handleSort}
+              options={[
+                { value: 'featured', label: 'Featured' },
+                { value: 'newest', label: 'Newest' },
+                { value: 'priceDesc', label: 'Price: High-Low' },
+                { value: 'priceAsc', label: 'Price: Low-High' },
+              ]}
+            />
+          </Box>
         </Box>
-      </Box>
 
-      {loading ? (
-        <Box sx={{ display: 'flex', justifyContent: 'center', p: 3 }}>
-          <CircularProgress />
-        </Box>
-      ) : error ? (
-        <Box sx={{ p: 3, textAlign: 'center' }}>
-          <Typography color="error">Error loading products: {error.message}</Typography>
-          <Box component="button" onClick={refetch} sx={{ mt: 2, p: 1, cursor: 'pointer' }}>Retry</Box>
-        </Box>
-      ) : products.length === 0 ? (
-        <Box sx={{ p: 3, textAlign: 'center' }}>
-          <Typography>No products found</Typography>
-        </Box>
-      ) : (
-        <>
-          <Grid container spacing={3}>
-            {products.map((product) => (
-              <Grid key={product.id} size={{ xs: 12, sm: 6, md: 3 }}>
-                <ProductItem 
-                  product={{
-                    ...product,
-                    status: product.status || '',
-                    coverUrl: product.coverUrl || '',
-                    colors: product.colors || [],
-                    priceSale: product.priceSale ?? null,
-                  }}
-                  onViewDetails={handleViewDetails}
-                  onEdit={handleEdit}
-                  onLock={handleLock}
-                  onUnlock={handleUnlock}
-                />
+        {loading ? (
+          <Box sx={{ display: 'flex', justifyContent: 'center', p: 3 }}>
+            <CircularProgress />
+          </Box>
+        ) : error ? (
+          <Box sx={{ p: 3, textAlign: 'center' }}>
+            <Typography color="error">Error loading products: {error.message}</Typography>
+            <Button onClick={refetch} sx={{ mt: 2 }}>Retry</Button>
+          </Box>
+        ) : products.length === 0 ? (
+          <Box sx={{ p: 3, textAlign: 'center' }}>
+            <Typography>No products found</Typography>
+          </Box>
+        ) : (
+          <>
+            <Box sx={{ p: 3 }}>
+              <Grid container spacing={3}>
+                {products.map((product) => (
+                  <Grid key={product.id} size={{ xs: 12, sm: 6, md: 3 }}>
+                    <ProductItem
+                      product={{
+                        id: product.id,
+                        name: product.name,
+                        price: product.price,
+                        status: product.isActive ? '' : 'locked',
+                        coverUrl: product.imageUrl || '',
+                        colors: product.color ? [product.color] : [],
+                        priceSale: null,
+                      }}
+                      onViewDetails={handleViewDetails}
+                      onEdit={handleEdit}
+                      onLock={handleLock}
+                      onUnlock={handleUnlock}
+                    />
+                  </Grid>
+                ))}
               </Grid>
-            ))}
-          </Grid>
+            </Box>
 
-          <Pagination 
-            count={totalPages} 
-            page={page + 1}
-            onChange={handlePageChange}
-            color="primary" 
-            sx={{ mt: 8, mx: 'auto' }} 
-          />
-        </>
-      )}
+            <Box sx={{ p: 3, pt: 0, display: 'flex', justifyContent: 'center' }}>
+              <Pagination
+                count={totalPages}
+                page={page + 1}
+                onChange={handlePageChange}
+                color="primary"
+              />
+            </Box>
+          </>
+        )}
+      </Card>
     </DashboardContent>
   );
 }

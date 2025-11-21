@@ -19,7 +19,7 @@ import MenuItem, { menuItemClasses } from '@mui/material/MenuItem';
 
 import { useCategories } from 'src/hooks/useCategories';
 import { DashboardContent } from 'src/layouts/dashboard';
-import { useRouter } from 'src/routes/hooks';
+import { useRouter } from 'src/routing/hooks';
 import { categoriesApi } from 'src/api/categories';
 
 import { Label } from 'src/components/label';
@@ -35,12 +35,11 @@ import { emptyRows } from '../../user/utils';
 // ----------------------------------------------------------------------
 
 type CategoryRow = {
-  id: string;
+  id: number;
   name: string;
-  description?: string;
-  status: string;
+  active: boolean;
   productCount: number;
-  createdAt: string;
+  imageUrl: string | null;
 };
 
 export function CategoryView() {
@@ -64,16 +63,16 @@ export function CategoryView() {
     router.push('/admin/category/create');
   }, [router]);
 
-  const handleViewCategory = useCallback((id: string) => {
+  const handleViewCategory = useCallback((id: string | number) => {
     router.push(`/admin/category/${id}`);
   }, [router]);
 
-  const handleEditCategory = useCallback((id: string) => {
+  const handleEditCategory = useCallback((id: string | number) => {
     router.push(`/admin/category/${id}/edit`);
   }, [router]);
 
   const handleDeleteCategory = useCallback(
-    async (id: string) => {
+    async (id: string | number) => {
       if (!window.confirm('Are you sure you want to delete this category?')) {
         return;
       }
@@ -99,7 +98,7 @@ export function CategoryView() {
 
   const onSelectAllRows = useCallback((checked: boolean) => {
     if (checked) {
-      setSelected(categories.map((cat) => cat.id));
+      setSelected(categories.map((cat) => cat.id.toString()));
       return;
     }
     setSelected([]);
@@ -161,10 +160,8 @@ export function CategoryView() {
                     onSelectAllRows={onSelectAllRows}
                     headLabel={[
                       { id: 'name', label: 'Name' },
-                      { id: 'description', label: 'Description' },
                       { id: 'productCount', label: 'Products', align: 'center' },
-                      { id: 'status', label: 'Status' },
-                      { id: 'createdAt', label: 'Created' },
+                      { id: 'active', label: 'Status' },
                       { id: '' },
                     ]}
                   />
@@ -172,9 +169,15 @@ export function CategoryView() {
                     {categories.map((row) => (
                       <CategoryTableRow
                         key={row.id}
-                        row={row}
-                        selected={selected.includes(row.id)}
-                        onSelectRow={() => onSelectRow(row.id)}
+                        row={{
+                          id: row.id,
+                          name: row.name,
+                          active: row.active,
+                          productCount: row.productCount,
+                          imageUrl: row.imageUrl,
+                        }}
+                        selected={selected.includes(row.id.toString())}
+                        onSelectRow={() => onSelectRow(row.id.toString())}
                         onView={handleViewCategory}
                         onEdit={handleEditCategory}
                         onDelete={handleDeleteCategory}
@@ -185,7 +188,7 @@ export function CategoryView() {
                       <TableEmptyRows
                         height={68}
                         emptyRows={emptyRows(page, rowsPerPage, categories.length)}
-                        colSpan={7}
+                        colSpan={5}
                       />
                     )}
 
@@ -232,9 +235,9 @@ function CategoryTableRow({
   row: CategoryRow;
   selected: boolean;
   onSelectRow: () => void;
-  onView?: (id: string) => void;
-  onEdit?: (id: string) => void;
-  onDelete?: (id: string) => void;
+  onView?: (id: string | number) => void;
+  onEdit?: (id: string | number) => void;
+  onDelete?: (id: string | number) => void;
 }) {
   const [openPopover, setOpenPopover] = useState<HTMLButtonElement | null>(null);
 
@@ -280,10 +283,10 @@ function CategoryTableRow({
 
   return (
     <>
-      <TableRow 
-        hover 
-        tabIndex={-1} 
-        role="checkbox" 
+      <TableRow
+        hover
+        tabIndex={-1}
+        role="checkbox"
         selected={selected}
         sx={{
           '& .MuiTableCell-root': {
@@ -301,15 +304,13 @@ function CategoryTableRow({
           </Button>
         </TableCell>
 
-        <TableCell>{row.description || '-'}</TableCell>
-
         <TableCell align="center">{row.productCount}</TableCell>
 
         <TableCell>
-          <Label color={getStatusColor(row.status)}>{row.status}</Label>
+          <Label color={getStatusColor(row.active ? 'active' : 'inactive')}>
+            {row.active ? 'Active' : 'Inactive'}
+          </Label>
         </TableCell>
-
-        <TableCell>{new Date(row.createdAt).toLocaleDateString()}</TableCell>
 
         <TableCell align="right">
           <IconButton onClick={handleOpenPopover}>
@@ -360,4 +361,3 @@ function CategoryTableRow({
     </>
   );
 }
-
