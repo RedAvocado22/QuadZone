@@ -1,5 +1,7 @@
 // Shop Product Types
-import type { SubCategory } from './Product';
+import type { SubCategoryResponse } from '../api/types';
+
+type SubCategory = SubCategoryResponse;
 
 export interface Product {
   id: number;
@@ -54,4 +56,3 @@ export type ViewMode = 'grid' | 'grid-details' | 'list' | 'list-small';
 
 // Sort Options
 export type SortOption = 'default' | 'popularity' | 'rating' | 'latest' | 'price-low' | 'price-high';
-
