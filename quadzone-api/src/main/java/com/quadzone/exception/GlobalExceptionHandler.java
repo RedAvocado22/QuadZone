@@ -2,6 +2,8 @@ package com.quadzone.exception;
 
 import com.quadzone.exception.product.ProductNotFoundException;
 import com.quadzone.exception.user.InactiveAccountException;
+import com.quadzone.exception.user.InvalidTokenException;
+import com.quadzone.exception.user.SuspendedAccountException;
 import com.quadzone.exception.user.UserAlreadyExistsException;
 import com.quadzone.exception.user.UserNotExistsException;
 import org.springframework.http.HttpStatus;
@@ -89,6 +91,36 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(InactiveAccountException.class)
     public ResponseEntity<String> handleUserNotExistsException(InactiveAccountException ex) {
         return new ResponseEntity<>(ex.getMessage(), HttpStatus.FORBIDDEN);
+    }
+
+    @ExceptionHandler(InvalidTokenException.class)
+    public ResponseEntity<Map<String, Object>> handleInvalidTokenException(InvalidTokenException ex) {
+        Map<String, Object> body = new HashMap<>();
+        body.put("timestamp", LocalDateTime.now());
+        body.put("status", HttpStatus.BAD_REQUEST.value());
+        body.put("error", "Bad Request");
+        body.put("message", ex.getMessage());
+        return new ResponseEntity<>(body, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(SuspendedAccountException.class)
+    public ResponseEntity<Map<String, Object>> handleSuspendedAccountException(SuspendedAccountException ex) {
+        Map<String, Object> body = new HashMap<>();
+        body.put("timestamp", LocalDateTime.now());
+        body.put("status", HttpStatus.FORBIDDEN.value());
+        body.put("error", "Forbidden");
+        body.put("message", ex.getMessage());
+        return new ResponseEntity<>(body, HttpStatus.FORBIDDEN);
+    }
+
+    @ExceptionHandler(IllegalArgumentException.class)
+    public ResponseEntity<Map<String, Object>> handleIllegalArgumentException(IllegalArgumentException ex) {
+        Map<String, Object> body = new HashMap<>();
+        body.put("timestamp", LocalDateTime.now());
+        body.put("status", HttpStatus.BAD_REQUEST.value());
+        body.put("error", "Bad Request");
+        body.put("message", ex.getMessage());
+        return new ResponseEntity<>(body, HttpStatus.BAD_REQUEST);
     }
 
     /**
