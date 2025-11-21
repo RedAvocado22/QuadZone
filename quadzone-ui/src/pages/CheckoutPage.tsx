@@ -2,7 +2,7 @@ import { useMemo, useState, type FormEvent } from "react";
 import { useNavigate } from "react-router-dom";
 import { useCart } from "../contexts/CartContext";
 import { useCurrency } from "../contexts/CurrencyContext";
-import { fCurrency } from "../utils/format-number";
+import { fCurrency } from "../utils/formatters";
 import CheckoutBreadcrumb from "../components/checkout/CheckoutBreadcrumb";
 import ReturningCustomerSection from "../components/checkout/ReturningCustomerSection";
 import CouponSection from "../components/checkout/CouponSection";
@@ -13,7 +13,7 @@ import OrderSummary from "../components/checkout/OrderSummary";
 import PaymentMethods from "../components/checkout/PaymentMethod";
 import TermsCheckbox from "../components/checkout/TermsCheckbox";
 import type { AddressFields, AlertState, PaymentMethod } from "../types/checkout";
-import "../components/checkout/checkout.css";
+import "../assets/css/checkout.css";
 
 const emptyAddress: AddressFields = {
     firstName: "",

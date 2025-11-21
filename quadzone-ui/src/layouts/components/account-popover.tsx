@@ -12,9 +12,9 @@ import Typography from '@mui/material/Typography';
 import IconButton from '@mui/material/IconButton';
 import MenuItem, { menuItemClasses } from '@mui/material/MenuItem';
 
-import { useRouter, usePathname } from 'src/routes/hooks';
+import { useRouter, usePathname } from 'src/routing/hooks';
 
-import { useCurrentUser } from '../../hooks/useCurrentUser';
+import { useUser } from '../../hooks/useUser';
 
 // ----------------------------------------------------------------------
 
@@ -30,7 +30,7 @@ export type AccountPopoverProps = IconButtonProps & {
 export function AccountPopover({ data = [], sx, ...other }: AccountPopoverProps) {
   const router = useRouter();
   const pathname = usePathname();
-  const { user } = useCurrentUser();
+  const { user } = useUser();
 
   const [openPopover, setOpenPopover] = useState<HTMLButtonElement | null>(null);
 
