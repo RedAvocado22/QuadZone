@@ -1,5 +1,6 @@
 package com.quadzone.product.category;
 
+import com.quadzone.product.category.dto.CategoryUpdateRequest;
 import com.quadzone.product.category.sub_category.SubCategory;
 import jakarta.persistence.*;
 import lombok.*;
@@ -18,7 +19,6 @@ import java.util.List;
 public class Category {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id")
     private Long id;
 
     @Column
@@ -31,6 +31,7 @@ public class Category {
     private String imageUrl;
 
     @OneToMany(mappedBy = "category", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
     private List<SubCategory> subcategories = new ArrayList<>();
 
     public void addSubCategory(SubCategory subCategory) {
@@ -39,5 +40,18 @@ public class Category {
         }
         subcategories.add(subCategory);
         subCategory.setCategory(this);
+    }
+
+
+    public void updateFrom(CategoryUpdateRequest request) {
+        if (request.name() != null) {
+            this.setName(request.name());
+        }
+        if (request.active() != null) {
+            this.setActive(request.active());
+        }
+        if (request.imageUrl() != null) {
+            this.setImageUrl(request.imageUrl());
+        }
     }
 }

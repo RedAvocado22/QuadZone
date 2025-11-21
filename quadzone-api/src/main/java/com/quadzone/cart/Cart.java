@@ -16,12 +16,12 @@ import java.util.List;
 @Entity
 @Table(name = "cart")
 public class Cart {
-    @Column(name = "created_at", nullable = false)
-    private final LocalDateTime createdAt = LocalDateTime.now();
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-
     private Long id;
+
+    @Column(name = "created_at", nullable = false, updatable = false)
+    private final LocalDateTime createdAt = LocalDateTime.now();
 
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;

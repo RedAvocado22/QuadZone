@@ -3,7 +3,7 @@ package com.quadzone.product;
 import com.quadzone.order.OrderItem;
 import com.quadzone.product.category.sub_category.SubCategory;
 import com.quadzone.product.dto.ProductUpdateRequest;
-import com.quadzone.product.review.Review;
+import com.quadzone.review.Review;
 import jakarta.persistence.*;
 import lombok.*;
 

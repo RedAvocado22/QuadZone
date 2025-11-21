@@ -1,5 +1,4 @@
 import { Link, useNavigate } from "react-router-dom";
-import { useUser } from "../hooks/useUser";
 import { register } from "../api/auth";
 import { toast } from "react-toastify";
 import { useFormik } from "formik";
@@ -42,7 +41,7 @@ export default function RegisterPage() {
                     confirmPassword: values.confirmPassword
                 });
 
-                toast.success("Registration successful! Please log in.");
+                toast.success("Registration successful! Please check your email to active the account.");
                 resetForm();
                 navigate("/login");
             } catch (err: any) {

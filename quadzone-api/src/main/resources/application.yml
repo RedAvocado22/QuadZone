@@ -1,5 +1,5 @@
 frontend:
-  baseurl: http://localhost:5173
+  baseurl: ${FRONTEND_BASE_URL:http://localhost:5173}
 
 application:
   uploads:
@@ -12,22 +12,22 @@ spring:
     name: quadzone-api
     security:
       jwt:
-        secret: K/gL4Rj8LqP6sUaF/R+dE/pA7vLzN/tS+bJ5wD/aE/gH+kF3jL8aU/wJ/yE7gE/dK/xH/vJ/qM/aA==
+        secret: ${JWT_SECRET:K/gL4Rj8LqP6sUaF/R+dE/pA7vLzN/tS+bJ5wD/aE/gH+kF3jL8aU/wJ/yE7gE/dK/xH/vJ/qM/aA==}
         expiration: 300000
         refresh-token:
-          secret: mD/uJ/wP/sH/aE/gH+kF3jL8aU/wJ/yE7gE/dK/xH/vJ/qM/aK/gL4Rj8LqP6sUaF/R+dE/pA7vLzN/tS+bJ5wD==
+          secret: ${JWT_REFRESH_SECRET:mD/uJ/wP/sH/aE/gH+kF3jL8aU/wJ/yE7gE/dK/xH/vJ/qM/aK/gL4Rj8LqP6sUaF/R+dE/pA7vLzN/tS+bJ5wD==}
           expiration: 86400000 # 1 day
   main:
     banner-mode: off
   servlet:
     multipart:
-      max-file-size: 1GB
-      max-request-size: 1GB
+      max-file-size: 50MB
+      max-request-size: 50MB
   mail:
-    host: smtp.gmail.com
-    port: 587
-    username: quadzone04@gmail.com
-    password: hiel wsxf kven mvht
+    host: ${MAIL_HOST:smtp.gmail.com}
+    port: ${MAIL_PORT:587}
+    username: ${MAIL_USERNAME:quadzone04@gmail.com}
+    password: ${MAIL_PASSWORD:hiel wsxf kven mvht}
     properties:
       mail:
         smtp:
@@ -38,3 +38,4 @@ spring:
 logging:
   level:
     root: warn
+    com.quadzone.utils.email: info

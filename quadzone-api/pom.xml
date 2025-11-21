@@ -47,11 +47,7 @@
 		</dependency>
 
 		<!-- Json/JWT -->
-		<dependency>
-			<groupId>com.fasterxml.jackson.core</groupId>
-			<artifactId>jackson-core</artifactId>
-			<version>2.18.2</version>
-		</dependency>
+		<!-- Jackson is managed by Spring Boot parent, no need to specify version -->
 		<dependency>
 			<groupId>io.jsonwebtoken</groupId>
 			<artifactId>jjwt-api</artifactId>
@@ -104,7 +100,7 @@
 		<dependency>
 			<groupId>org.projectlombok</groupId>
 			<artifactId>lombok</artifactId>
-			<version>1.18.36</version>
+			<version>1.18.34</version>
 			<scope>provided</scope>
 		</dependency>
 

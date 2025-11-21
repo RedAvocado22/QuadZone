@@ -3,7 +3,7 @@ package com.quadzone.product.dto;
 import com.quadzone.product.Product;
 import com.quadzone.product.category.dto.CategoryResponse;
 import com.quadzone.product.category.sub_category.dto.SubCategoryResponse;
-import com.quadzone.product.review.dto.ReviewResponse;
+import com.quadzone.review.dto.ReviewResponse;
 
 import java.util.List;
 
