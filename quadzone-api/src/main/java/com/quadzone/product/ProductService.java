@@ -1,5 +1,6 @@
 package com.quadzone.product;
 
+import com.quadzone.admin.dto.ProductAdminResponse;
 import com.quadzone.exception.product.ProductNotFoundException;
 import com.quadzone.global.dto.PagedResponse;
 import com.quadzone.product.category.sub_category.SubCategoryRepository;
@@ -78,6 +79,7 @@ public class ProductService {
         }
         productRepository.deleteById(id);
     }
+
     @Transactional(readOnly = true)
     public PagedResponse<ProductResponse> findProducts(int page, int size, String search) {
         Pageable pageable = PageRequest.of(Math.max(page, 0), Math.max(size, 1), Sort.by(Sort.Direction.DESC, "createdAt"));
@@ -100,11 +102,57 @@ public class ProductService {
                 resultPage.getSize()
         );
     }
+
     @Transactional(readOnly = true)
     public ProductResponse findByIdForAdmin(Long id) {
         return productRepository.findById(id)
                 .map(objectMapper::toProductResponse)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Product not found: " + id));
+    }
+
+    // Admin methods with admin DTOs
+    @Transactional(readOnly = true)
+    public PagedResponse<ProductAdminResponse> findProductsForAdmin(int page, int size, String search) {
+        Pageable pageable = PageRequest.of(Math.max(page, 0), Math.max(size, 1), Sort.by(Sort.Direction.DESC, "createdAt"));
+
+        Page<Product> resultPage;
+        if (search != null && !search.isBlank()) {
+            resultPage = productRepository.search(search.trim(), pageable);
+        } else {
+            resultPage = productRepository.findAll(pageable);
+        }
+
+        var products = resultPage.stream()
+                .map(ProductAdminResponse::from)
+                .toList();
+
+        return new PagedResponse<>(
+                products,
+                resultPage.getTotalElements(),
+                resultPage.getNumber(),
+                resultPage.getSize()
+        );
+    }
+
+    @Transactional(readOnly = true)
+    public ProductAdminResponse findByIdForAdminWithDetails(Long id) {
+        return productRepository.findById(id)
+                .map(ProductAdminResponse::from)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Product not found: " + id));
+    }
+
+    public ProductAdminResponse createProductForAdmin(ProductRegisterRequest request) {
+        Product product = ProductRegisterRequest.toProduct(request);
+        return ProductAdminResponse.from(productRepository.save(product));
+    }
+
+    public ProductAdminResponse updateProductForAdmin(Long id, ProductUpdateRequest request) {
+        Product product = productRepository.findById(id)
+                .orElseThrow(() -> new ProductNotFoundException(id));
+
+        product.updateFrom(request);
+
+        return ProductAdminResponse.from(productRepository.save(product));
     }
 
     @Transactional

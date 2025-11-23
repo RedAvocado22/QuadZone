@@ -19,7 +19,7 @@ import MenuItem, { menuItemClasses } from '@mui/material/MenuItem';
 
 import { useOrders } from 'src/hooks/useOrders';
 import { DashboardContent } from 'src/layouts/dashboard';
-import { useRouter } from 'src/routes/hooks';
+import { useRouter } from 'src/routing/hooks';
 import { ordersApi } from 'src/api/orders';
 
 import { Label } from 'src/components/label';
@@ -35,14 +35,13 @@ import { emptyRows } from '../../user/utils';
 // ----------------------------------------------------------------------
 
 type OrderRow = {
-  id: string;
+  id: number;
   orderNumber: string;
   customerName: string;
-  total: number;
+  totalAmount: number;
   status: string;
-  paymentStatus: string;
-  createdAt: string;
-  items: number;
+  orderDate: string;
+  itemsCount: number;
 };
 
 export function OrderView() {
@@ -67,21 +66,21 @@ export function OrderView() {
   }, [router]);
 
   const handleViewOrder = useCallback(
-    (id: string) => {
+    (id: string | number) => {
       router.push(`/admin/order/${id}`);
     },
     [router]
   );
 
   const handleEditOrder = useCallback(
-    (id: string) => {
+    (id: string | number) => {
       router.push(`/admin/order/${id}/edit`);
     },
     [router]
   );
 
   const handleDeleteOrder = useCallback(
-    async (id: string) => {
+    async (id: string | number) => {
       if (!window.confirm('Are you sure you want to delete this order?')) {
         return;
       }
@@ -107,7 +106,7 @@ export function OrderView() {
 
   const onSelectAllRows = useCallback((checked: boolean) => {
     if (checked) {
-      setSelected(orders.map((ord) => ord.id));
+      setSelected(orders.map((ord) => ord.id.toString()));
       return;
     }
     setSelected([]);
@@ -170,11 +169,10 @@ export function OrderView() {
                     headLabel={[
                       { id: 'orderNumber', label: 'Order #' },
                       { id: 'customerName', label: 'Customer' },
-                      { id: 'items', label: 'Items', align: 'center' },
-                      { id: 'total', label: 'Total' },
+                      { id: 'itemsCount', label: 'Items', align: 'center' },
+                      { id: 'totalAmount', label: 'Total' },
                       { id: 'status', label: 'Status' },
-                      { id: 'paymentStatus', label: 'Payment' },
-                      { id: 'createdAt', label: 'Created' },
+                      { id: 'orderDate', label: 'Created' },
                       { id: '' },
                     ]}
                   />
@@ -182,9 +180,17 @@ export function OrderView() {
                     {orders.map((row) => (
                       <OrderTableRow
                         key={row.id}
-                        row={row}
-                        selected={selected.includes(row.id)}
-                        onSelectRow={() => onSelectRow(row.id)}
+                        row={{
+                          id: row.id,
+                          orderNumber: row.orderNumber,
+                          customerName: row.customerName,
+                          totalAmount: row.totalAmount,
+                          status: row.status,
+                          orderDate: row.orderDate,
+                          itemsCount: row.itemsCount,
+                        }}
+                        selected={selected.includes(row.id.toString())}
+                        onSelectRow={() => onSelectRow(row.id.toString())}
                         onView={handleViewOrder}
                         onEdit={handleEditOrder}
                         onDelete={handleDeleteOrder}
@@ -242,9 +248,9 @@ function OrderTableRow({
   row: OrderRow;
   selected: boolean;
   onSelectRow: () => void;
-  onView?: (id: string) => void;
-  onEdit?: (id: string) => void;
-  onDelete?: (id: string) => void;
+  onView?: (id: string | number) => void;
+  onEdit?: (id: string | number) => void;
+  onDelete?: (id: string | number) => void;
 }) {
   const [openPopover, setOpenPopover] = useState<HTMLButtonElement | null>(null);
 
@@ -292,25 +298,13 @@ function OrderTableRow({
     }
   };
 
-  const getPaymentStatusColor = (status: string) => {
-    switch (status.toLowerCase()) {
-      case 'paid':
-        return 'success';
-      case 'pending':
-        return 'warning';
-      case 'failed':
-        return 'error';
-      default:
-        return 'default';
-    }
-  };
 
   return (
     <>
-      <TableRow 
-        hover 
-        tabIndex={-1} 
-        role="checkbox" 
+      <TableRow
+        hover
+        tabIndex={-1}
+        role="checkbox"
         selected={selected}
         sx={{
           '& .MuiTableCell-root': {
@@ -330,19 +324,15 @@ function OrderTableRow({
 
         <TableCell>{row.customerName}</TableCell>
 
-        <TableCell align="center">{row.items}</TableCell>
+        <TableCell align="center">{row.itemsCount}</TableCell>
 
-        <TableCell>${row.total.toFixed(2)}</TableCell>
+        <TableCell>${row.totalAmount.toFixed(2)}</TableCell>
 
         <TableCell>
           <Label color={getStatusColor(row.status)}>{row.status}</Label>
         </TableCell>
 
-        <TableCell>
-          <Label color={getPaymentStatusColor(row.paymentStatus)}>{row.paymentStatus}</Label>
-        </TableCell>
-
-        <TableCell>{new Date(row.createdAt).toLocaleDateString()}</TableCell>
+        <TableCell>{new Date(row.orderDate).toLocaleDateString()}</TableCell>
 
         <TableCell align="right">
           <IconButton onClick={handleOpenPopover}>
@@ -393,4 +383,3 @@ function OrderTableRow({
     </>
   );
 }
-

@@ -1,69 +1,22 @@
 import API from "./base";
+import type { ProductAdminResponse, PagedResponse } from "./types";
 
-// ----------------------------------------------------------------------
-
-export interface Product {
-  id: string;
-  name: string;
-  price: number;
-  priceSale?: number | null;
-  coverUrl?: string;
-  colors?: string[];
-  status?: 'sale' | 'new' | 'locked' | 'active' | '';
-  description?: string;
-  brand?: string | null;
-  quantity?: number | null;
-}
-
-interface ProductDto {
-  id: number;
-  name: string;
-  brand: string | null;
-  price: number;
-  quantity: number | null;
-  imageUrl: string | null;
-  modelNumber?: string | null;
-  description?: string | null;
-  subCategory?: any;
-  category?: any;
-}
-
-export interface ProductsResponse {
-  data: Product[];
-  total: number;
-  page: number;
-  pageSize: number;
-}
-
-// ----------------------------------------------------------------------
-
-function mapProductToFrontend(dto: ProductDto): Product {
-  return {
-    id: String(dto.id),
-    name: dto.name,
-    price: dto.price,
-    priceSale: null,
-    coverUrl: dto.imageUrl ?? 'https://via.placeholder.com/400x400?text=Product',
-    colors: [],
-    status: 'active',
-    description: dto.description ?? dto.brand ?? '',
-    brand: dto.brand,
-    quantity: dto.quantity,
-  };
-}
+// Re-export for convenience
+export type { ProductAdminResponse as Product } from "./types";
+export type { PagedResponse as ProductsResponse } from "./types";
 
 export const productsApi = {
   // Get all products
-  getAll: async (params?: { 
-    page?: number; 
-    pageSize?: number; 
+  getAll: async (params?: {
+    page?: number;
+    pageSize?: number;
     search?: string;
     category?: string;
     price?: string;
     gender?: string[];
     colors?: string[];
     rating?: string;
-  }): Promise<ProductsResponse> => {
+  }): Promise<PagedResponse<ProductAdminResponse>> => {
     const {
       page = 0,
       pageSize = 12,
@@ -87,67 +40,53 @@ export const productsApi = {
     if (colors) queryParams.append('colors', colors.join(','));
     if (rating) queryParams.append('rating', rating);
 
-    const response = await API.get<{
-      data: ProductDto[];
-      total: number;
-      page: number;
-      pageSize: number;
-    }>(`/products/admin?${queryParams.toString()}`);
-
-    const payload = response.data;
-
-    return {
-      data: (payload.data ?? []).map(mapProductToFrontend),
-      total: payload.total ?? 0,
-      page: payload.page ?? page,
-      pageSize: payload.pageSize ?? pageSize,
-    };
+    const response = await API.get<PagedResponse<ProductAdminResponse>>(`/admin/products?${queryParams.toString()}`);
+    return response.data;
   },
 
   // Get product by ID
-  getById: async (id: string): Promise<Product> => {
-    const response = await API.get<ProductDto>(`/products/admin/${id}`);
-    const data = response.data;
-
-    return mapProductToFrontend(data);
+  getById: async (id: string | number): Promise<ProductAdminResponse> => {
+    const response = await API.get<ProductAdminResponse>(`/admin/products/${id}`);
+    return response.data;
   },
 
   // Create product
-  create: async (product: Omit<Product, 'id'>): Promise<Product> => {
-    const requestBody = {
+  create: async (product: Omit<ProductAdminResponse, 'id' | 'subCategory' | 'category' | 'createdAt' | 'updatedAt'> & { subCategoryId?: number }): Promise<ProductAdminResponse> => {
+    const requestBody: any = {
       name: product.name,
       brand: product.brand || '',
       modelNumber: '',
-      description: product.description || '',
-      quantity: product.quantity || 0,
+      description: '',
+      stock: product.quantity || 0,
       price: product.price,
       costPrice: product.price * 0.8,
       weight: 0,
-      color: product.colors?.[0] || '',
-      imageUrl: product.coverUrl || '',
-      subCategory: null, // This needs to be provided from the form
+      color: '',
+      imageUrl: product.imageUrl || '',
+      subCategory: product.subCategoryId ? { id: product.subCategoryId } : null,
     };
 
-    const response = await API.post<ProductDto>('/products/admin', requestBody);
-    return mapProductToFrontend(response.data);
+    const response = await API.post<ProductAdminResponse>('/admin/products', requestBody);
+    return response.data;
   },
 
   // Update product
-  update: async (id: string, product: Partial<Product>): Promise<Product> => {
+  update: async (id: string | number, product: Partial<Omit<ProductAdminResponse, 'id' | 'subCategory' | 'category' | 'createdAt' | 'updatedAt'>> & { subCategoryId?: number; status?: string }): Promise<ProductAdminResponse> => {
     const requestBody: any = {};
     if (product.name !== undefined) requestBody.name = product.name;
     if (product.brand !== undefined) requestBody.brand = product.brand;
-    if (product.description !== undefined) requestBody.description = product.description;
-    if (product.quantity !== undefined) requestBody.quantity = product.quantity;
     if (product.price !== undefined) requestBody.price = product.price;
-    if (product.coverUrl !== undefined) requestBody.imageUrl = product.coverUrl;
+    if (product.quantity !== undefined) requestBody.quantity = product.quantity;
+    if (product.imageUrl !== undefined) requestBody.imageUrl = product.imageUrl;
+    if (product.subCategoryId !== undefined) requestBody.subCategory = { id: product.subCategoryId };
+    if (product.status !== undefined) requestBody.isActive = product.status !== 'locked';
 
-    const response = await API.put<ProductDto>(`/products/${id}`, requestBody);
-    return mapProductToFrontend(response.data);
+    const response = await API.put<ProductAdminResponse>(`/admin/products/${id}`, requestBody);
+    return response.data;
   },
 
   // Delete product
-  delete: async (id: string): Promise<void> => {
-    await API.delete(`/products/${id}`);
+  delete: async (id: string | number): Promise<void> => {
+    await API.delete(`/admin/products/${id}`);
   },
 };

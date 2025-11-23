@@ -1,70 +1,9 @@
 import API from "./base";
+import type { OrderResponse, PagedResponse } from "./types";
 
-// ----------------------------------------------------------------------
-
-export interface Order {
-  id: string;
-  orderNumber: string;
-  customerName: string;
-  total: number;
-  status: 'pending' | 'processing' | 'completed' | 'cancelled';
-  paymentStatus: 'pending' | 'paid' | 'failed';
-  createdAt: string;
-  items: number;
-}
-
-export interface OrdersResponse {
-  data: Order[];
-  total: number;
-  page: number;
-  pageSize: number;
-}
-
-// ----------------------------------------------------------------------
-
-interface OrderDto {
-  id: number;
-  orderNumber: string;
-  customerName: string;
-  totalAmount: number;
-  status: string;
-  orderDate: string;
-  itemsCount: number;
-}
-
-function normalizeStatus(status: string): Order['status'] {
-  switch (status?.toUpperCase()) {
-    case 'PENDING':
-      return 'pending';
-    case 'PROCESSING':
-    case 'IN_PROGRESS':
-      return 'processing';
-    case 'COMPLETED':
-    case 'DELIVERED':
-      return 'completed';
-    case 'CANCELLED':
-    case 'CANCELED':
-      return 'cancelled';
-    default:
-      return 'pending';
-  }
-}
-
-function mapOrderToFrontend(dto: OrderDto): Order {
-  const status = normalizeStatus(dto.status);
-  const paymentStatus: Order['paymentStatus'] = status === 'completed' ? 'paid' : 'pending';
-
-  return {
-    id: String(dto.id),
-    orderNumber: dto.orderNumber,
-    customerName: dto.customerName,
-    total: Number(dto.totalAmount ?? 0),
-    status,
-    paymentStatus,
-    createdAt: dto.orderDate ?? '',
-    items: dto.itemsCount ?? 0,
-  };
-}
+// Re-export for convenience
+export type { OrderResponse as Order } from "./types";
+export type { PagedResponse as OrdersResponse } from "./types";
 
 export const ordersApi = {
   getAll: async (params: {
@@ -73,65 +12,51 @@ export const ordersApi = {
     search?: string;
     sortBy?: string;
     sortOrder?: 'asc' | 'desc';
-  } = {}): Promise<OrdersResponse> => {
+  } = {}): Promise<PagedResponse<OrderResponse>> => {
     const { page = 0, pageSize = 10, search = '' } = params;
-    
+
     const queryParams = new URLSearchParams({
       page: page.toString(),
       size: pageSize.toString(),
       search,
     });
-    
-    const response = await API.get<{
-      data: OrderDto[];
-      total: number;
-      page: number;
-      pageSize: number;
-    }>(`/orders/admin?${queryParams.toString()}`);
 
-    const payload = response.data;
-
-    return {
-      data: (payload.data ?? []).map(mapOrderToFrontend),
-      total: payload.total ?? 0,
-      page: payload.page ?? page,
-      pageSize: payload.pageSize ?? pageSize,
-    };
+    const response = await API.get<PagedResponse<OrderResponse>>(`/orders/admin?${queryParams.toString()}`);
+    return response.data;
   },
 
-  getById: async (id: string): Promise<Order> => {
-    const response = await API.get<OrderDto>(`/orders/admin/${id}`);
-    return mapOrderToFrontend(response.data);
+  getById: async (id: string | number): Promise<OrderResponse> => {
+    const response = await API.get<OrderResponse>(`/orders/admin/${id}`);
+    return response.data;
   },
 
-  create: async (order: Omit<Order, 'id'>): Promise<Order> => {
-    // Note: Order creation requires userId which should come from the form
+  create: async (order: { userId: number; totalAmount: number; status?: OrderResponse['status']; subtotal?: number; taxAmount?: number; shippingCost?: number; discountAmount?: number; notes?: string; address?: string }): Promise<OrderResponse> => {
     const requestBody = {
-      userId: 1, // This should come from the form/context
-      subtotal: order.total * 0.9,
-      taxAmount: order.total * 0.1,
-      shippingCost: 0,
-      discountAmount: 0,
-      totalAmount: order.total,
-      orderStatus: order.status.toUpperCase(),
-      notes: '',
-      address: '',
+      userId: order.userId,
+      subtotal: order.subtotal ?? order.totalAmount * 0.9,
+      taxAmount: order.taxAmount ?? order.totalAmount * 0.1,
+      shippingCost: order.shippingCost ?? 0,
+      discountAmount: order.discountAmount ?? 0,
+      totalAmount: order.totalAmount,
+      orderStatus: order.status ?? 'PENDING',
+      notes: order.notes ?? '',
+      address: order.address ?? '',
     };
 
-    const response = await API.post<OrderDto>('/orders/admin', requestBody);
-    return mapOrderToFrontend(response.data);
+    const response = await API.post<OrderResponse>('/orders/admin', requestBody);
+    return response.data;
   },
 
-  update: async (id: string, order: Partial<Order>): Promise<Order> => {
+  update: async (id: string | number, order: { totalAmount?: number; status?: OrderResponse['status'] }): Promise<OrderResponse> => {
     const requestBody: any = {};
-    if (order.total !== undefined) requestBody.totalAmount = order.total;
-    if (order.status !== undefined) requestBody.orderStatus = order.status.toUpperCase();
+    if (order.totalAmount !== undefined) requestBody.totalAmount = order.totalAmount;
+    if (order.status !== undefined) requestBody.orderStatus = order.status;
 
-    const response = await API.put<OrderDto>(`/orders/${id}`, requestBody);
-    return mapOrderToFrontend(response.data);
+    const response = await API.put<OrderResponse>(`/orders/${id}`, requestBody);
+    return response.data;
   },
 
-  delete: async (id: string): Promise<void> => {
+  delete: async (id: string | number): Promise<void> => {
     await API.delete(`/orders/${id}`);
   },
 

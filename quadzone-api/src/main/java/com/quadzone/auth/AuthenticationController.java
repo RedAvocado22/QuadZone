@@ -3,7 +3,9 @@ package com.quadzone.auth;
 import com.quadzone.auth.dto.ActivateAccountRequest;
 import com.quadzone.auth.dto.AuthenticationRequest;
 import com.quadzone.auth.dto.AuthenticationResponse;
+import com.quadzone.auth.dto.ForgotPasswordRequest;
 import com.quadzone.auth.dto.RegisterRequest;
+import com.quadzone.auth.dto.ResetPasswordRequest;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -46,5 +48,17 @@ public class AuthenticationController {
     public ResponseEntity<AuthenticationResponse> activateAccount(@Valid @RequestBody ActivateAccountRequest req) {
         authenticationService.activateAccount(req);
         return ResponseEntity.ok().build();
+    }
+
+    @PostMapping("/forgot-password")
+    public ResponseEntity<String> forgotPassword(@Valid @RequestBody ForgotPasswordRequest request) {
+        authenticationService.forgotPassword(request.email());
+        return ResponseEntity.ok("Password reset link sent to your email");
+    }
+
+    @PostMapping("/reset-password")
+    public ResponseEntity<String> resetPassword(@Valid @RequestBody ResetPasswordRequest request) {
+        authenticationService.resetPassword(request);
+        return ResponseEntity.ok("Password reset successfully");
     }
 }

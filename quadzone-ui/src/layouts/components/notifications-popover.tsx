@@ -18,7 +18,7 @@ import ListItemAvatar from '@mui/material/ListItemAvatar';
 import ListItemButton from '@mui/material/ListItemButton';
 import CircularProgress from '@mui/material/CircularProgress';
 
-import { fToNow } from 'src/utils/format-time';
+import { fToNow } from 'src/utils/formatters';
 import { useNotifications } from 'src/hooks/useNotifications';
 
 import { Iconify } from 'src/components/iconify';
@@ -260,4 +260,3 @@ function renderContent(notification: { type: string; title: string; description:
     title,
   };
 }
-

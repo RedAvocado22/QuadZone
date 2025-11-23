@@ -8,10 +8,12 @@ import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
 import Alert from '@mui/material/Alert';
 import CircularProgress from '@mui/material/CircularProgress';
-import MenuItem from '@mui/material/MenuItem';
+import Switch from '@mui/material/Switch';
+import FormControlLabel from '@mui/material/FormControlLabel';
 
 import { DashboardContent } from 'src/layouts/dashboard';
-import { categoriesApi, type Category } from 'src/api/categories';
+import { categoriesApi } from 'src/api/categories';
+import type { CategoryResponse } from 'src/api/types';
 
 // ----------------------------------------------------------------------
 
@@ -21,8 +23,6 @@ interface CategoryEditFormProps {
   onCancel?: () => void;
 }
 
-const STATUS_OPTIONS: Category['status'][] = ['active', 'inactive'];
-
 export function CategoryEditForm({ categoryId, onSuccess, onCancel }: CategoryEditFormProps) {
   const [loading, setLoading] = useState(false);
   const [loadingCategory, setLoadingCategory] = useState(true);
@@ -31,7 +31,7 @@ export function CategoryEditForm({ categoryId, onSuccess, onCancel }: CategoryEd
   const [formData, setFormData] = useState({
     name: '',
     description: '',
-    status: 'active' as Category['status'],
+    active: true,
     productCount: 0,
     createdAt: new Date().toISOString().slice(0, 10),
   });
@@ -44,10 +44,10 @@ export function CategoryEditForm({ categoryId, onSuccess, onCancel }: CategoryEd
         const category = await categoriesApi.getById(categoryId);
         setFormData({
           name: category.name || '',
-          description: category.description || '',
-          status: category.status || 'active',
+          description: '', // Description not in CategoryResponse
+          active: category.active ?? true,
           productCount: category.productCount ?? 0,
-          createdAt: category.createdAt ? new Date(category.createdAt).toISOString().slice(0, 10) : new Date().toISOString().slice(0, 10),
+          createdAt: new Date().toISOString().slice(0, 10),
         });
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to load category');
@@ -78,12 +78,10 @@ export function CategoryEditForm({ categoryId, onSuccess, onCancel }: CategoryEd
       return;
     }
 
-    const payload: Partial<Category> = {
+    const payload: Partial<Omit<CategoryResponse, 'id' | 'productCount'>> = {
       name: formData.name,
-      description: formData.description,
-      status: formData.status,
-      productCount: Number(formData.productCount) || 0,
-      createdAt: new Date(formData.createdAt).toISOString(),
+      active: formData.active,
+      imageUrl: null, // Add if needed from form
     };
 
     setLoading(true);
@@ -141,19 +139,15 @@ export function CategoryEditForm({ categoryId, onSuccess, onCancel }: CategoryEd
                 onChange={handleChange('description')}
               />
 
-              <TextField
-                select
-                fullWidth
-                label="Status"
-                value={formData.status}
-                onChange={handleChange('status')}
-              >
-                {STATUS_OPTIONS.map((option) => (
-                  <MenuItem key={option} value={option} sx={{ textTransform: 'capitalize' }}>
-                    {option}
-                  </MenuItem>
-                ))}
-              </TextField>
+              <FormControlLabel
+                control={
+                  <Switch
+                    checked={formData.active}
+                    onChange={(e) => setFormData(prev => ({ ...prev, active: e.target.checked }))}
+                  />
+                }
+                label={formData.active ? "Active" : "Inactive"}
+              />
 
               <Box
                 sx={{

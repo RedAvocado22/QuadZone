@@ -1,7 +1,7 @@
 import Logo from "../../shared/Logo";
 import { useCart } from "../../../contexts/CartContext";
 import { useCurrency } from "../../../contexts/CurrencyContext";
-import { fCurrency } from "../../../utils/format-number";
+import { fCurrency } from "../../../utils/formatters";
 
 const MiddleHeader = () => {
     const { totalItems, totalPrice } = useCart();
@@ -48,7 +48,7 @@ const MiddleHeader = () => {
                                         </a>
                                     </li>
                                     <li className="nav-item u-header__nav-item">
-                                        <a className="nav-link u-header__nav-link" href="/about">
+                                        <a className="nav-link u-header__nav-link" href="/about-us">
                                             About us
                                         </a>
                                     </li>

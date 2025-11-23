@@ -1,13 +1,13 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
-import type { Product } from "../types/Product";
+import type { PublicProductDTO } from "../api/types";
 
-interface CartItem extends Product {
+interface CartItem extends PublicProductDTO {
     quantity: number;
 }
 
 interface CartContextType {
     items: CartItem[];
-    addToCart: (product: Product, quantity?: number) => void;
+    addToCart: (product: PublicProductDTO, quantity?: number) => void;
     removeFromCart: (productId: number) => void;
     updateQuantity: (productId: number, quantity: number) => void;
     clearCart: () => void;
@@ -36,7 +36,7 @@ export const CartProvider = ({ children }: { children: React.ReactNode }) => {
         localStorage.setItem("cart", JSON.stringify(items));
     }, [items]);
 
-    const addToCart = (product: Product, quantity: number = 1) => {
+    const addToCart = (product: PublicProductDTO, quantity: number = 1) => {
         setItems((prev) => {
             const existing = prev.find((item) => item.id === product.id);
             if (existing) {

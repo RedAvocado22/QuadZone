@@ -10,7 +10,7 @@ import IconButton from '@mui/material/IconButton';
 import MenuList from '@mui/material/MenuList';
 import MenuItem, { menuItemClasses } from '@mui/material/MenuItem';
 
-import { fCurrency } from 'src/utils/format-number';
+import { fCurrency } from 'src/utils/formatters';
 import { useCurrency } from 'src/contexts/CurrencyContext';
 
 import { Label } from 'src/components/label';
@@ -20,7 +20,7 @@ import { ColorPreview } from 'src/components/color-utils';
 // ----------------------------------------------------------------------
 
 export type ProductItemProps = {
-  id: string;
+  id: number;
   name: string;
   price: number;
   status: string;
@@ -31,10 +31,10 @@ export type ProductItemProps = {
 
 type ProductItemComponentProps = {
   product: ProductItemProps;
-  onViewDetails?: (id: string) => void;
-  onEdit?: (id: string) => void;
-  onLock?: (id: string) => void;
-  onUnlock?: (id: string) => void;
+  onViewDetails?: (id: number) => void;
+  onEdit?: (id: number) => void;
+  onLock?: (id: number) => void;
+  onUnlock?: (id: number) => void;
 };
 
 export function ProductItem({ product, onViewDetails, onEdit, onLock, onUnlock }: ProductItemComponentProps) {

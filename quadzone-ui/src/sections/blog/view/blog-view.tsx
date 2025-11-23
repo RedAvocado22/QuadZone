@@ -1,6 +1,7 @@
 import { useState, useCallback } from 'react';
 
 import Box from '@mui/material/Box';
+import Card from '@mui/material/Card';
 import Grid from '@mui/material/Grid';
 import Button from '@mui/material/Button';
 import Typography from '@mui/material/Typography';
@@ -9,7 +10,7 @@ import CircularProgress from '@mui/material/CircularProgress';
 
 import { usePosts } from 'src/hooks/usePosts';
 import { DashboardContent } from 'src/layouts/dashboard';
-import { useRouter } from 'src/routes/hooks';
+import { useRouter } from 'src/routing/hooks';
 import { postsApi } from 'src/api/posts';
 
 import { Iconify } from 'src/components/iconify';
@@ -108,77 +109,82 @@ export function BlogView() {
         </Button>
       </Box>
 
-      <Box
-        sx={{
-          mb: 5,
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-        }}
-      >
-        <PostSearch onSearch={handleSearch} />
-        <PostSort
-          sortBy={sortBy}
-          onSort={handleSort}
-          options={[
-            { value: 'latest', label: 'Latest' },
-            { value: 'popular', label: 'Popular' },
-            { value: 'oldest', label: 'Oldest' },
-          ]}
-        />
-      </Box>
-
-      {loading ? (
-        <Box sx={{ display: 'flex', justifyContent: 'center', p: 3 }}>
-          <CircularProgress />
-        </Box>
-      ) : error ? (
-        <Box sx={{ p: 3, textAlign: 'center' }}>
-          <Typography color="error">Error loading posts: {error.message}</Typography>
-          <Button onClick={refetch} sx={{ mt: 2 }}>Retry</Button>
-        </Box>
-      ) : posts.length === 0 ? (
-        <Box sx={{ p: 3, textAlign: 'center' }}>
-          <Typography>No posts found</Typography>
-        </Box>
-      ) : (
-        <>
-          <Grid container spacing={3}>
-            {posts.map((post, index) => {
-              const latestPostLarge = index === 0;
-              const latestPost = index === 1 || index === 2;
-
-              return (
-                <Grid
-                  key={post.id}
-                  size={{
-                    xs: 12,
-                    sm: latestPostLarge ? 12 : 6,
-                    md: latestPostLarge ? 6 : 3,
-                  }}
-                >
-                  <PostItem
-                    post={post as IPostItem}
-                    latestPost={latestPost}
-                    latestPostLarge={latestPostLarge}
-                    onView={handleViewPost}
-                    onEdit={handleEditPost}
-                    onDelete={handleDeletePost}
-                  />
-                </Grid>
-              );
-            })}
-          </Grid>
-
-          <Pagination 
-            count={totalPages} 
-            page={page + 1}
-            onChange={handlePageChange}
-            color="primary" 
-            sx={{ mt: 8, mx: 'auto' }} 
+      <Card>
+        <Box
+          sx={{
+            mb: 3,
+            p: 3,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+          }}
+        >
+          <PostSearch onSearch={handleSearch} />
+          <PostSort
+            sortBy={sortBy}
+            onSort={handleSort}
+            options={[
+              { value: 'latest', label: 'Latest' },
+              { value: 'popular', label: 'Popular' },
+              { value: 'oldest', label: 'Oldest' },
+            ]}
           />
-        </>
-      )}
+        </Box>
+        {loading ? (
+          <Box sx={{ display: 'flex', justifyContent: 'center', p: 3 }}>
+            <CircularProgress />
+          </Box>
+        ) : error ? (
+          <Box sx={{ p: 3, textAlign: 'center' }}>
+            <Typography color="error">Error loading posts: {error.message}</Typography>
+            <Button onClick={refetch} sx={{ mt: 2 }}>Retry</Button>
+          </Box>
+        ) : posts.length === 0 ? (
+          <Box sx={{ p: 3, textAlign: 'center' }}>
+            <Typography>No posts found</Typography>
+          </Box>
+        ) : (
+          <>
+            <Box sx={{ p: 3 }}>
+              <Grid container spacing={3}>
+                {posts.map((post, index) => {
+                  const latestPostLarge = index === 0;
+                  const latestPost = index === 1 || index === 2;
+
+                  return (
+                    <Grid
+                      key={post.id}
+                      size={{
+                        xs: 12,
+                        sm: latestPostLarge ? 12 : 6,
+                        md: latestPostLarge ? 6 : 3,
+                      }}
+                    >
+                      <PostItem
+                        post={post as IPostItem}
+                        latestPost={latestPost}
+                        latestPostLarge={latestPostLarge}
+                        onView={handleViewPost}
+                        onEdit={handleEditPost}
+                        onDelete={handleDeletePost}
+                      />
+                    </Grid>
+                  );
+                })}
+              </Grid>
+            </Box>
+
+            <Box sx={{ p: 3, pt: 0, display: 'flex', justifyContent: 'center' }}>
+              <Pagination
+                count={totalPages}
+                page={page + 1}
+                onChange={handlePageChange}
+                color="primary"
+              />
+            </Box>
+          </>
+        )}
+      </Card>
     </DashboardContent>
   );
 }

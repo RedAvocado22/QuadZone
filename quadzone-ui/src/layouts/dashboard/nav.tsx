@@ -8,8 +8,8 @@ import { useTheme } from "@mui/material/styles";
 import ListItemButton from "@mui/material/ListItemButton";
 import Drawer, { drawerClasses } from "@mui/material/Drawer";
 
-import { usePathname } from "src/routes/hooks";
-import { RouterLink } from "src/routes/components";
+import { usePathname } from 'src/routing/hooks';
+import { RouterLink } from 'src/routing/components';
 
 import { Logo } from "src/components/logo";
 import { Scrollbar } from "src/components/scrollbar";

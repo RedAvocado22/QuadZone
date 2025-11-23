@@ -2,14 +2,14 @@ SET FOREIGN_KEY_CHECKS = 0;
 
 INSERT INTO _user (id, email, password, first_name, last_name, role, created_at, status)
 VALUES
-    (1, 'customer@example.com', '$2a$10$slYQmyNdGzTn7ZLBXBChFOC9f6kFjAqPhccnP6DxlWXx2lPk1C3G6', 'John', 'Doe', 'CUSTOMER', NOW(), 'ACTIVE'),
-    (2, 'admin@example.com', '$2a$10$slYQmyNdGzTn7ZLBXBChFOC9f6kFjAqPhccnP6DxlWXx2lPk1C3G6', 'Test', 'Admin', 'ADMIN', NOW(), 'ACTIVE'),
-    (3, 'staff@example.com', '$2a$10$slYQmyNdGzTn7ZLBXBChFOC9f6kFjAqPhccnP6DxlWXx2lPk1C3G6', 'Test', 'Staff', 'STAFF', NOW(),'ACTIVE'),
-    (4, 'shipper@example.com', '$2a$10$slYQmyNdGzTn7ZLBXBChFOC9f6kFjAqPhccnP6DxlWXx2lPk1C3G6', 'Test', 'Shipper', 'SHIPPER', NOW(), 'ACTIVE'),
-    (5, 'an.nguyen@example.com', '$2a$10$slYQmyNdGzTn7ZLBXBChFOC9f6kFjAqPhccnP6DxlWXx2lPk1C3G6', 'Anna', 'Smith', 'CUSTOMER', NOW(), 'ACTIVE'),
-    (6, 'binh.le@example.com', '$2a$10$slYQmyNdGzTn7ZLBXBChFOC9f6kFjAqPhccnP6DxlWXx2lPk1C3G6', 'Ben', 'Lee', 'CUSTOMER', NOW(), 'ACTIVE'),
-    (7, 'chi.pham@example.com', '$2a$10$slYQmyNdGzTn7ZLBXBChFOC9f6kFjAqPhccnP6DxlWXx2lPk1C3G6', 'Chloe', 'Pham', 'CUSTOMER', NOW(), 'ACTIVE'),
-    (8, 'dung.tran@example.com', '$2a$10$slYQmyNdGzTn7ZLBXBChFOC9f6kFjAqPhccnP6DxlWXx2lPk1C3G6', 'David', 'Tran', 'CUSTOMER', NOW(), 'ACTIVE');
+    (1, 'customer@example.com', '$2a$10$kmEi6ZSfjEB4fJ7fbJZQO.woGcPeh5aP8FiA6q.kX82fiT.Z.S21e', 'John', 'Doe', 'CUSTOMER', NOW(), 'ACTIVE'),
+    (2, 'admin@example.com', '$2a$10$kmEi6ZSfjEB4fJ7fbJZQO.woGcPeh5aP8FiA6q.kX82fiT.Z.S21e', 'Test', 'Admin', 'ADMIN', NOW(), 'ACTIVE'),
+    (3, 'staff@example.com', '$2a$10$kmEi6ZSfjEB4fJ7fbJZQO.woGcPeh5aP8FiA6q.kX82fiT.Z.S21e', 'Test', 'Staff', 'STAFF', NOW(),'ACTIVE'),
+    (4, 'shipper@example.com', '$2a$10$kmEi6ZSfjEB4fJ7fbJZQO.woGcPeh5aP8FiA6q.kX82fiT.Z.S21e', 'Test', 'Shipper', 'SHIPPER', NOW(), 'ACTIVE'),
+    (5, 'an.nguyen@example.com', '$$2a$10$kmEi6ZSfjEB4fJ7fbJZQO.woGcPeh5aP8FiA6q.kX82fiT.Z.S21e', 'Anna', 'Smith', 'CUSTOMER', NOW(), 'ACTIVE'),
+    (6, 'binh.le@example.com', '$2a$10$kmEi6ZSfjEB4fJ7fbJZQO.woGcPeh5aP8FiA6q.kX82fiT.Z.S21e', 'Ben', 'Lee', 'CUSTOMER', NOW(), 'ACTIVE'),
+    (7, 'chi.pham@example.com', '$2a$10$kmEi6ZSfjEB4fJ7fbJZQO.woGcPeh5aP8FiA6q.kX82fiT.Z.S21e', 'Chloe', 'Pham', 'CUSTOMER', NOW(), 'ACTIVE'),
+    (8, 'dung.tran@example.com', '$2a$10$kmEi6ZSfjEB4fJ7fbJZQO.woGcPeh5aP8FiA6q.kX82fiT.Z.S21e', 'David', 'Tran', 'CUSTOMER', NOW(), 'ACTIVE');
 -- password:Abc1234@
 INSERT INTO category (id, name, is_active, image_url)
 VALUES

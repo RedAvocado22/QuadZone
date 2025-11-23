@@ -2,6 +2,7 @@ import { useMemo, useState, useEffect, type FormEvent } from "react";
 import { useNavigate } from "react-router-dom";
 import { useCart } from "../contexts/CartContext";
 import { useCurrency } from "../contexts/CurrencyContext";
+import { fCurrency } from "../utils/formatters";
 import { useUser } from "../hooks/useUser";
 import { ordersApi } from "../api/orders";
 import { fCurrency } from "../utils/format-number";
@@ -15,7 +16,7 @@ import OrderSummary from "../components/checkout/OrderSummary";
 import PaymentMethods from "../components/checkout/PaymentMethod";
 import TermsCheckbox from "../components/checkout/TermsCheckbox";
 import type { AddressFields, AlertState, PaymentMethod } from "../types/checkout";
-import "../components/checkout/checkout.css";
+import "../assets/css/checkout.css";
 
 const emptyAddress: AddressFields = {
     firstName: "",
@@ -189,19 +190,19 @@ const CheckoutPage = () => {
 
             const orderResponse = await ordersApi.checkout(checkoutData);
 
-            setAlert({ 
-                type: "success", 
-                message: `Order placed successfully! Your order number is ${orderResponse.orderNumber}. A confirmation email has been sent to ${billing.email}.` 
+            setAlert({
+                type: "success",
+                message: `Order placed successfully! Your order number is ${orderResponse.orderNumber}. A confirmation email has been sent to ${billing.email}.`
             });
-            
+
             setTimeout(() => {
                 clearCart();
                 navigate(`/track-order?orderNumber=${orderResponse.orderNumber}`);
             }, 3000);
         } catch (error: any) {
             console.error("Checkout error:", error);
-            const errorMessage = error.response?.data?.message || 
-                               error.message || 
+            const errorMessage = error.response?.data?.message ||
+                               error.message ||
                                "Failed to place order. Please try again.";
             setAlert({
                 type: "error",

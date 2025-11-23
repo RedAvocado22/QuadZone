@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
-import { useRouter } from 'src/routes/hooks';
+import { useRouter } from 'src/routing/hooks';
 
 import Box from '@mui/material/Box';
 import Card from '@mui/material/Card';
@@ -13,8 +13,7 @@ import Avatar from '@mui/material/Avatar';
 
 import { DashboardContent } from 'src/layouts/dashboard';
 import { postsApi } from 'src/api/posts';
-import { fDate } from 'src/utils/format-time';
-import { fShortenNumber } from 'src/utils/format-number';
+import { fDate, fShortenNumber } from 'src/utils/formatters';
 
 // ----------------------------------------------------------------------
 

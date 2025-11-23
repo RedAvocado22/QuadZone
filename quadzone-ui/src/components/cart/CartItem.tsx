@@ -1,12 +1,16 @@
 import { Link } from "react-router-dom";
 import { useCart } from "../../contexts/CartContext";
 import { useCurrency } from "../../contexts/CurrencyContext";
-import { fCurrency } from "../../utils/format-number";
+import { fCurrency } from "../../utils/formatters";
 import { defaultImages } from "../../constants/images";
-import type { Product } from "../../types/Product";
+import type { PublicProductDTO } from "../../api/types";
+
+interface CartItem extends PublicProductDTO {
+    quantity: number;
+}
 
 interface CartItemProps {
-    item: Product;
+    item: CartItem;
 }
 
 const CartItem = ({ item }: CartItemProps) => {
@@ -38,7 +42,7 @@ const CartItem = ({ item }: CartItemProps) => {
                 <Link to={`/product/${item.id}`}>
                     <img
                         className="img-fluid max-width-100 p-1 border border-color-1"
-                        src={item.image || defaultImages.cart}
+                        src={item.imageUrl || defaultImages.cart}
                         alt={item.name}
                     />
                 </Link>
