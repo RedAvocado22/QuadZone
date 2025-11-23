@@ -154,12 +154,4 @@ public class ProductService {
 
         return ProductAdminResponse.from(productRepository.save(product));
     }
-
-    @Transactional
-    public void reserveStock(Long productId, int quantity) {
-        int updatedRows = productRepository.reduceStock(productId, quantity);
-        if (updatedRows == 0) {
-            throw new RuntimeException("Out of stock or fail to update stock!");
-        }
-    }
 }
