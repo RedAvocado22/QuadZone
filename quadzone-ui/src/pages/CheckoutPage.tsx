@@ -1,7 +1,9 @@
-import { useMemo, useState, type FormEvent } from "react";
+import { useMemo, useState, useEffect, type FormEvent } from "react";
 import { useNavigate } from "react-router-dom";
 import { useCart } from "../contexts/CartContext";
 import { useCurrency } from "../contexts/CurrencyContext";
+import { useUser } from "../hooks/useUser";
+import { ordersApi } from "../api/orders";
 import { fCurrency } from "../utils/format-number";
 import CheckoutBreadcrumb from "../components/checkout/CheckoutBreadcrumb";
 import ReturningCustomerSection from "../components/checkout/ReturningCustomerSection";
@@ -32,6 +34,7 @@ const CheckoutPage = () => {
     const navigate = useNavigate();
     const { items, totalPrice, clearCart } = useCart();
     const { currency, convertPrice } = useCurrency();
+    const { user } = useUser();
 
     const [isReturningCustomerOpen, setReturningCustomerOpen] = useState(false);
     const [isCouponOpen, setCouponOpen] = useState(false);
@@ -44,6 +47,19 @@ const CheckoutPage = () => {
     const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("bank-transfer");
     const [termsAccepted, setTermsAccepted] = useState(false);
     const [alert, setAlert] = useState<AlertState>({ type: "idle" });
+    const [isSubmitting, setIsSubmitting] = useState(false);
+
+    // Auto-fill billing information for logged-in users
+    useEffect(() => {
+        if (user) {
+            setBilling((prev) => ({
+                ...prev,
+                firstName: user.firstName || prev.firstName,
+                lastName: user.lastName || prev.lastName,
+                email: user.email || prev.email,
+            }));
+        }
+    }, [user]);
 
     const formatPrice = (value: number) => fCurrency(convertPrice(value), { currency });
 
@@ -74,7 +90,19 @@ const CheckoutPage = () => {
         setCouponOpen(false);
     };
 
-    const handlePlaceOrder = (event: FormEvent) => {
+    // Email validation helper
+    const isValidEmail = (email: string): boolean => {
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        return emailRegex.test(email);
+    };
+
+    // Phone validation helper
+    const isValidPhone = (phone: string): boolean => {
+        const phoneRegex = /^[+]?[(]?[0-9]{1,4}[)]?[-\s.]?[(]?[0-9]{1,4}[)]?[-\s.]?[0-9]{1,9}$/;
+        return phoneRegex.test(phone.replace(/\s/g, ""));
+    };
+
+    const handlePlaceOrder = async (event: FormEvent) => {
         event.preventDefault();
         setAlert({ type: "idle" });
 
@@ -83,6 +111,7 @@ const CheckoutPage = () => {
             return;
         }
 
+        // Validate required fields
         if (
             !billing.firstName ||
             !billing.lastName ||
@@ -99,6 +128,24 @@ const CheckoutPage = () => {
             return;
         }
 
+        // Validate email format
+        if (!isValidEmail(billing.email)) {
+            setAlert({
+                type: "error",
+                message: "Please enter a valid email address."
+            });
+            return;
+        }
+
+        // Validate phone format
+        if (!isValidPhone(billing.phone)) {
+            setAlert({
+                type: "error",
+                message: "Please enter a valid phone number."
+            });
+            return;
+        }
+
         if (!termsAccepted) {
             setAlert({
                 type: "error",
@@ -107,12 +154,62 @@ const CheckoutPage = () => {
             return;
         }
 
-        // TODO: Integrate with order API
-        setAlert({ type: "success", message: "Order placed successfully! Thank you for shopping with QuadZone." });
-        setTimeout(() => {
-            clearCart();
-            navigate("/");
-        }, 2000);
+        setIsSubmitting(true);
+
+        try {
+            // Map payment method from frontend to backend format
+            const paymentMethodMap: Record<PaymentMethod, string> = {
+                "bank-transfer": "BANK_TRANSFER",
+                "cheque": "BANK_TRANSFER",
+                "cod": "CASH_ON_DELIVERY",
+                "paypal": "CREDIT_CARD"
+            };
+
+            const checkoutData = {
+                firstName: billing.firstName,
+                lastName: billing.lastName,
+                email: billing.email,
+                phone: billing.phone,
+                address: billing.address,
+                city: billing.city || "",
+                state: billing.state || "",
+                apartment: billing.apartment || "",
+                items: items.map((item) => ({
+                    productId: item.id!,
+                    quantity: item.quantity
+                })),
+                subtotal: totalPrice,
+                taxAmount: 0, // Can be calculated if needed
+                shippingCost: shippingCost,
+                discountAmount: 0, // Can be calculated from coupon if needed
+                totalAmount: grandTotal,
+                paymentMethod: paymentMethodMap[paymentMethod] || "BANK_TRANSFER",
+                notes: orderNotes || undefined
+            };
+
+            const orderResponse = await ordersApi.checkout(checkoutData);
+
+            setAlert({ 
+                type: "success", 
+                message: `Order placed successfully! Your order number is ${orderResponse.orderNumber}. A confirmation email has been sent to ${billing.email}.` 
+            });
+            
+            setTimeout(() => {
+                clearCart();
+                navigate(`/track-order?orderNumber=${orderResponse.orderNumber}`);
+            }, 3000);
+        } catch (error: any) {
+            console.error("Checkout error:", error);
+            const errorMessage = error.response?.data?.message || 
+                               error.message || 
+                               "Failed to place order. Please try again.";
+            setAlert({
+                type: "error",
+                message: errorMessage
+            });
+        } finally {
+            setIsSubmitting(false);
+        }
     };
 
     const summaryItems = items.map((item, index) => ({
@@ -214,8 +311,9 @@ const CheckoutPage = () => {
 
                                 <button
                                     type="submit"
+                                    disabled={isSubmitting}
                                     className="btn btn-primary-dark-w btn-block btn-pill font-size-20 py-3 mb-3">
-                                    Place order
+                                    {isSubmitting ? "Placing order..." : "Place order"}
                                 </button>
                             </div>
                         </div>

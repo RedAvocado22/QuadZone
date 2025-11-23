@@ -3,6 +3,7 @@ package com.quadzone.product;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
@@ -41,4 +42,10 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
             ORDER BY p.createdAt DESC
             """)
     Page<Product> findNewArrivalProducts(Pageable pageable);
+
+    @Modifying // Báo cho Spring đây là câu lệnh Update/Delete
+    @Query("UPDATE Product p SET p.stock = p.stock - :amount " +
+            "WHERE p.id = :id AND p.stock >= :amount")
+    int reduceStock(@Param("id") Long id, @Param("amount") int amount);
+
 }

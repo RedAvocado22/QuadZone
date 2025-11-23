@@ -1,8 +1,10 @@
 package com.quadzone.order;
 
 import com.quadzone.global.dto.PagedResponse;
+import com.quadzone.order.dto.CheckoutRequest;
 import com.quadzone.order.dto.OrderRegisterRequest;
 import com.quadzone.order.dto.OrderResponse;
+import com.quadzone.order.dto.OrderStatusResponse;
 import com.quadzone.order.dto.OrderUpdateRequest;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -49,6 +51,31 @@ public class OrderController {
     public ResponseEntity<OrderResponse> createOrder(@Valid @RequestBody OrderRegisterRequest orderRegisterRequest) {
         OrderResponse createdOrder = orderService.createOrder(orderRegisterRequest);
         return ResponseEntity.status(HttpStatus.CREATED).body(createdOrder);
+    }
+
+    // Checkout endpoint (supports both guest and authenticated users)
+    @PostMapping("/checkout")
+    @Operation(summary = "Checkout", description = "Create a new order. Supports both guest and authenticated users.")
+    @ApiResponse(responseCode = "201", description = "Order created successfully")
+    @ApiResponse(responseCode = "400", description = "Invalid input or insufficient stock")
+    public ResponseEntity<OrderResponse> checkout(@Valid @RequestBody CheckoutRequest request) {
+        OrderResponse createdOrder = orderService.checkout(request);
+        return ResponseEntity.status(HttpStatus.CREATED).body(createdOrder);
+    }
+
+    // Public endpoint to check order status by order number
+    @GetMapping("/public/track")
+    @Operation(summary = "Track order status", description = "Check order status by order number (public endpoint)")
+    @ApiResponse(responseCode = "200", description = "Order status returned")
+    @ApiResponse(responseCode = "404", description = "Order not found")
+    public ResponseEntity<OrderStatusResponse> trackOrder(
+            @RequestParam String orderNumber
+    ) {
+        OrderStatusResponse statusResponse = orderService.getOrderStatusByOrderNumber(orderNumber);
+        if (statusResponse.status() == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(statusResponse);
+        }
+        return ResponseEntity.ok(statusResponse);
     }
 
     // Regular endpoints

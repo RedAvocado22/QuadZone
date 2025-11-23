@@ -106,4 +106,12 @@ public class ProductService {
                 .map(objectMapper::toProductResponse)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Product not found: " + id));
     }
+
+    @Transactional
+    public void reserveStock(Long productId, int quantity) {
+        int updatedRows = productRepository.reduceStock(productId, quantity);
+        if (updatedRows == 0) {
+            throw new RuntimeException("Out of stock or fail to update stock!");
+        }
+    }
 }

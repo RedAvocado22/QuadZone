@@ -12,6 +12,7 @@ import LoginPage from "./pages/LoginPage";
 import RegisterPage from "./pages/RegisterPage";
 import ProductDetailPage from "./pages/ProductDetailPage";
 import CheckoutPage from "@/pages/CheckoutPage.tsx";
+import TrackOrderPage from "./pages/TrackOrderPage";
 
 const AdminApp = lazy(() => import("./AdminApp"));
 const AdminRoutes = lazy(() => import("./AdminRoutes"));
@@ -50,6 +51,7 @@ function App() {
                         {/* Cart - accessible to everyone (guest and authenticated) */}
                         <Route path="cart" element={<CartPage />} />
                         <Route path="checkout" element={<CheckoutPage />}/>
+                        <Route path="track-order" element={<TrackOrderPage />}/>
 
                         {/* Error Boundary */}
                         {/* <Route path="unauthorized" element={<Unauthorized />} />

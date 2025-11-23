@@ -134,4 +134,26 @@ export const ordersApi = {
   delete: async (id: string): Promise<void> => {
     await API.delete(`/orders/${id}`);
   },
+
+  checkout: async (checkoutData: {
+    firstName: string;
+    lastName: string;
+    email: string;
+    phone: string;
+    address: string;
+    city?: string;
+    state?: string;
+    apartment?: string;
+    items: Array<{ productId: number; quantity: number }>;
+    subtotal: number;
+    taxAmount?: number;
+    shippingCost: number;
+    discountAmount?: number;
+    totalAmount: number;
+    paymentMethod: string;
+    notes?: string;
+  }): Promise<Order> => {
+    const response = await API.post<OrderDto>('/orders/checkout', checkoutData);
+    return mapOrderToFrontend(response.data);
+  },
 };
