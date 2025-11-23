@@ -48,7 +48,7 @@ const MiddleHeader = () => {
                                         </a>
                                     </li>
                                     <li className="nav-item u-header__nav-item">
-                                        <a className="nav-link u-header__nav-link" href="/about">
+                                        <a className="nav-link u-header__nav-link" href="/about-us">
                                             About us
                                         </a>
                                     </li>
