@@ -1,4 +1,4 @@
-import type { Product } from "@/types/Product";
+import type { Product } from "../../api/types";
 import { Link } from "react-router-dom";
 
 interface ListSmallProductCardProps {
@@ -16,7 +16,7 @@ const ListSmallProductCard: React.FC<ListSmallProductCardProps> = ({ product, ad
                     <div className="product-item__header col-6 col-md-2">
                         <div className="mb-2">
                             <Link to={`/product/${product.id}`} className="d-block text-center">
-                                <img className="img-fluid" src={product.imageUrl} alt={product.name} />
+                                <img className="img-fluid" src={product.imageUrl || ""} alt={product.name} />
                             </Link>
                         </div>
                     </div>

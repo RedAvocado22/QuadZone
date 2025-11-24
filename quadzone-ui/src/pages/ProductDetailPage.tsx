@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { useCart } from "../contexts/CartContext";
 import type { ProductDetailsResponse } from "../api/types";
-import { getProduct } from "../api/products";
+import { getProductDetails } from "../api/products";
 import { toast } from "react-toastify";
 
 const ProductDetailPage = () => {
@@ -15,10 +15,8 @@ const ProductDetailPage = () => {
         if (!id) return;
         const loadProduct = async () => {
             try {
-                const data = await getProduct(Number(id));
-                // Map PublicProductDTO to ProductDetailsResponse structure if needed
-                // For now, we'll use it directly
-                setProduct(data as any);
+                const data = await getProductDetails(Number(id));
+                setProduct(data);
                 setLoading(false);
             } catch {
                 toast.error("Failed to load product details. Please try again later.");
@@ -42,12 +40,12 @@ const ProductDetailPage = () => {
                             Home
                         </Link>
                     </li>
-                    {product.subCategoryId && (
+                    {product.subCategory.id && (
                         <li className="breadcrumb-item">
                             <Link
-                                to={`/subCategory/${product.subCategoryId}`}
+                                to={`/subCategory/${product.subCategory.id}`}
                                 className="text-muted text-decoration-none">
-                                {product.subCategoryName || "Category"}
+                                {product.subCategory.name || "Category"}
                             </Link>
                         </li>
                     )}
@@ -131,34 +129,27 @@ const ProductDetailPage = () => {
                 <div className="tab-content p-4 border border-top-0 rounded-bottom shadow-sm">
                     {/* 📄 Description */}
                     <div className="tab-pane fade show active" id="description" role="tabpanel">
-                        {!product.isActive ? (
-                            <p>This product is currently unavailable.</p>
-                        ) : (
-                            <>
-                                <div className="mb-3">
-                                    <strong>Description:</strong>
+                        <div className="mb-3">
+                            <strong>Description:</strong>
+                            {/* If description is a list (JSON) */}
+                            {Array.isArray(product.description) ? (
+                                <ul className="mt-2">
+                                    {product.description.map((desc: string, index: number) => (
+                                        <li key={index}>{desc}</li>
+                                    ))}
+                                </ul>
+                            ) : (
+                                <p className="mt-2">No description</p>
+                            )}
+                        </div>
 
-                                    {/* If description is a list (JSON) */}
-                                    {Array.isArray(product.description) ? (
-                                        <ul className="mt-2">
-                                            {product.description.map((desc: string, index: number) => (
-                                                <li key={index}>{desc}</li>
-                                            ))}
-                                        </ul>
-                                    ) : (
-                                        <p className="mt-2">No description</p>
-                                    )}
-                                </div>
+                        <p>
+                            <strong>Model Number:</strong> {product.modelNumber || "N/A"}
+                        </p>
 
-                                <p>
-                                    <strong>Model Number:</strong> {product.modelNumber || "N/A"}
-                                </p>
-
-                                <p>
-                                    <strong>Brand:</strong> {product.brand || "N/A"}
-                                </p>
-                            </>
-                        )}
+                        <p>
+                            <strong>Brand:</strong> {product.brand || "N/A"}
+                        </p>
                     </div>
 
                     {/* 💬 Reviews */}

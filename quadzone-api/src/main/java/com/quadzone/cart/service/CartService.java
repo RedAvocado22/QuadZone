@@ -8,6 +8,7 @@ import com.quadzone.cart.CartRepository;
 import com.quadzone.product.Product;
 import com.quadzone.product.ProductRepository;
 
+
 @Service
 public class CartService {
 
@@ -21,6 +22,7 @@ public class CartService {
 
     public Cart getCartByUserId(Long userId) {
         // For simplicity, assuming cart exists, in real app handle creation if not exists
+
         return cartRepository.findById(userId).orElseThrow();
     }
 

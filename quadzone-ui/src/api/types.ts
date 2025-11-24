@@ -7,10 +7,13 @@ export type OrderStatus = 'PENDING' | 'CONFIRMED' | 'PROCESSING' | 'COMPLETED' |
 
 // ============== PAGED RESPONSE ==============
 export interface PagedResponse<T> {
-  data: T[];
-  total: number;
-  page: number;
-  pageSize: number;
+  content: T[];
+  page: {
+    size: number;
+    number: number;
+    totalElements: number;
+    totalPages: number;
+  };
 }
 
 // ============== CATEGORY & SUBCATEGORY ==============
@@ -66,6 +69,7 @@ export interface Product {
   quantity: number;
   subCategory: SubCategory;
   category: CategoryName;
+  createdAt: string; // ISO date string
 }
 
 /**
@@ -102,6 +106,10 @@ export interface ProductAdmin {
   subCategory: SubCategory;
   category: Category;
 }
+
+export type ProductResponse = Product;
+export type ProductDetailsResponse = ProductDetails;
+export type ProductAdminResponse = ProductAdmin;
 
 // Brand info
 export interface Brand {
@@ -155,6 +163,90 @@ export interface Order {
 
 export type OrderResponse = Order;
 
+// ============== NOTIFICATION TYPES ==============
+export interface Notification {
+  id: number;
+  type: string;
+  title: string;
+  description: string;
+  avatarUrl: string;
+  postedAt: string; // ISO date string
+  isUnRead: boolean;
+}
+
+export type NotificationResponse = Notification;
+
+export interface NotificationRequest {
+  type: string;
+  title: string;
+  description: string;
+  avatarUrl: string;
+}
+
+// ============== CART TYPES ==============
+export interface CartItem extends Product {
+  quantity: number;
+  addedAt: string; // ISO date string
+}
+
+export interface Cart {
+  id: number;
+  customerId: number;
+  updateAt: string; // ISO date string
+  cart_item_list: CartItem[];
+}
+
+export type CartResponse = Cart;
+export type CartItemResponse = CartItem;
+
+export interface AddToCartRequest {
+  productId: number;
+  quantity: number;
+}
+
+// ============== ADMIN CATEGORY ==============
+/**
+ * Admin category with detailed stats
+ * Maps to CategoryAdminResponse in backend
+ */
+export interface CategoryAdmin {
+  id: number;
+  name: string;
+  active: boolean;
+  imageUrl: string;
+  productCount: number;
+  subcategoryCount: number;
+  subcategories: SubCategory[];
+}
+
+export type CategoryAdminResponse = CategoryAdmin;
+
+// ============== HOME PAGE ==============
+export interface HomeResponse {
+  categories: Category[];
+  featured: PagedResponse<Product>;
+  bestSellers: PagedResponse<Product>;
+  newArrivals: PagedResponse<Product>;
+}
+
+// ============== EXCHANGE RATE ==============
+export interface ExchangeRateResponse {
+  result: string;
+  base_code: string;
+  conversion_rates: Record<string, number>;
+}
+
+// ============== AUTH TYPES ==============
+export interface AuthenticationRequest {
+  email: string;
+  password: string;
+}
+
+export interface AuthenticationResponse {
+  access_token: string;
+  refresh_token: string;
+}
+
 // ============== LEGACY PUBLIC DTOS (for backward compatibility) ==============
 /**
  * Legacy PublicProductDTO - use Product or ProductDetails instead
@@ -175,3 +267,4 @@ export interface PublicProductDTO {
   subCategoryName?: string;
   createdAt: string;
 }
+

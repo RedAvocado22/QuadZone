@@ -5,7 +5,7 @@ import ShopControlBar from "../components/shop/ShopControlBar";
 import ProductGrid from "../components/shop/ProductGrid";
 import ShopPagination from "../components/shop/ShopPagination";
 import { getProducts } from "../api/products";
-import type { Product } from "../types/Product";
+import type { Product } from "../api/types";
 import type { ViewMode, SortOption } from "../types/shop";
 
 const Shop: React.FC = () => {
@@ -70,6 +70,7 @@ const Shop: React.FC = () => {
                 });
 
                 const products = response.content || [];
+                console.log("Products fetched:", products);
                 setAllProducts(products);
                 setCurrentPage(1); // Reset page on filter change
             } catch (err) {
