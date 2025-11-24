@@ -21,3 +21,29 @@ export const yupLastName = yup
     .min(2, "Last name must be at least 2 characters")
     .max(50, "Last name must be at most 50 characters")
     .required("Last name is required");
+
+export const yupName = yup
+    .string()
+    .min(2, "Name must be at least 2 characters")
+    .max(100, "Name must be at most 100 characters")
+    .required("Name is required");
+
+export const yupPrice = yup
+    .number()
+    .min(0, "Price must be greater than or equal to 0")
+    .required("Price is required");
+
+export const yupQuantity = yup
+    .number()
+    .integer("Quantity must be an integer")
+    .min(0, "Quantity must be greater than or equal to 0")
+    .required("Quantity is required");
+
+export const yupUrl = yup
+    .string()
+    .url("Must be a valid URL")
+    .nullable();
+
+export const yupOptionalString = yup.string().nullable();
+
+export const yupOptionalNumber = yup.number().nullable();

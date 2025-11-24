@@ -22,37 +22,8 @@ const forgotPasswordSchema = yup
 
 export default function LoginPage() {
     const { login } = useUser();
-    const { token } = useParams();
     const [loginView, setLoginView] = useState<"login" | "forgot">("login");
     const navigate = useNavigate();
-
-    useEffect(() => {
-        if (token) {
-            activateAccount(token)
-                .then(() => {
-                    Swal.fire({
-                        icon: "success",
-                        title: "Account activated",
-                        text: "Your account has been activated successfully. Please login."
-                    }).then(() => {
-                        navigate("/login", { replace: true });
-                    });
-                })
-                .catch((err) => {
-                    const msg = err.response?.data?.message || "Activation failed or link expired.";
-
-                    const isExpired = msg.toLowerCase().includes("expired");
-
-                    Swal.fire({
-                        icon: isExpired ? "info" : "error",
-                        title: isExpired ? "Link Expired" : "Activation Failed",
-                        text: msg
-                    }).then(() => {
-                        navigate("/login", { replace: true });
-                    });
-                });
-        }
-    }, [token, navigate]);
 
     const loginFormik = useFormik({
         initialValues: {

@@ -98,7 +98,7 @@ const HeroSection = () => {
                                         href="#"
                                         onClick={(e) => {
                                             e.preventDefault();
-                                            setActiveTab(tab.id);
+                                            setActiveTab(tab.id as TabId);
                                         }}>
                                         <span className="font-size-14">{tab.label}</span>
                                     </a>

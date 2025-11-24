@@ -1,14 +1,17 @@
 import { Link } from "react-router-dom";
 import { useCart } from "../../contexts/CartContext";
+import { useCurrency } from "../../contexts/CurrencyContext";
+import { fCurrency } from "../../utils/formatters";
 import { defaultImages } from "../../constants/images";
-import type { Product } from "../../types/Product";
+import type { PublicProductDTO } from "../../api/types";
 
 interface ProductCardProps {
-    product: Product;
+    product: PublicProductDTO;
 }
 
 const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
     const { addToCart } = useCart();
+    const { currency, convertPrice } = useCurrency();
 
     const handleAddToCart = (e: any) => {
         e.preventDefault();
@@ -21,8 +24,8 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
                 <div className="product-item__inner px-wd-4 p-2 p-md-3">
                     <div className="product-item__body pb-xl-2">
                         <div className="mb-2">
-                            <Link to={`/subCategory/${product.subCategory.id}`} className="font-size-12 text-gray-5">
-                                {product.subCategory.name || "Products"}
+                            <Link to={`/subCategory/${product.subCategoryId || 0}`} className="font-size-12 text-gray-5">
+                                {product.subCategoryName || "Products"}
                             </Link>
                         </div>
 
@@ -45,8 +48,8 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
 
                         <div className="flex-center-between mb-1">
                             <div className="prodcut-price">
-                                {/* {product.oldPrice && <del className="text-gray-9 mr-2">${product.oldPrice}</del>} */}
-                                <div className="text-gray-100">${product.price}</div>
+                                {/* {product.oldPrice && <del className="text-gray-9 mr-2">{fCurrency(convertPrice(product.oldPrice), { currency })}</del>} */}
+                                <div className="text-gray-100">{fCurrency(convertPrice(product.price), { currency })}</div>
                             </div>
 
                             <div className="d-none d-xl-block prodcut-add-cart">

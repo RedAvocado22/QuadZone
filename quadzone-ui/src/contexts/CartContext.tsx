@@ -1,19 +1,19 @@
 import React, { createContext, useContext, useState, useEffect, useMemo } from "react";
-import type { Product } from "../types/Product";
 import { getCart, addToCart as apiAddToCart, removeFromCart as apiRemoveFromCart, updateCartItemQuantity } from "../api/cart";
 import { useUser } from "../hooks/useUser";
 import { toast } from "react-toastify";
+import type { PublicProductDTO } from "../api/types";
 
-interface CartItem extends Product {
+interface CartItem extends PublicProductDTO {
     quantity: number;
 }
 
 interface CartContextType {
     items: CartItem[];
-    addToCart: (product: Product, quantity?: number) => Promise<void>;
-    removeFromCart: (productId: number) => Promise<void>;
-    updateQuantity: (productId: number, quantity: number) => Promise<void>;
-    clearCart: () => Promise<void>;
+    addToCart: (product: PublicProductDTO, quantity?: number) => void;
+    removeFromCart: (productId: number) => void;
+    updateQuantity: (productId: number, quantity: number) => void;
+    clearCart: () => void;
     totalPrice: number;
     totalItems: number;
     loading: boolean;

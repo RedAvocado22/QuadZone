@@ -1,79 +1,54 @@
 import API from "./base";
-import type { Product, Category, Brand, ProductDetails } from "../types/Product";
+import type { PublicProductDTO } from "./types";
 
-export interface ProductFilterParams {
-    page?: number;
-    size?: number;
-    brand?: string;
-    categoryId?: number;
-    subcategoryId?: number;
-    minPrice?: number;
-    maxPrice?: number;
-    sortBy?: string;
-}
+// Re-export for convenience
+export type { PublicProductDTO as ProductDTO } from "./types";
 
-export interface PageResponse<T> {
-    content: T[];
+// ProductResponse for public API endpoint (may differ from admin endpoint)
+export interface ProductResponse {
+    content: PublicProductDTO[];
+    pageable: {
+        pageNumber: number;
+        pageSize: number;
+        sort: {
+            empty: boolean;
+            sorted: boolean;
+            unsorted: boolean;
+        };
+        offset: number;
+        paged: boolean;
+        unpaged: boolean;
+    };
+    last: boolean;
     totalPages: number;
     totalElements: number;
+    first: boolean;
     size: number;
     number: number;
-    first: boolean;
-    last: boolean;
+    sort: {
+        empty: boolean;
+        sorted: boolean;
+        unsorted: boolean;
+    };
+    numberOfElements: number;
     empty: boolean;
 }
 
-export const getProducts = async (params: ProductFilterParams = {}): Promise<PageResponse<Product>> => {
-    try {
-        const response = await API.get(`/public/products`, {
-            params: {
-                page: params.page ?? 0,
-                size: params.size ?? 10,
-                ...(params.brand && { brand: params.brand }),
-                ...(params.categoryId && { categoryId: params.categoryId }),
-                ...(params.subcategoryId && { subcategoryId: params.subcategoryId }),
-                ...(params.minPrice !== undefined && { minPrice: params.minPrice }),
-                ...(params.maxPrice !== undefined && { maxPrice: params.maxPrice }),
-                ...(params.sortBy && { sortBy: params.sortBy })
-            }
-        });
-        return response.data;
-    } catch (error) {
-        console.error("Error fetching products:", error);
-        throw error;
+export const getProducts = async (page = 0, size = 20, query?: string): Promise<ProductResponse> => {
+    const params = new URLSearchParams({
+        page: page.toString(),
+        size: size.toString(),
+    });
+
+    if (query) {
+        params.append("q", query);
     }
+
+    const response = await API.get<ProductResponse>(`/public/products?${params.toString()}`);
+    return response.data;
 };
 
-// Fetch single product details
-export const getProductDetails = async (id: number): Promise<ProductDetails> => {
-    try {
-        const response = await API.get(`/public/products/${id}`);
-        return response.data;
-    } catch (error) {
-        console.error(`Error fetching product ${id}:`, error);
-        throw error;
-    }
+export const getProduct = async (id: number): Promise<PublicProductDTO> => {
+    const response = await API.get<PublicProductDTO>(`/public/products/${id}`);
+    return response.data;
 };
-
-// Fetch categories
-export const getCategories = async (): Promise<Category[]> => {
-    try {
-        const response = await API.get('/public/categories/names');
-        return response.data;
-    } catch (error) {
-        console.error('Error fetching categories:', error);
-        return [];
-    }
-};
-
-// Fetch brands
-export const getBrands = async (): Promise<Brand[]> => {
-    try {
-        const response = await API.get('/public/products/brands');
-        return response.data;
-    } catch (error) {
-        console.error('Error fetching brands:', error);
-        return [];
-    }
-};
-

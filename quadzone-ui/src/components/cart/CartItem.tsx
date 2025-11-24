@@ -1,12 +1,17 @@
 import { Link } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { useCart } from "../../contexts/CartContext";
+import { useCurrency } from "../../contexts/CurrencyContext";
+import { fCurrency } from "../../utils/formatters";
 import { defaultImages } from "../../constants/images";
-import { getProductDetails } from "../../api/products";
-import type { Product } from "../../types/Product";
+import type { PublicProductDTO } from "../../api/types";
+
+interface CartItem extends PublicProductDTO {
+    quantity: number;
+}
 
 interface CartItemProps {
-    item: Product & { quantity: number };
+    item: CartItem;
 }
 
 const CartItem = ({ item }: CartItemProps) => {
@@ -28,6 +33,7 @@ const CartItem = ({ item }: CartItemProps) => {
 
         fetchProductDetails();
     }, [item.id, item]);
+    const { currency, convertPrice } = useCurrency();
 
     const handleQuantityChange = (newQuantity: number) => {
         if (newQuantity > 0 && product.id) {
@@ -58,8 +64,8 @@ const CartItem = ({ item }: CartItemProps) => {
                 <Link to={`/product/${product.id}`}>
                     <img
                         className="img-fluid max-width-100 p-1 border border-color-1"
-                        src={product.imageUrl || defaultImages.cart}
-                        alt={product.name}
+                        src={item.imageUrl || defaultImages.cart}
+                        alt={item.name}
                     />
                 </Link>
             </td>
@@ -69,7 +75,7 @@ const CartItem = ({ item }: CartItemProps) => {
                 </Link>
             </td>
             <td data-title="Price">
-                <span>${product.price.toFixed(2)}</span>
+                <span>{fCurrency(convertPrice(item.price), { currency })}</span>
             </td>
             <td data-title="Quantity">
                 <span className="sr-only">Quantity</span>
@@ -107,7 +113,7 @@ const CartItem = ({ item }: CartItemProps) => {
                 </div>
             </td>
             <td data-title="Total">
-                <span>${(product.price * product.quantity).toFixed(2)}</span>
+                <span>{fCurrency(convertPrice(item.price * item.quantity), { currency })}</span>
             </td>
         </tr>
     );

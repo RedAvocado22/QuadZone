@@ -2,6 +2,7 @@ import axios, { type AxiosError, type AxiosResponse, type InternalAxiosRequestCo
 
 interface RefreshResponse {
     access_token: string;
+    refresh_token?: string;
 }
 
 interface FailedRequest {
@@ -67,15 +68,34 @@ API.interceptors.response.use(
             isRefreshing = true;
 
             try {
-                const resp = await API.post<RefreshResponse>("/auth/refresh");
+                // Get refresh token from localStorage
+                const refreshToken = localStorage.getItem("refresh_token");
+                if (!refreshToken) {
+                    throw new Error("No refresh token available");
+                }
 
-                const { access_token } = resp.data;
+                // Call refresh endpoint with refresh token in Authorization header
+                const resp = await API.post<RefreshResponse>(
+                    "/auth/refresh",
+                    {},
+                    {
+                        headers: {
+                            Authorization: `Bearer ${refreshToken}`
+                        }
+                    }
+                );
+
+                const { access_token, refresh_token } = resp.data;
 
                 if (!access_token) {
                     throw new Error("No access_token returned from refresh endpoint");
                 }
 
                 localStorage.setItem("access_token", access_token);
+                // Update refresh token if a new one is provided
+                if (refresh_token) {
+                    localStorage.setItem("refresh_token", refresh_token);
+                }
                 API.defaults.headers.common["Authorization"] = `Bearer ${access_token}`;
                 processQueue(null, access_token);
 
@@ -83,6 +103,7 @@ API.interceptors.response.use(
                 return API(originalRequest);
             } catch (refreshError) {
                 localStorage.removeItem("access_token");
+                localStorage.removeItem("refresh_token");
                 processQueue(refreshError as AxiosError, null);
                 window.location.href = "/login";
                 return Promise.reject(refreshError);
