@@ -1,7 +1,7 @@
 import { useState, type FormEvent } from "react";
 import { useSearchParams } from "react-router-dom";
 import API from "../api/base";
-import { fCurrency } from "../utils/format-number";
+import { fCurrency } from "../utils/formatters";
 import { useCurrency } from "../contexts/CurrencyContext";
 
 interface OrderStatusResponse {

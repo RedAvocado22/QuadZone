@@ -28,7 +28,6 @@ spring:
     port: ${MAIL_PORT:587}
     username: ${MAIL_USERNAME:quadzone04@gmail.com}
     password: ${MAIL_PASSWORD:hiel wsxf kven mvht}
-    default-encoding: UTF-8
     properties:
       mail:
         smtp:

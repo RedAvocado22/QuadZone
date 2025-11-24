@@ -5,7 +5,6 @@ import { useCurrency } from "../contexts/CurrencyContext";
 import { fCurrency } from "../utils/formatters";
 import { useUser } from "../hooks/useUser";
 import { ordersApi } from "../api/orders";
-import { fCurrency } from "../utils/format-number";
 import CheckoutBreadcrumb from "../components/checkout/CheckoutBreadcrumb";
 import ReturningCustomerSection from "../components/checkout/ReturningCustomerSection";
 import CouponSection from "../components/checkout/CouponSection";
