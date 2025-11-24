@@ -1,11 +1,11 @@
-// Unified API Types - These match the backend DTOs exactly
-// ----------------------------------------------------------------------
+// Unified API Types - Accurately matching backend DTOs
+// =====================================================
 
-// Common Types
+// ============== ENUMS ==============
 export type UserRole = 'ADMIN' | 'STAFF' | 'CUSTOMER' | 'SHIPPER';
 export type OrderStatus = 'PENDING' | 'CONFIRMED' | 'PROCESSING' | 'COMPLETED' | 'CANCELLED';
 
-// Paged Response (matches PagedResponse<T>)
+// ============== PAGED RESPONSE ==============
 export interface PagedResponse<T> {
   data: T[];
   total: number;
@@ -13,34 +13,78 @@ export interface PagedResponse<T> {
   pageSize: number;
 }
 
-// Category Types (matches CategoryResponse)
-export interface CategoryResponse {
-  id: number;
-  name: string;
-  active: boolean;
-  productCount: number;
-  imageUrl: string | null;
-}
-
-export interface SubCategoryResponse {
+// ============== CATEGORY & SUBCATEGORY ==============
+/** Minimal category info (used in ProductResponse) */
+export interface CategoryName {
   id: number;
   name: string;
 }
 
-// Product Types (matches ProductResponse and ProductDetailsResponse)
-export interface ProductResponse {
+/** Full category with subcategories (used in ProductDetailsResponse, /categories/names endpoint) */
+export interface Category {
+  id: number;
+  name: string;
+  subCategories: SubCategory[];
+}
+
+export interface SubCategory {
+  id: number;
+  name: string;
+}
+
+// Legacy type aliases for backward compatibility
+export type CategoryNameResponse = CategoryName;
+export type CategoryResponse = Category;
+export type SubCategoryResponse = SubCategory;
+export type PublicSubCategoryDTO = SubCategory;
+export type PublicCategoryDTO = Category;
+
+// ============== REVIEW ==============
+export interface Review {
+  id: number;
+  rating: number;
+  title: string | null;
+  text: string;
+  createdAt: string; // ISO date string (LocalDateTime from backend)
+  userName: string;
+  userId: number;
+}
+
+export type ReviewResponse = Review;
+
+// ============== PRODUCT TYPES ==============
+/**
+ * Basic product info (used in /products list endpoints)
+ * Maps to ProductResponse in backend
+ */
+export interface Product {
   id: number;
   name: string;
   brand: string | null;
   price: number;
   imageUrl: string | null;
   quantity: number;
-  subCategory: SubCategoryResponse;
-  category: CategoryResponse;
+  subCategory: SubCategory;
+  category: CategoryName;
 }
 
-// Product Admin Response (matches ProductAdminResponse from backend)
-export interface ProductAdminResponse {
+/**
+ * Extended product with details (used in /products/{id} endpoint)
+ * Maps to ProductDetailsResponse in backend
+ */
+export interface ProductDetails extends Product {
+  modelNumber: string | null;
+  description: string[]; // Array of strings (parsed from JSON in backend)
+  weight: number;
+  reviews: Review[];
+  category: Category; // Full category with subcategories
+}
+
+/**
+ * Admin product with full details (used in admin endpoints)
+ * Maps to ProductAdminResponse in backend
+ */
+export interface ProductAdmin {
   id: number;
   name: string;
   brand: string | null;
@@ -53,57 +97,69 @@ export interface ProductAdminResponse {
   quantity: number;
   imageUrl: string | null;
   isActive: boolean;
-  createdAt: string;
+  createdAt: string; // ISO date string
   updatedAt: string | null;
-  subCategory: SubCategoryResponse;
-  category: CategoryResponse;
+  subCategory: SubCategory;
+  category: Category;
 }
 
-export interface ReviewResponse {
-  id: number;
-  rating: number;
-  title: string | null;
-  text: string;
-  createdAt: string;
-  userName: string;
-  userId: number;
+// Brand info
+export interface Brand {
+  brand: string;
 }
 
-export interface ProductDetailsResponse extends ProductResponse {
-  modelNumber: string | null;
-  description: string | null;
-  reviews: ReviewResponse[];
-}
+export type BrandResponse = Brand;
+export type PublicBrandDTO = Brand;
 
-// User Types (matches UserResponse and CurrentUserResponse)
-export interface UserResponse {
+// ============== USER TYPES ==============
+/**
+ * User info (used in most user endpoints)
+ * Maps to UserResponse in backend
+ */
+export interface User {
   id: number;
   name: string;
   email: string;
   role: UserRole;
-  createdAt: string;
+  createdAt: string; // ISO date string
 }
 
-export interface CurrentUserResponse {
+/**
+ * Current authenticated user (used in /user/me endpoint)
+ * Maps to CurrentUserResponse in backend
+ * Contains firstName/lastName instead of fullName
+ */
+export interface CurrentUser {
+  id: number;
   firstName: string;
   lastName: string;
   email: string;
   role: UserRole;
-  createdAt: string;
+  createdAt: string; // ISO date string
 }
 
-// Order Types (matches OrderResponse)
-export interface OrderResponse {
+// Legacy type aliases for backward compatibility
+export type UserResponse = User;
+export type CurrentUserResponse = CurrentUser;
+
+// ============== ORDER TYPES ==============
+export interface Order {
   id: number;
   orderNumber: string;
   customerName: string;
   totalAmount: number;
   status: OrderStatus;
-  orderDate: string;
+  orderDate: string; // ISO date string
   itemsCount: number;
 }
 
-// Public Product DTO (for public API endpoint - may have different structure)
+export type OrderResponse = Order;
+
+// ============== LEGACY PUBLIC DTOS (for backward compatibility) ==============
+/**
+ * Legacy PublicProductDTO - use Product or ProductDetails instead
+ * Kept for backward compatibility
+ */
 export interface PublicProductDTO {
   id: number;
   name: string;
