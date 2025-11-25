@@ -7,127 +7,117 @@ import com.quadzone.cart.CartItem;
 import com.quadzone.cart.CartRepository;
 import com.quadzone.product.Product;
 import com.quadzone.product.ProductRepository;
-
+import com.quadzone.user.User;
+import com.quadzone.user.UserRepository;
 
 @Service
 public class CartService {
 
     private final CartRepository cartRepository;
     private final ProductRepository productRepository;
+    private final UserRepository userRepository;
 
-    public CartService(CartRepository cartRepository, ProductRepository productRepository) {
+    public CartService(CartRepository cartRepository, ProductRepository productRepository, UserRepository userRepository) {
         this.cartRepository = cartRepository;
         this.productRepository = productRepository;
+        this.userRepository = userRepository;
     }
 
+    // --------------------------
+    //   PRIVATE UTILITY METHOD
+    // --------------------------
+    private Cart getOrCreateCart(Long userId) {
+        // Find cart by user
+        return cartRepository.findByUserId(userId)
+                .orElseGet(() -> {
+                    User user = userRepository.findById(userId)
+                            .orElseThrow(() -> new RuntimeException("User not found with id: " + userId));
+                    
+                    Cart cart = new Cart();
+                    cart.setUser(user);
+                    return cartRepository.save(cart);
+                });
+    }
+
+    // --------------------------
+    //       GET CART
+    // --------------------------
     public Cart getCartByUserId(Long userId) {
-        // For simplicity, assuming cart exists, in real app handle creation if not exists
-
-        return cartRepository.findById(userId).orElseThrow();
+        return getOrCreateCart(userId);
     }
 
-    /**
-     * Add a product to the user's cart.
-     * If the product already exists in the cart, increment its quantity.
-     * Otherwise, create a new cart item.
-     *
-     * @param cartId    The ID of the cart
-     * @param productId The ID of the product to add
-     * @param quantity  The quantity to add (default: 1)
-     * @return The updated Cart
-     * @throws RuntimeException if cart or product not found
-     */
-    public Cart addToCart(Long cartId, Long productId, Integer quantity) {
+    // --------------------------
+    //      ADD TO CART
+    // --------------------------
+    public Cart addToCart(Long userId, Long productId, Integer quantity) {
+
         if (quantity == null || quantity <= 0) {
             quantity = 1;
         }
 
-        // Fetch cart and product
-        Cart cart = cartRepository.findById(cartId)
-                .orElseThrow(() -> new RuntimeException("Cart not found with id: " + cartId));
+        Cart cart = getOrCreateCart(userId);
 
         Product product = productRepository.findById(productId)
                 .orElseThrow(() -> new RuntimeException("Product not found with id: " + productId));
 
-        // Check if product already exists in cart
+        // If exists → increment quantity
         if (cart.getItems() != null) {
             for (CartItem item : cart.getItems()) {
                 if (item.getProduct().getId().equals(productId)) {
-                    // Product already in cart, increment quantity
                     item.setQuantity(item.getQuantity() + quantity);
                     return cartRepository.save(cart);
                 }
             }
         }
 
-        // Product not in cart, create new cart item
+        // Else → create new item
         CartItem cartItem = new CartItem();
         cartItem.setProduct(product);
         cartItem.setQuantity(quantity);
-        cart.addCartItem(cartItem);
 
+        cart.addCartItem(cartItem);
         return cartRepository.save(cart);
     }
 
-    /**
-     * Add a product to cart with default quantity of 1.
-     *
-     * @param cartId    The ID of the cart
-     * @param productId The ID of the product to add
-     * @return The updated Cart
-     */
-    public Cart addToCart(Long cartId, Long productId) {
-        return addToCart(cartId, productId, 1);
+    public Cart addToCart(Long userId, Long productId) {
+        return addToCart(userId, productId, 1);
     }
 
-    /**
-     * Remove a product completely from the cart.
-     *
-     * @param cartId    The ID of the cart
-     * @param productId The ID of the product to remove
-     * @return The updated Cart
-     * @throws RuntimeException if cart not found or product not in cart
-     */
-    public Cart removeFromCart(Long cartId, Long productId) {
-        Cart cart = cartRepository.findById(cartId)
-                .orElseThrow(() -> new RuntimeException("Cart not found with id: " + cartId));
+    // --------------------------
+    //     REMOVE FROM CART
+    // --------------------------
+    public Cart removeFromCart(Long userId, Long productId) {
+        Cart cart = getOrCreateCart(userId);
+
+        CartItem itemToRemove = null;
 
         if (cart.getItems() != null) {
-            CartItem itemToRemove = null;
             for (CartItem item : cart.getItems()) {
                 if (item.getProduct().getId().equals(productId)) {
                     itemToRemove = item;
                     break;
                 }
             }
-
-            if (itemToRemove != null) {
-                cart.getItems().remove(itemToRemove);
-                return cartRepository.save(cart);
-            }
         }
 
-        throw new RuntimeException("Product with id: " + productId + " not found in cart");
+        if (itemToRemove == null) {
+            throw new RuntimeException("Product with id: " + productId + " not found in cart");
+        }
+
+        cart.getItems().remove(itemToRemove);
+        return cartRepository.save(cart);
     }
 
-    /**
-     * Update the quantity of a product in the cart.
-     * If quantity is 0 or less, the item is removed from cart.
-     *
-     * @param cartId    The ID of the cart
-     * @param productId The ID of the product to update
-     * @param quantity  The new quantity
-     * @return The updated Cart
-     * @throws RuntimeException if cart not found or product not in cart
-     */
-    public Cart updateQuantity(Long cartId, Long productId, Integer quantity) {
+    // --------------------------
+    //     UPDATE QUANTITY
+    // --------------------------
+    public Cart updateQuantity(Long userId, Long productId, Integer quantity) {
+
         if (quantity == null || quantity <= 0) {
-            // Remove item if quantity is 0 or negative
-            return removeFromCart(cartId, productId);
+            return removeFromCart(userId, productId);
         }
 
-        Cart cart = cartRepository.findById(cartId)
-                .orElseThrow(() -> new RuntimeException("Cart not found with id: " + cartId));
+        Cart cart = getOrCreateCart(userId);
 
         if (cart.getItems() != null) {
             for (CartItem item : cart.getItems()) {
@@ -141,16 +131,11 @@ public class CartService {
         throw new RuntimeException("Product with id: " + productId + " not found in cart");
     }
 
-    /**
-     * Clear all items from the cart.
-     *
-     * @param cartId The ID of the cart to clear
-     * @return The cleared Cart
-     * @throws RuntimeException if cart not found
-     */
-    public Cart clearCart(Long cartId) {
-        Cart cart = cartRepository.findById(cartId)
-                .orElseThrow(() -> new RuntimeException("Cart not found with id: " + cartId));
+    // --------------------------
+    //         CLEAR CART
+    // --------------------------
+    public Cart clearCart(Long userId) {
+        Cart cart = getOrCreateCart(userId);
 
         if (cart.getItems() != null) {
             cart.getItems().clear();

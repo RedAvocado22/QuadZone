@@ -2,34 +2,20 @@ package com.quadzone.order;
 
 import com.quadzone.exception.order.OrderNotFoundException;
 import com.quadzone.global.dto.PagedResponse;
-import com.quadzone.order.dto.CheckoutRequest;
 import com.quadzone.order.dto.OrderRegisterRequest;
 import com.quadzone.order.dto.OrderResponse;
-import com.quadzone.order.dto.OrderStatusResponse;
 import com.quadzone.order.dto.OrderUpdateRequest;
-import com.quadzone.payment.Payment;
-import com.quadzone.payment.PaymentMethod;
-import com.quadzone.payment.PaymentRepository;
-import com.quadzone.payment.PaymentStatus;
-import com.quadzone.product.Product;
-import com.quadzone.product.ProductRepository;
 import com.quadzone.user.User;
 import com.quadzone.user.UserRepository;
-import com.quadzone.utils.email.EmailSenderService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
-
-import java.math.BigDecimal;
-import java.time.LocalDateTime;
 
 @Service
 @RequiredArgsConstructor
@@ -38,9 +24,6 @@ public class OrderService {
 
     private final OrderRepository orderRepository;
     private final UserRepository userRepository;
-    private final ProductRepository productRepository;
-    private final PaymentRepository paymentRepository;
-    private final EmailSenderService emailSenderService;
 
     public OrderResponse getOrder(Long id) {
         Order order = orderRepository.findById(id)
@@ -102,6 +85,8 @@ public class OrderService {
                 .map(OrderResponse::from)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Order not found: " + id));
     }
+<<<<<<< Updated upstream
+=======
 
     /**
      * Checkout method that supports both guest and authenticated users
@@ -207,7 +192,7 @@ public class OrderService {
         // Create payment
         Payment payment = new Payment();
         payment.setOrder(savedOrder);
-        payment.setAmount(BigDecimal.valueOf(savedOrder.getTotalAmount()));
+        payment.setAmount(savedOrder.getTotalAmount());
         
         // Map payment method from string to enum
         PaymentMethod paymentMethodEnum;
@@ -220,7 +205,6 @@ public class OrderService {
         }
         
         payment.setPaymentMethod(paymentMethodEnum);
-        payment.setStatus(PaymentStatus.PENDING);
         paymentRepository.save(payment);
 
         // Send order confirmation email
@@ -258,5 +242,6 @@ public class OrderService {
                 .map(OrderStatusResponse::from)
                 .orElse(OrderStatusResponse.notFound(orderNumber));
     }
+>>>>>>> Stashed changes
 }
 

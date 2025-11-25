@@ -36,7 +36,7 @@ export const CartProvider = ({ children }: { children: React.ReactNode }) => {
         try {
             const cartResponse = await getCart(user.id);
             // Transform CartResponse to CartItem[]
-            const cartItems = cartResponse.cart_item_list.map((item) => ({
+            const cartItems = cartResponse.cart_item_list.map((item: { productResponse: Product; quantity: number }) => ({
                 ...item.productResponse,
                 quantity: item.quantity
             }));
