@@ -1,126 +1,46 @@
-import { useState } from 'react';
-import { Link } from 'react-router-dom';
-import { productImages } from '../../constants/images';
-import type { Category, Brand, Color, PriceRange, Product } from '../../types/shop';
+// src/components/shop/ShopSidebar.tsx
+import { useState, useEffect } from "react";
+import type { Category, Brand } from "../../types/Product";
+import { getCategories, getBrands } from "../../api/products";
+import PriceRangeSlider from "../../components/shop/PriceRangeSlider";
 
 interface ShopSidebarProps {
   isOpen: boolean;
   onClose: () => void;
+  onApplyFilters: (filters: {
+    brands: string[];
+    priceRange: { min: number; max: number } | null;
+    categoryId?: number;
+    subcategoryId?: number;
+  }) => void;
 }
 
-interface SidebarContentProps {
-  categories: Category[];
-  expandedCategories: { [key: number]: boolean };
-  toggleCategory: (index: number) => void;
-  brands: Brand[];
-  showMoreBrands: boolean;
-  setShowMoreBrands: (show: boolean) => void;
-  colors: Color[];
-  showMoreColors: boolean;
-  setShowMoreColors: (show: boolean) => void;
-  priceRange: PriceRange;
-  latestProducts: Product[];
-}
+const ShopSidebar: React.FC<ShopSidebarProps> = ({ isOpen, onClose, onApplyFilters }) => {
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [brands, setBrands] = useState<Brand[]>([]);
+  const [expandedCategories, setExpandedCategories] = useState<Record<number, boolean>>({});
 
-const categories: Category[] = [
-  {
-    name: 'Accessories',
-    count: 56,
-    subcategories: [
-      { name: 'Accessories', count: 56 },
-      { name: 'Cameras & Photography', count: 11 },
-      { name: 'Computer Components', count: 22 },
-      { name: 'Gadgets', count: 5 },
-      { name: 'Home Entertainment', count: 7 },
-      { name: 'Laptops & Computers', count: 42 },
-      { name: 'Printers & Ink', count: 63 },
-      { name: 'Smart Phones & Tablets', count: 11 },
-      { name: 'TV & Audio', count: 66 },
-      { name: 'Video Games & Consoles', count: 31 }
-    ]
-  },
-  { name: 'Cameras & Photography', count: 56, subcategories: [{ name: 'Cameras', count: 56 }] },
-  { name: 'Computer Components', count: 56, subcategories: [{ name: 'Computer Cases', count: 56 }] },
-  { name: 'Gadgets', count: 56, subcategories: [{ name: 'Smartwatches', count: 56 }, { name: 'Wearables', count: 56 }] },
-  { name: 'Home Entertainment', count: 56, subcategories: [{ name: 'Tvs', count: 56 }] },
-  { name: 'Laptops & Computers', count: 56, subcategories: [] },
-  { name: 'Printers & Ink', count: 56, subcategories: [{ name: 'Printers', count: 56 }] },
-  { name: 'Smart Phones & Tablets', count: 56, subcategories: [{ name: 'Smartphones', count: 56 }, { name: 'Tablets', count: 56 }] },
-  { name: 'TV & Audio', count: 56, subcategories: [{ name: 'Audio Speakers', count: 56 }] },
-  { name: 'Video Games & Consoles', count: 56, subcategories: [{ name: 'Game Consoles', count: 56 }] }
-];
+  // Local pending filters
+  const [selectedBrands, setSelectedBrands] = useState<string[]>([]);
+  const [priceRange, setPriceRange] = useState<{ min: number; max: number } | null>(null);
+  const [selectedCategoryId, setSelectedCategoryId] = useState<number | undefined>();
+  const [selectedSubcategoryId, setSelectedSubcategoryId] = useState<number | undefined>();
 
-const brands: Brand[] = [
-  { id: 'brandAdidas', name: 'Adidas', count: 56 },
-  { id: 'brandNewBalance', name: 'New Balance', count: 56 },
-  { id: 'brandNike', name: 'Nike', count: 56 },
-  { id: 'brandFredPerry', name: 'Fred Perry', count: 56 },
-  { id: 'brandTnf', name: 'The North Face', count: 56 },
-  { id: 'brandGucci', name: 'Gucci', count: 56, hidden: true },
-  { id: 'brandMango', name: 'Mango', count: 56, hidden: true }
-];
+  const [showMoreBrands, setShowMoreBrands] = useState(false);
+  const [showMoreCategories, setShowMoreCategories] = useState(false);
 
-const colors: Color[] = [
-  { id: 'colorBlack', name: 'Black', count: 56 },
-  { id: 'colorBlackLeather', name: 'Black Leather', count: 56 },
-  { id: 'colorBlackRed', name: 'Black with Red', count: 56 },
-  { id: 'colorGold', name: 'Gold', count: 56 },
-  { id: 'colorSpacegrey', name: 'Spacegrey', count: 56 },
-  { id: 'colorTurquoise', name: 'Turquoise', count: 56, hidden: true },
-  { id: 'colorWhite', name: 'White', count: 56, hidden: true },
-  { id: 'colorWhiteGold', name: 'White with Gold', count: 56, hidden: true }
-];
-
-const latestProducts: Product[] = [
-  {
-    id: 1,
-    name: 'Notebook Black Spire V Nitro VN7-591G',
-    category: 'Laptops',
-    price: 1999.00,
-    oldPrice: 2299.00,
-    rating: 4,
-    image: productImages[1]
-  },
-  {
-    id: 2,
-    name: 'Notebook Black Spire V Nitro VN7-591G',
-    category: 'Laptops',
-    price: 499.00,
-    rating: 4,
-    image: productImages[2]
-  },
-  {
-    id: 3,
-    name: 'Tablet Thin EliteBook Revolve 810 G6',
-    category: 'Tablets',
-    price: 100.00,
-    rating: 4,
-    image: productImages[5]
-  },
-  {
-    id: 4,
-    name: 'Notebook Purple G952VX-T7008T',
-    category: 'Laptops',
-    price: 1999.00,
-    oldPrice: 2299.00,
-    rating: 4,
-    image: productImages[6]
-  },
-  {
-    id: 5,
-    name: 'Laptop Yoga 21 80JH0035GE W8.1',
-    category: 'Laptops',
-    price: 1200.00,
-    rating: 4,
-    image: productImages[1]
-  }
-];
-
-const ShopSidebar = ({ isOpen, onClose }: ShopSidebarProps) => {
-  const [expandedCategories, setExpandedCategories] = useState<{ [key: number]: boolean }>({});
-  const [showMoreBrands, setShowMoreBrands] = useState<boolean>(false);
-  const [showMoreColors, setShowMoreColors] = useState<boolean>(false);
-  const [priceRange] = useState<PriceRange>({ min: 0, max: 3456 });
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const [cats, brs] = await Promise.all([getCategories(), getBrands()]);
+        setCategories(cats);
+        setBrands(brs);
+      } catch (err) {
+        console.error("Error loading sidebar data", err);
+      }
+    };
+    fetchData();
+  }, []);
 
   const toggleCategory = (index: number) => {
     setExpandedCategories(prev => ({
@@ -129,54 +49,96 @@ const ShopSidebar = ({ isOpen, onClose }: ShopSidebarProps) => {
     }));
   };
 
+  const toggleBrand = (brand: string) => {
+    setSelectedBrands(prev =>
+      prev.includes(brand)
+        ? prev.filter(b => b !== brand)
+        : [...prev, brand]
+    );
+  };
+
+  const handleApply = () => {
+    onApplyFilters({
+      brands: selectedBrands,
+      priceRange,
+      categoryId: selectedCategoryId,
+      subcategoryId: selectedSubcategoryId
+    });
+  };
+
+  const handleClear = () => {
+    setSelectedBrands([]);
+    setPriceRange(null);
+    setSelectedCategoryId(undefined);
+    setSelectedSubcategoryId(undefined);
+  };
+
+  const handlePriceFilter = (range: { min: number; max: number }) => {
+    setPriceRange(range);
+  };
+
   return (
     <>
-      <div className={`d-none d-xl-block col-xl-3 col-wd-2gdot5`}>
-        <SidebarContent 
+      {/* Desktop */}
+      <div className="d-none d-xl-block col-xl-3 col-wd-2gdot5">
+        <SidebarContent
           categories={categories}
+          brands={brands}
           expandedCategories={expandedCategories}
           toggleCategory={toggleCategory}
-          brands={brands}
+          selectedBrands={selectedBrands}
+          toggleBrand={toggleBrand}
           showMoreBrands={showMoreBrands}
           setShowMoreBrands={setShowMoreBrands}
-          colors={colors}
-          showMoreColors={showMoreColors}
-          setShowMoreColors={setShowMoreColors}
-          priceRange={priceRange}
-          latestProducts={latestProducts}
+          showMoreCategories={showMoreCategories}
+          setShowMoreCategories={setShowMoreCategories}
+          onPriceFilter={handlePriceFilter}
+          onCategorySelect={(catId, subId) => {
+            setSelectedCategoryId(catId);
+            setSelectedSubcategoryId(subId);
+          }}
+          onApply={handleApply}
+          onClear={handleClear}
         />
       </div>
 
-      {/* Mobile Sidebar */}
+      {/* Mobile */}
       {isOpen && (
         <div className="d-xl-none">
-          <div 
+          <div
+            onClick={onClose}
             className="position-fixed top-0 left-0 right-0 bottom-0 bg-dark"
             style={{ opacity: 0.5, zIndex: 999 }}
-            onClick={onClose}
           />
-          <div 
+
+          <div
             className="position-fixed top-0 left-0 bottom-0 bg-white p-4"
-            style={{ width: '300px', zIndex: 1000, overflowY: 'auto' }}
-          >
-            <button 
-              className="btn btn-sm btn-icon btn-soft-secondary mb-3"
-              onClick={onClose}
-            >
+            style={{ width: "300px", zIndex: 1000, overflowY: "auto" }}>
+            <button className="btn btn-sm btn-icon btn-soft-secondary mb-3" onClick={onClose}>
               <i className="fas fa-times"></i>
             </button>
-            <SidebarContent 
+
+            <SidebarContent
               categories={categories}
+              brands={brands}
               expandedCategories={expandedCategories}
               toggleCategory={toggleCategory}
-              brands={brands}
+              selectedBrands={selectedBrands}
+              toggleBrand={toggleBrand}
               showMoreBrands={showMoreBrands}
               setShowMoreBrands={setShowMoreBrands}
-              colors={colors}
-              showMoreColors={showMoreColors}
-              setShowMoreColors={setShowMoreColors}
-              priceRange={priceRange}
-              latestProducts={latestProducts}
+              showMoreCategories={showMoreCategories}
+              setShowMoreCategories={setShowMoreCategories}
+              onPriceFilter={handlePriceFilter}
+              onCategorySelect={(catId, subId) => {
+                setSelectedCategoryId(catId);
+                setSelectedSubcategoryId(subId);
+              }}
+              onApply={() => {
+                handleApply();
+                onClose();
+              }}
+              onClear={handleClear}
             />
           </div>
         </div>
@@ -185,45 +147,71 @@ const ShopSidebar = ({ isOpen, onClose }: ShopSidebarProps) => {
   );
 };
 
-const SidebarContent = ({ 
-  categories, 
-  expandedCategories, 
-  toggleCategory,
+export default ShopSidebar;
+
+/* ===================== SidebarContent (your original style 100% preserved) ===================== */
+interface SidebarContentProps {
+  categories: Category[];
+  brands: Brand[];
+  expandedCategories: Record<number, boolean>;
+  toggleCategory: (index: number) => void;
+  selectedBrands: string[];
+  toggleBrand: (brand: string) => void;
+  showMoreBrands: boolean;
+  setShowMoreBrands: (v: boolean) => void;
+  showMoreCategories: boolean;
+  setShowMoreCategories: (v: boolean) => void;
+  onPriceFilter: (range: { min: number; max: number }) => void;
+  onCategorySelect: (categoryId: number, subcategoryId?: number) => void;
+  onApply: () => void;
+  onClear: () => void;
+}
+
+const SidebarContent: React.FC<SidebarContentProps> = ({
+  categories,
   brands,
+  expandedCategories,
+  toggleCategory,
+  selectedBrands,
+  toggleBrand,
   showMoreBrands,
   setShowMoreBrands,
-  colors,
-  showMoreColors,
-  setShowMoreColors,
-  priceRange,
-  latestProducts
-}: SidebarContentProps) => {
+  showMoreCategories,
+  setShowMoreCategories,
+  onPriceFilter,
+  onCategorySelect,
+  onApply,
+  onClear
+}) => {
   return (
     <>
-      {/* Categories */}
+      {/* Categories - exactly your original code */}
       <div className="mb-6 border border-width-2 border-color-3 borders-radius-6">
         <ul id="sidebarNav" className="list-unstyled mb-0 sidebar-navbar view-all">
-          <li><div className="dropdown-title">Browse Categories</div></li>
-          {categories.map((category, index) => (
-            <li key={index}>
-              <a 
-                className="dropdown-toggle dropdown-toggle-collapse"
-                href="javascript:;"
-                role="button"
-                onClick={() => toggleCategory(index)}
-              >
+          <li>
+            <div className="dropdown-title">Browse Categories</div>
+          </li>
+
+          {(showMoreCategories ? categories : categories.slice(0, 5)).map((category, index) => (
+            <li key={category.id}>
+              <button
+                type="button"
+                className="dropdown-toggle dropdown-toggle-collapse btn-reset"
+                onClick={() => toggleCategory(index)}>
                 {category.name}
-                <span className="text-gray-25 font-size-12 font-weight-normal"> ({category.count})</span>
-              </a>
-              {expandedCategories[index] && category.subcategories.length > 0 && (
+              </button>
+
+              {expandedCategories[index] && category.subCategories?.length > 0 && (
                 <div className="collapse show">
                   <ul className="list-unstyled dropdown-list">
-                    {category.subcategories.map((sub, subIndex) => (
-                      <li key={subIndex}>
-                        <Link className="dropdown-item" to="#">
+                    {category.subCategories.map((sub) => (
+                      <li key={sub.id}>
+                        <button
+                          type="button"
+                          className="dropdown-item btn-reset"
+                          onClick={() => onCategorySelect(category.id, sub.id)}>
                           {sub.name}
-                          <span className="text-gray-25 font-size-12 font-weight-normal"> ({sub.count})</span>
-                        </Link>
+                        </button>
                       </li>
                     ))}
                   </ul>
@@ -231,124 +219,85 @@ const SidebarContent = ({
               )}
             </li>
           ))}
+
+          {categories.length > 5 && (
+            <li>
+              <button
+                type="button"
+                className="link small btn-reset mt-2"
+                onClick={() => setShowMoreCategories(!showMoreCategories)}>
+                {showMoreCategories ? "Show less" : "Show more"}
+              </button>
+            </li>
+          )}
         </ul>
       </div>
 
-      {/* Filters */}
+      {/* Filters Section */}
       <div className="mb-6">
-        <div className="border-bottom border-color-1 mb-5">
+        <div className="border-bottom mb-5 pb-3">
           <h3 className="section-title section-title__sm mb-0 pb-2 font-size-18">Filters</h3>
         </div>
 
-        {/* Brands */}
+        {/* Brands - now multi-select */}
         <div className="border-bottom pb-4 mb-4">
           <h4 className="font-size-14 mb-3 font-weight-bold">Brands</h4>
-          {brands.filter(b => !b.hidden || showMoreBrands).map((brand) => (
-            <div key={brand.id} className="form-group d-flex align-items-center justify-content-between mb-2 pb-1">
-              <div className="custom-control custom-checkbox">
-                <input type="checkbox" className="custom-control-input" id={brand.id} />
-                <label className="custom-control-label" htmlFor={brand.id}>
-                  {brand.name}
-                  <span className="text-gray-25 font-size-12 font-weight-normal"> ({brand.count})</span>
-                </label>
-              </div>
-            </div>
-          ))}
-          <a 
-            className="link link-collapse small font-size-13 text-gray-27 d-inline-flex mt-2"
-            href="javascript:;"
-            onClick={() => setShowMoreBrands(!showMoreBrands)}
-          >
-            <span className="link__icon text-gray-27 bg-white">
-              <span className="link__icon-inner">+</span>
-            </span>
-            <span>{showMoreBrands ? 'Show less' : 'Show more'}</span>
-          </a>
-        </div>
 
-        {/* Colors */}
-        <div className="border-bottom pb-4 mb-4">
-          <h4 className="font-size-14 mb-3 font-weight-bold">Color</h4>
-          {colors.filter(c => !c.hidden || showMoreColors).map((color) => (
-            <div key={color.id} className="form-group d-flex align-items-center justify-content-between mb-2 pb-1">
+          {(showMoreBrands ? brands : brands.slice(0, 5)).map((brand) => (
+            <div
+              key={brand.brand}
+              className="form-group d-flex align-items-center justify-content-between mb-2 pb-1">
               <div className="custom-control custom-checkbox">
-                <input type="checkbox" className="custom-control-input" id={color.id} />
-                <label className="custom-control-label" htmlFor={color.id}>
-                  {color.name}
-                  <span className="text-gray-25 font-size-12 font-weight-normal"> ({color.count})</span>
+                <input
+                  type="checkbox"
+                  className="custom-control-input"
+                  id={`brand${brand.brand.replace(/\s+/g, "")}`}
+                  checked={selectedBrands.includes(brand.brand)}
+                  onChange={() => toggleBrand(brand.brand)}
+                />
+                <label
+                  className="custom-control-label"
+                  htmlFor={`brand${brand.brand.replace(/\s+/g, "")}`}>
+                  {brand.brand}
                 </label>
               </div>
             </div>
           ))}
-          <a 
-            className="link link-collapse small font-size-13 text-gray-27 d-inline-flex mt-2"
-            href="javascript:;"
-            onClick={() => setShowMoreColors(!showMoreColors)}
-          >
-            <span className="link__icon text-gray-27 bg-white">
-              <span className="link__icon-inner">+</span>
-            </span>
-            <span>{showMoreColors ? 'Show less' : 'Show more'}</span>
-          </a>
+
+          {brands.length > 5 && (
+            <a
+              href="#collapseBrand"
+              className="link link-collapse small font-size-13 text-gray-27 d-inline-flex mt-2"
+              onClick={(e) => {
+                e.preventDefault();
+                setShowMoreBrands(!showMoreBrands);
+              }}>
+              <span className="link__icon text-gray-27 bg-white">
+                <span className="link__icon-inner">{showMoreBrands ? "-" : "+"}</span>
+              </span>
+              <span className="link-collapse__default">Show more</span>
+              <span className="link-collapse__active">Show less</span>
+            </a>
+          )}
         </div>
 
         {/* Price Range */}
-        <div className="range-slider">
-          <h4 className="font-size-14 mb-3 font-weight-bold">Price</h4>
-          <div className="mt-1 text-gray-111 d-flex mb-4">
-            <span className="mr-0dot5">Price: </span>
-            <span>$</span>
-            <span>{priceRange.min}</span>
-            <span className="mx-0dot5"> — </span>
-            <span>$</span>
-            <span>{priceRange.max}</span>
-          </div>
-          <button type="submit" className="btn px-4 btn-primary-dark-w py-2 rounded-lg">
-            Filter
+        <PriceRangeSlider min={0} max={5000} onFilter={onPriceFilter} />
+
+        {/* Apply & Clear Buttons - your style */}
+        <div className="mt-5 d-flex gap-3">
+          <button
+            onClick={onApply}
+            className="btn btn-primary btn-block transition-3d-hover height-60px">
+            Apply Filters
+          </button>
+          <button
+            onClick={onClear}
+            className="btn btn-soft-secondary btn-block transition-3d-hover height-60px">
+            Clear All
           </button>
         </div>
-      </div>
-
-      {/* Latest Products */}
-      <div className="mb-8">
-        <div className="border-bottom border-color-1 mb-5">
-          <h3 className="section-title section-title__sm mb-0 pb-2 font-size-18">Latest Products</h3>
-        </div>
-        <ul className="list-unstyled">
-          {latestProducts.map((product) => (
-            <li key={product.id} className="mb-4">
-              <div className="row">
-                <div className="col-auto">
-                  <Link to="#" className="d-block width-75">
-                    <img className="img-fluid" src={product.image} alt={product.name} />
-                  </Link>
-                </div>
-                <div className="col">
-                  <h3 className="text-lh-1dot2 font-size-14 mb-0">
-                    <Link to="#">{product.name}</Link>
-                  </h3>
-                  <div className="text-warning text-ls-n2 font-size-16 mb-1" style={{ width: '80px' }}>
-                    {[...Array(5)].map((_, i) => (
-                      <small key={i} className={i < product.rating ? 'fas fa-star' : 'far fa-star text-muted'}></small>
-                    ))}
-                  </div>
-                  <div className="font-weight-bold">
-                    {product.oldPrice && (
-                      <del className="font-size-11 text-gray-9 d-block">${product.oldPrice.toFixed(2)}</del>
-                    )}
-                    <ins className={`font-size-15 text-decoration-none d-block ${product.oldPrice ? 'text-red' : ''}`}>
-                      ${product.price.toFixed(2)}
-                    </ins>
-                  </div>
-                </div>
-              </div>
-            </li>
-          ))}
-        </ul>
       </div>
     </>
   );
 };
-
-export default ShopSidebar;
-

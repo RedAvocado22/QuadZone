@@ -1,13 +1,13 @@
 import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { useCart } from "../contexts/CartContext";
-import type { Product } from "../types/Product";
+import type { ProductDetails } from "../types/Product";
 import API from "@/api/base";
 import { toast } from "react-toastify";
 
 const ProductDetailPage = () => {
     const { id } = useParams();
-    const [product, setProduct] = useState<Product | null>(null);
+    const [product, setProduct] = useState<ProductDetails | null>(null);
     const [loading, setLoading] = useState(true);
     const { addToCart } = useCart();
 
@@ -81,7 +81,9 @@ const ProductDetailPage = () => {
                         <div className="d-flex gap-3">
                             <button
                                 className="btn btn-primary flex-fill"
-                                onClick={() => addToCart(product, 1)}
+                                onClick={() => {
+                                    addToCart(product, 1);
+                                }}
                                 disabled={product.quantity === 0}>
                                 <i className="fa fa-shopping-cart me-2"></i>Add to Cart
                             </button>
@@ -129,12 +131,30 @@ const ProductDetailPage = () => {
                         {product.isActive ? (
                             <p>This product is currently unavailable.</p>
                         ) : (
-                            <p>
-                                {product.description ||
-                                    product.modelNumber ||
-                                    product.brand ||
-                                    "No detailed description available."}
-                            </p>
+                            <>
+                                <div className="mb-3">
+                                    <strong>Description:</strong>
+
+                                    {/* If description is a list (JSON) */}
+                                    {Array.isArray(product.description) ? (
+                                        <ul className="mt-2">
+                                            {product.description.map((desc: string, index: number) => (
+                                                <li key={index}>{desc}</li>
+                                            ))}
+                                        </ul>
+                                    ) : (
+                                        <p className="mt-2">No description</p>
+                                    )}
+                                </div>
+
+                                <p>
+                                    <strong>Model Number:</strong> {product.modelNumber || "N/A"}
+                                </p>
+
+                                <p>
+                                    <strong>Brand:</strong> {product.brand || "N/A"}
+                                </p>
+                            </>
                         )}
                     </div>
 

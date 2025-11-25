@@ -1,18 +1,39 @@
 import { Link } from "react-router-dom";
+import { useState, useEffect } from "react";
 import { useCart } from "../../contexts/CartContext";
 import { defaultImages } from "../../constants/images";
+import { getProductDetails } from "../../api/products";
 import type { Product } from "../../types/Product";
 
 interface CartItemProps {
-    item: Product;
+    item: Product & { quantity: number };
 }
 
 const CartItem = ({ item }: CartItemProps) => {
     const { removeFromCart, updateQuantity } = useCart();
+    const [product, setProduct] = useState<Product & { quantity: number }>(item);
+
+    // Fetch latest product data from database
+    useEffect(() => {
+        const fetchProductDetails = async () => {
+            try {
+                const updatedProduct = await getProductDetails(item.id);
+                setProduct({ ...updatedProduct, quantity: item.quantity });
+            } catch (err) {
+                console.error("Failed to fetch product details:", err);
+                // Fallback to item data if fetch fails
+                setProduct(item);
+            }
+        };
+
+        fetchProductDetails();
+    }, [item.id, item]);
 
     const handleQuantityChange = (newQuantity: number) => {
-        if (newQuantity > 0 && item.id) {
-            updateQuantity(item.id, newQuantity);
+        if (newQuantity > 0 && product.id) {
+            updateQuantity(product.id, newQuantity).catch((err) => {
+                console.error("Failed to update quantity:", err);
+            });
         }
     };
 
@@ -24,29 +45,31 @@ const CartItem = ({ item }: CartItemProps) => {
                     className="text-gray-32 font-size-26"
                     onClick={(e) => {
                         e.preventDefault();
-                        if (item.id) {
-                            removeFromCart(item.id);
+                        if (product.id) {
+                            removeFromCart(product.id).catch((err) => {
+                                console.error("Failed to remove from cart:", err);
+                            });
                         }
                     }}>
                     ×
                 </a>
             </td>
             <td className="d-none d-md-table-cell">
-                <Link to={`/product/${item.id}`}>
+                <Link to={`/product/${product.id}`}>
                     <img
                         className="img-fluid max-width-100 p-1 border border-color-1"
-                        src={item.imageUrl || defaultImages.cart}
-                        alt={item.name}
+                        src={product.imageUrl || defaultImages.cart}
+                        alt={product.name}
                     />
                 </Link>
             </td>
             <td data-title="Product">
-                <Link to={`/product/${item.id}`} className="text-gray-90">
-                    {item.name}
+                <Link to={`/product/${product.id}`} className="text-gray-90">
+                    {product.name}
                 </Link>
             </td>
             <td data-title="Price">
-                <span>${item.price.toFixed(2)}</span>
+                <span>${product.price.toFixed(2)}</span>
             </td>
             <td data-title="Quantity">
                 <span className="sr-only">Quantity</span>
@@ -56,7 +79,7 @@ const CartItem = ({ item }: CartItemProps) => {
                             <input
                                 className="js-result form-control h-auto border-0 rounded p-0 shadow-none"
                                 type="text"
-                                value={item.quantity}
+                                value={product.quantity}
                                 readOnly
                             />
                         </div>
@@ -66,7 +89,7 @@ const CartItem = ({ item }: CartItemProps) => {
                                 href="#"
                                 onClick={(e) => {
                                     e.preventDefault();
-                                    handleQuantityChange(item.quantity - 1);
+                                    handleQuantityChange(product.quantity - 1);
                                 }}>
                                 <small className="fas fa-minus btn-icon__inner"></small>
                             </a>
@@ -75,7 +98,7 @@ const CartItem = ({ item }: CartItemProps) => {
                                 href="#"
                                 onClick={(e) => {
                                     e.preventDefault();
-                                    handleQuantityChange(item.quantity + 1);
+                                    handleQuantityChange(product.quantity + 1);
                                 }}>
                                 <small className="fas fa-plus btn-icon__inner"></small>
                             </a>
@@ -84,7 +107,7 @@ const CartItem = ({ item }: CartItemProps) => {
                 </div>
             </td>
             <td data-title="Total">
-                <span>${(item.price * item.quantity).toFixed(2)}</span>
+                <span>${(product.price * product.quantity).toFixed(2)}</span>
             </td>
         </tr>
     );
