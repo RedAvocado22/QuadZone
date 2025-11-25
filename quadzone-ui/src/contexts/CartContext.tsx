@@ -2,11 +2,11 @@ import React, { createContext, useContext, useState, useEffect, useMemo } from "
 import { getCart, addToCart as apiAddToCart, removeFromCart as apiRemoveFromCart, updateCartItemQuantity } from "../api/cart";
 import { useUser } from "../hooks/useUser";
 import { toast } from "react-toastify";
-import type { CartItem, Product } from "../api/types";
+import type { CartItemResponse, Product } from "../api/types";
 
 
 interface CartContextType {
-    items: CartItem[];
+    items: CartItemResponse[];
     addToCart: (product: Product, quantity?: number) => void;
     removeFromCart: (productId: number) => void;
     updateQuantity: (productId: number, quantity: number) => void;
@@ -21,7 +21,7 @@ interface CartContextType {
 const CartContext = createContext<CartContextType | undefined>(undefined);
 
 export const CartProvider = ({ children }: { children: React.ReactNode }) => {
-    const [items, setItems] = useState<CartItem[]>([]);
+    const [items, setItems] = useState<CartItemResponse[]>([]);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     

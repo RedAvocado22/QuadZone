@@ -70,7 +70,7 @@ const Shop: React.FC = () => {
                 });
 
                 const products = response.content || [];
-                console.log("Products fetched:", products);
+                console.log("Products fetched");
                 setAllProducts(products);
                 setCurrentPage(1); // Reset page on filter change
             } catch (err) {

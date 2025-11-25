@@ -4,11 +4,11 @@ import { useCart } from "../../contexts/CartContext";
 import { useCurrency } from "../../contexts/CurrencyContext";
 import { fCurrency } from "../../utils/formatters";
 import { defaultImages } from "../../constants/images";
-import type { CartItem as CartItemType, Product } from "../../api/types";
+import type { CartItemResponse, Product } from "../../api/types";
 import { getProductDetails } from "../../api/products";
 
 interface CartItemProps {
-    item: CartItemType;
+    item: CartItemResponse;
 }
 
 const CartItem = ({ item }: CartItemProps) => {

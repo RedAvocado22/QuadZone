@@ -116,7 +116,6 @@ export interface Brand {
   brand: string;
 }
 
-export type BrandResponse = Brand;
 export type PublicBrandDTO = Brand;
 
 // ============== USER TYPES ==============
