@@ -77,8 +77,8 @@ export const ordersApi = {
     totalAmount: number;
     paymentMethod: string;
     notes?: string;
-  }): Promise<Order> => {
-    const response = await API.post<OrderDto>('/orders/checkout', checkoutData);
-    return mapOrderToFrontend(response.data);
+  }): Promise<OrderResponse> => {
+    const response = await API.post<OrderResponse>('/orders/checkout', checkoutData);
+    return response.data;
   },
 };
