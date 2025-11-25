@@ -9,6 +9,10 @@ import com.quadzone.product.Product;
 import com.quadzone.product.ProductRepository;
 import com.quadzone.user.User;
 import com.quadzone.user.UserRepository;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+import com.quadzone.cart.dto.CartItemRequest;
 
 @Service
 public class CartService {
@@ -17,14 +21,15 @@ public class CartService {
     private final ProductRepository productRepository;
     private final UserRepository userRepository;
 
-    public CartService(CartRepository cartRepository, ProductRepository productRepository, UserRepository userRepository) {
+    public CartService(CartRepository cartRepository, ProductRepository productRepository,
+            UserRepository userRepository) {
         this.cartRepository = cartRepository;
         this.productRepository = productRepository;
         this.userRepository = userRepository;
     }
 
     // --------------------------
-    //   PRIVATE UTILITY METHOD
+    // PRIVATE UTILITY METHOD
     // --------------------------
     private Cart getOrCreateCart(Long userId) {
         // Find cart by user
@@ -32,7 +37,7 @@ public class CartService {
                 .orElseGet(() -> {
                     User user = userRepository.findById(userId)
                             .orElseThrow(() -> new RuntimeException("User not found with id: " + userId));
-                    
+
                     Cart cart = new Cart();
                     cart.setUser(user);
                     return cartRepository.save(cart);
@@ -40,14 +45,14 @@ public class CartService {
     }
 
     // --------------------------
-    //       GET CART
+    // GET CART
     // --------------------------
     public Cart getCartByUserId(Long userId) {
         return getOrCreateCart(userId);
     }
 
     // --------------------------
-    //      ADD TO CART
+    // ADD TO CART
     // --------------------------
     public Cart addToCart(Long userId, Long productId, Integer quantity) {
 
@@ -84,7 +89,7 @@ public class CartService {
     }
 
     // --------------------------
-    //     REMOVE FROM CART
+    // REMOVE FROM CART
     // --------------------------
     public Cart removeFromCart(Long userId, Long productId) {
         Cart cart = getOrCreateCart(userId);
@@ -109,7 +114,7 @@ public class CartService {
     }
 
     // --------------------------
-    //     UPDATE QUANTITY
+    // UPDATE QUANTITY
     // --------------------------
     public Cart updateQuantity(Long userId, Long productId, Integer quantity) {
 
@@ -132,13 +137,53 @@ public class CartService {
     }
 
     // --------------------------
-    //         CLEAR CART
+    // CLEAR CART
     // --------------------------
     public Cart clearCart(Long userId) {
         Cart cart = getOrCreateCart(userId);
 
         if (cart.getItems() != null) {
             cart.getItems().clear();
+        }
+
+        return cartRepository.save(cart);
+    }
+
+    public Cart mergeCart(User user, List<CartItemRequest> localItems) {
+        Cart cart = cartRepository.findByUserId(user.getId())
+                .orElseGet(() -> {
+                    Cart newCart = new Cart();
+                    newCart.setUser(user);
+                    return cartRepository.save(newCart);
+                });
+
+        List<CartItem> dbItems = cart.getItems();
+        if (dbItems == null) {
+            dbItems = new ArrayList<>();
+            cart.setItems(dbItems);
+        }
+
+        for (CartItemRequest localItem : localItems) {
+            Product product = productRepository.findById(localItem.productId())
+                    .orElseThrow(() -> new RuntimeException("Product not found with id: " + localItem.productId()));
+
+            Optional<CartItem> existingItemOpt = dbItems.stream()
+                    .filter(item -> item.getProduct().getId().equals(localItem.productId()))
+                    .findFirst();
+
+            if (existingItemOpt.isPresent()) {
+                CartItem existingItem = existingItemOpt.get();
+                int newQuantity = existingItem.getQuantity() + localItem.quantity();
+
+                existingItem.setQuantity(newQuantity);
+            } else {
+                CartItem newItem = new CartItem();
+                newItem.setCart(cart);
+                newItem.setProduct(product);
+                newItem.setQuantity(localItem.quantity());
+
+                cart.addCartItem(newItem);
+            }
         }
 
         return cartRepository.save(cart);
