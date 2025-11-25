@@ -85,5 +85,163 @@ public class OrderService {
                 .map(OrderResponse::from)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Order not found: " + id));
     }
+<<<<<<< Updated upstream
+=======
+
+    /**
+     * Checkout method that supports both guest and authenticated users
+     * @param request Checkout request containing customer info and order items
+     * @return OrderResponse with created order
+     */
+    public OrderResponse checkout(CheckoutRequest request) {
+        // Check if user is authenticated
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        User user = null;
+        
+        if (authentication != null && 
+            authentication.isAuthenticated() && 
+            !authentication.getName().equals("anonymousUser")) {
+            // User is authenticated, get user from database
+            user = userRepository.findByEmail(authentication.getName())
+                    .orElse(null);
+        }
+
+        // Create order
+        Order order = new Order();
+        order.setOrderDate(LocalDateTime.now());
+        order.setSubtotal(request.subtotal() != null ? request.subtotal() : 0.0);
+        order.setTaxAmount(request.taxAmount() != null ? request.taxAmount() : 0.0);
+        order.setShippingCost(request.shippingCost() != null ? request.shippingCost() : 0.0);
+        order.setDiscountAmount(request.discountAmount() != null ? request.discountAmount() : 0.0);
+        order.setTotalAmount(request.totalAmount());
+        order.setOrderStatus(OrderStatus.PENDING);
+        order.setNotes(request.notes());
+        
+        // Build address string
+        StringBuilder addressBuilder = new StringBuilder();
+        addressBuilder.append(request.address());
+        if (request.apartment() != null && !request.apartment().isBlank()) {
+            addressBuilder.append(", ").append(request.apartment());
+        }
+        if (request.city() != null && !request.city().isBlank()) {
+            addressBuilder.append(", ").append(request.city());
+        }
+        if (request.state() != null && !request.state().isBlank()) {
+            addressBuilder.append(", ").append(request.state());
+        }
+        order.setAddress(addressBuilder.toString());
+
+        // Set user (can be null for guest checkout)
+        order.setUser(user);
+
+        // If guest checkout, save customer information snapshot
+        if (user == null) {
+            order.setCustomerFirstName(request.firstName());
+            order.setCustomerLastName(request.lastName());
+            order.setCustomerEmail(request.email());
+            order.setCustomerPhone(request.phone());
+        } else {
+            // For authenticated users, also save snapshot (in case they change their profile later)
+            order.setCustomerFirstName(request.firstName());
+            order.setCustomerLastName(request.lastName());
+            order.setCustomerEmail(request.email());
+            order.setCustomerPhone(request.phone());
+        }
+
+        // Create order items and validate products
+        for (CheckoutRequest.CheckoutItemRequest itemRequest : request.items()) {
+            Product product = productRepository.findById(itemRequest.productId())
+                    .orElseThrow(() -> new ResponseStatusException(
+                            HttpStatus.BAD_REQUEST, 
+                            "Product not found: " + itemRequest.productId()));
+
+            // Validate stock
+            if (product.getStock() < itemRequest.quantity()) {
+                throw new ResponseStatusException(
+                        HttpStatus.BAD_REQUEST,
+                        "Insufficient stock for product: " + product.getName() + 
+                        ". Available: " + product.getStock() + ", Requested: " + itemRequest.quantity());
+            }
+
+            // Validate product is active
+            if (!product.isActive()) {
+                throw new ResponseStatusException(
+                        HttpStatus.BAD_REQUEST,
+                        "Product is not available: " + product.getName());
+            }
+
+            // Create order item
+            OrderItem orderItem = new OrderItem();
+            orderItem.setQuantity(itemRequest.quantity());
+            orderItem.setPriceAtPurchase(BigDecimal.valueOf(product.getPrice()));
+            orderItem.setProduct(product);
+            order.addOrderItem(orderItem);
+
+            // Reduce stock
+            int updatedRows = productRepository.reduceStock(product.getId(), itemRequest.quantity());
+            if (updatedRows == 0) {
+                throw new ResponseStatusException(
+                        HttpStatus.BAD_REQUEST,
+                        "Failed to reduce stock for product: " + product.getName());
+            }
+        }
+
+        // Save order
+        Order savedOrder = orderRepository.save(order);
+
+        // Create payment
+        Payment payment = new Payment();
+        payment.setOrder(savedOrder);
+        payment.setAmount(savedOrder.getTotalAmount());
+        
+        // Map payment method from string to enum
+        PaymentMethod paymentMethodEnum;
+        try {
+            String methodUpper = request.paymentMethod().toUpperCase().replace("-", "_");
+            paymentMethodEnum = PaymentMethod.valueOf(methodUpper);
+        } catch (IllegalArgumentException e) {
+            // Default to BANK_TRANSFER if invalid
+            paymentMethodEnum = PaymentMethod.BANK_TRANSFER;
+        }
+        
+        payment.setPaymentMethod(paymentMethodEnum);
+        paymentRepository.save(payment);
+
+        // Send order confirmation email
+        try {
+            OrderResponse orderResponse = OrderResponse.from(savedOrder);
+            String customerEmail = orderResponse.customerEmail();
+            if (customerEmail != null && !customerEmail.isBlank()) {
+                emailSenderService.sendOrderConfirmationEmail(
+                        customerEmail,
+                        orderResponse.orderNumber(),
+                        orderResponse.customerName(),
+                        orderResponse.totalAmount(),
+                        orderResponse.orderDate(),
+                        orderResponse.itemsCount()
+                );
+            }
+        } catch (Exception e) {
+            // Log error but don't fail the checkout if email fails
+            org.slf4j.LoggerFactory.getLogger(OrderService.class)
+                    .error("Failed to send order confirmation email", e);
+        }
+
+        return OrderResponse.from(savedOrder);
+    }
+
+    /**
+     * Get order status by order number (public endpoint for tracking)
+     * @param orderNumber Order number in format ORD-00001
+     * @return OrderStatusResponse with order information
+     */
+    @Transactional(readOnly = true)
+    public OrderStatusResponse getOrderStatusByOrderNumber(String orderNumber) {
+        return orderRepository.findByOrderNumber(orderNumber)
+                .map(OrderResponse::from)
+                .map(OrderStatusResponse::from)
+                .orElse(OrderStatusResponse.notFound(orderNumber));
+    }
+>>>>>>> Stashed changes
 }
 
