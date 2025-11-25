@@ -1,11 +1,14 @@
 package com.quadzone.order;
 
+import com.quadzone.order.dto.OrderUpdateRequest;
+import com.quadzone.payment.Payment;
 import com.quadzone.user.User;
 import jakarta.persistence.*;
 import lombok.*;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 @AllArgsConstructor
@@ -55,4 +58,41 @@ public class Order {
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
+    @OneToOne(mappedBy = "order", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private Payment payment;
+
+    public void addOrderItem(OrderItem item) {
+        if (orderItems == null) {
+            orderItems = new ArrayList<>();
+        }
+        orderItems.add(item);
+        item.setOrder(this);
+    }
+
+    public void updateFrom(OrderUpdateRequest request) {
+        if (request.subtotal() != null) {
+            this.setSubtotal(request.subtotal());
+        }
+        if (request.taxAmount() != null) {
+            this.setTaxAmount(request.taxAmount());
+        }
+        if (request.shippingCost() != null) {
+            this.setShippingCost(request.shippingCost());
+        }
+        if (request.discountAmount() != null) {
+            this.setDiscountAmount(request.discountAmount());
+        }
+        if (request.totalAmount() != null) {
+            this.setTotalAmount(request.totalAmount());
+        }
+        if (request.orderStatus() != null) {
+            this.setOrderStatus(request.orderStatus());
+        }
+        if (request.notes() != null) {
+            this.setNotes(request.notes());
+        }
+        if (request.address() != null) {
+            this.setAddress(request.address());
+        }
+    }
 }

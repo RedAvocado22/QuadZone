@@ -1,9 +1,6 @@
 package com.quadzone.auth;
 
-import com.quadzone.auth.dto.ActivateAccountRequest;
-import com.quadzone.auth.dto.AuthenticationRequest;
-import com.quadzone.auth.dto.AuthenticationResponse;
-import com.quadzone.auth.dto.RegisterRequest;
+import com.quadzone.auth.dto.*;
 import com.quadzone.auth.token.Token;
 import com.quadzone.auth.token.TokenRepository;
 import com.quadzone.config.JwtService;
@@ -66,10 +63,15 @@ public class AuthenticationService {
             throw new SuspendedAccountException("User account is suspended.");
         }
 
-        var accessToken = jwtService.generateToken(user);
-        var refreshToken = jwtService.generateRefreshToken(user);
-
         if (user.getStatus() == UserStatus.UNACTIVE) {
+            // Still authenticate to validate credentials before sending activation email
+            authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(
+                            request.email(),
+                            request.password()
+                    )
+            );
+            var accessToken = jwtService.generateToken(user);
             emailSenderService.sendAccountActivationEmail(user.getEmail(), accessToken);
             throw new InactiveAccountException("User account is not activated. Check email.");
         }
@@ -80,6 +82,9 @@ public class AuthenticationService {
                         request.password()
                 )
         );
+        
+        var accessToken = jwtService.generateToken(user);
+        var refreshToken = jwtService.generateRefreshToken(user);
 
         revokeAllUserTokens(user);
         saveUserToken(user, refreshToken);
@@ -149,6 +154,9 @@ public class AuthenticationService {
                 throw new SuspendedAccountException("User account is suspended.");
             }
 
+            if (user.getStatus() == UserStatus.ACTIVE) {
+                throw new InactiveAccountException("User account is active.");
+            }
             user.setStatus(UserStatus.ACTIVE);
             userRepository.save(user);
 
@@ -165,6 +173,50 @@ public class AuthenticationService {
 
         } catch (Exception e) {
             throw new InvalidTokenException("Invalid activation token");
+        }
+    }
+
+    public void forgotPassword(String email) {
+        var user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new UserNotExistsException(
+                        String.format("User with email %s does not exist!", email)
+                ));
+
+        if (user.getStatus() == UserStatus.SUSPENDED) {
+            throw new SuspendedAccountException("User account is suspended.");
+        }
+
+        var resetToken = jwtService.generateToken(user);
+        emailSenderService.sendAccountResetPasswordEmail(user.getEmail(), resetToken);
+    }
+
+    public void resetPassword(ResetPasswordRequest request) {
+        if (!request.password().equals(request.confirmPassword())) {
+            throw new IllegalArgumentException("Passwords do not match");
+        }
+
+        try {
+            String email = jwtService.extractUsername(request.token());
+            User user = userRepository.findByEmail(email)
+                    .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+
+            if (user.getStatus() == UserStatus.SUSPENDED) {
+                throw new SuspendedAccountException("User account is suspended.");
+            }
+
+            user.setPassword(passwordEncoder.encode(request.password()));
+            userRepository.save(user);
+
+            revokeAllUserTokens(user);
+
+        } catch (ExpiredJwtException e) {
+            throw new InvalidTokenException("Password reset link has expired. Please request a new one.");
+        } catch (UsernameNotFoundException e) {
+            throw new InvalidTokenException("Invalid password reset token. User not found.");
+        } catch (io.jsonwebtoken.JwtException e) {
+            throw new InvalidTokenException("Invalid password reset token. " + e.getMessage());
+        } catch (Exception e) {
+            throw new InvalidTokenException("Invalid password reset token: " + e.getMessage());
         }
     }
 }

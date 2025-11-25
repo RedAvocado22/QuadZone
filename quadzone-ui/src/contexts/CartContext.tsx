@@ -1,19 +1,16 @@
 import React, { createContext, useContext, useState, useEffect, useMemo } from "react";
-import type { Product } from "../types/Product";
 import { getCart, addToCart as apiAddToCart, removeFromCart as apiRemoveFromCart, updateCartItemQuantity } from "../api/cart";
 import { useUser } from "../hooks/useUser";
 import { toast } from "react-toastify";
+import type { CartItemResponse, Product } from "../api/types";
 
-interface CartItem extends Product {
-    quantity: number;
-}
 
 interface CartContextType {
-    items: CartItem[];
-    addToCart: (product: Product, quantity?: number) => Promise<void>;
-    removeFromCart: (productId: number) => Promise<void>;
-    updateQuantity: (productId: number, quantity: number) => Promise<void>;
-    clearCart: () => Promise<void>;
+    items: CartItemResponse[];
+    addToCart: (product: Product, quantity?: number) => void;
+    removeFromCart: (productId: number) => void;
+    updateQuantity: (productId: number, quantity: number) => void;
+    clearCart: () => void;
     totalPrice: number;
     totalItems: number;
     loading: boolean;
@@ -24,7 +21,7 @@ interface CartContextType {
 const CartContext = createContext<CartContextType | undefined>(undefined);
 
 export const CartProvider = ({ children }: { children: React.ReactNode }) => {
-    const [items, setItems] = useState<CartItem[]>([]);
+    const [items, setItems] = useState<CartItemResponse[]>([]);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     

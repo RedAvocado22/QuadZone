@@ -1,5 +1,5 @@
 import API from "./base";
-import type { Product, Category, Brand, ProductDetails } from "../types/Product";
+import type { Product, Category, Brand, ProductDetails, PagedResponse } from "../api/types";
 
 export interface ProductFilterParams {
     page?: number;
@@ -10,36 +10,31 @@ export interface ProductFilterParams {
     minPrice?: number;
     maxPrice?: number;
     sortBy?: string;
+    query?: string;
 }
 
-export interface PageResponse<T> {
-    content: T[];
-    totalPages: number;
-    totalElements: number;
-    size: number;
-    number: number;
-    first: boolean;
-    last: boolean;
-    empty: boolean;
-}
 
-export const getProducts = async (params: ProductFilterParams = {}): Promise<PageResponse<Product>> => {
+export const getProducts = async (params: ProductFilterParams = {}): Promise<PagedResponse<Product>> => {
     try {
+        const requestParams = {
+            page: params.page ?? 0,
+            size: params.size ?? 10,
+            ...(params.brand && { brand: params.brand }),
+            ...(params.categoryId && { categoryId: params.categoryId }),
+            ...(params.subcategoryId && { subcategoryId: params.subcategoryId }),
+            ...(params.minPrice !== undefined && { minPrice: params.minPrice }),
+            ...(params.maxPrice !== undefined && { maxPrice: params.maxPrice }),
+            ...(params.sortBy && { sortBy: params.sortBy }),
+            ...(params.query && { query: params.query })
+        };
+        console.log(" Requesting products with params:", requestParams);
         const response = await API.get(`/public/products`, {
-            params: {
-                page: params.page ?? 0,
-                size: params.size ?? 10,
-                ...(params.brand && { brand: params.brand }),
-                ...(params.categoryId && { categoryId: params.categoryId }),
-                ...(params.subcategoryId && { subcategoryId: params.subcategoryId }),
-                ...(params.minPrice !== undefined && { minPrice: params.minPrice }),
-                ...(params.maxPrice !== undefined && { maxPrice: params.maxPrice }),
-                ...(params.sortBy && { sortBy: params.sortBy })
-            }
+            params: requestParams
         });
+        console.log(" Products response received:", response.data);
         return response.data;
     } catch (error) {
-        console.error("Error fetching products:", error);
+        console.error(" Error fetching products:", error);
         throw error;
     }
 };

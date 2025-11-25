@@ -86,7 +86,10 @@ public class User implements UserDetails {
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return List.of(new SimpleGrantedAuthority(role.toString()));
+        if (role == null) {
+            return List.of();
+        }
+        return List.of(new SimpleGrantedAuthority(role.name()));
     }
 
     @Override
@@ -117,5 +120,23 @@ public class User implements UserDetails {
     @Override
     public boolean isEnabled() {
         return true;
+    }
+
+    public void updateFrom(com.quadzone.user.dto.UserUpdateRequest request) {
+        if (request.firstName() != null) {
+            this.setFirstName(request.firstName());
+        }
+        if (request.lastName() != null) {
+            this.setLastName(request.lastName());
+        }
+        if (request.email() != null) {
+            this.setEmail(request.email());
+        }
+        if (request.password() != null) {
+            this.setPassword(request.password());
+        }
+        if (request.role() != null) {
+            this.setRole(request.role());
+        }
     }
 }

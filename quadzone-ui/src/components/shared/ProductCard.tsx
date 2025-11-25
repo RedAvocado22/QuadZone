@@ -1,7 +1,9 @@
 import { Link } from "react-router-dom";
 import { useCart } from "../../contexts/CartContext";
+import { useCurrency } from "../../contexts/CurrencyContext";
+import { fCurrency } from "../../utils/formatters";
 import { defaultImages } from "../../constants/images";
-import type { Product } from "../../types/Product";
+import type { Product } from "../../api/types";
 
 interface ProductCardProps {
     product: Product;
@@ -9,6 +11,7 @@ interface ProductCardProps {
 
 const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
     const { addToCart } = useCart();
+    const { currency, convertPrice } = useCurrency();
 
     const handleAddToCart = (e: any) => {
         e.preventDefault();
@@ -21,7 +24,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
                 <div className="product-item__inner px-wd-4 p-2 p-md-3">
                     <div className="product-item__body pb-xl-2">
                         <div className="mb-2">
-                            <Link to={`/subCategory/${product.subCategory.id}`} className="font-size-12 text-gray-5">
+                            <Link to={`/subCategory/${product.subCategory.id || 0}`} className="font-size-12 text-gray-5">
                                 {product.subCategory.name || "Products"}
                             </Link>
                         </div>
@@ -45,28 +48,20 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
 
                         <div className="flex-center-between mb-1">
                             <div className="prodcut-price">
-                                {/* {product.oldPrice && <del className="text-gray-9 mr-2">${product.oldPrice}</del>} */}
-                                <div className="text-gray-100">${product.price}</div>
+                                <div className="text-gray-100">{fCurrency(convertPrice(product.price), { currency })}</div>
                             </div>
 
                             <div className="d-none d-xl-block prodcut-add-cart">
-                                <a
-                                    href="#"
+                                <button
+                                    type="button"
                                     className="btn-add-cart btn-primary transition-3d-hover"
-                                    onClick={handleAddToCart}>
+                                    onClick={handleAddToCart}
+                                    aria-label="Add to cart">
                                     <i className="ec ec-add-to-cart"></i>
-                                </a>
+                                </button>
                             </div>
                         </div>
                     </div>
-
-                    {/* <div className="product-item__footer">
-                        <div className="border-top pt-2 flex-center-between flex-wrap">
-                            <Link to="/compare" className="text-gray-6 font-size-13">
-                                <i className="ec ec-compare mr-1 font-size-15"></i> Compare
-                            </Link>
-                        </div>
-                    </div> */}
                 </div>
             </div>
         </div>

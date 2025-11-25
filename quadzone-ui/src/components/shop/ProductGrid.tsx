@@ -1,4 +1,4 @@
-import type { Product } from "../../types/Product";
+import type { Product } from "../../api/types";
 import type { ViewMode } from "../../types/shop";
 import { useCart } from "../../contexts/CartContext";
 import ProductCard from "../../components/shared/ProductCard";

@@ -1,3 +1,5 @@
+SET FOREIGN_KEY_CHECKS = 0;
+
 INSERT INTO _user (id, email, password, first_name, last_name, role, created_at, status)
 VALUES
     (1, 'customer@example.com', '$2y$10$TyY0L134mVANXy0zQqTnrumSCgHtK4ShKvI3eg1mik/VK2XMCqC0i', 'John', 'Doe', 'CUSTOMER', NOW(), 'ACTIVE'),
@@ -142,3 +144,5 @@ VALUES
     (4, 3, 'Okay tablet for the price', 'The screen is decent, but the battery life is a bit short.', DATE_SUB(NOW(), INTERVAL 2 DAY), 10, 5, 9),
     (5, 5, 'Amazing Sound!', 'This speaker has incredible sound for its size. Worth every penny.', DATE_SUB(NOW(), INTERVAL 0 DAY), 1, 7, 13),
     (6, 4, 'Sleek Printer', 'Love the design and it prints fast. Setup was easy.', DATE_SUB(NOW(), INTERVAL 0 DAY), 6, 6, 16);
+
+SET FOREIGN_KEY_CHECKS = 1;

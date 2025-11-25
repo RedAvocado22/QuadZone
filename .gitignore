@@ -1,8 +1,24 @@
+.idea/.name
+.idea/compiler.xml
+.idea/copilot.data.migration.agent.xml
+.idea/copilot.data.migration.ask.xml
+.idea/copilot.data.migration.ask2agent.xml
+.idea/copilot.data.migration.edit.xml
+.idea/dataSources.xml
+.idea/encodings.xml
+.idea/inspectionProfiles/Project_Default.xml
+.idea/jarRepositories.xml
+.idea/misc.xml
+.idea/prettier.xml
+.idea/QuadZone-master.iml
+.idea/vcs.xml
+.idea/modules.xml
+FLOW_EXPLANATION.md
+TODO.md
 
 /.idea/
-/quadzone-ui/MOCK_DATA_GUIDE.md
 /.vscode/settings.json
 TODO.md
 .github/copilot-instructions.md
 PRICE_FILTER_INTEGRATION.md
-*.md
+
