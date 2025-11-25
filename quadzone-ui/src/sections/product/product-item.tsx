@@ -99,7 +99,9 @@ export function ProductItem({ product, onViewDetails, onEdit, onLock, onUnlock }
     <Box
       component="img"
       alt={product.name}
-      src={product.coverUrl}
+      src={product.coverUrl
+                ? `http://localhost:8080/api/v1/public/images/${product.coverUrl}`
+                : "/assets/img/default-product.png"}
       sx={{
         top: 0,
         width: 1,

@@ -52,6 +52,7 @@ public class SecurityConfiguration {
                 .authorizeHttpRequests(authorize -> authorize
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll() // Allow all OPTIONS requests for CORS preflight
                         .requestMatchers(WHITE_LIST).permitAll()
+                        .requestMatchers("/api/v*/cart/**").authenticated()
                         .requestMatchers("/api/v*/admin/**").hasAnyAuthority(UserRole.ADMIN.name(), UserRole.STAFF.name())
                         .anyRequest().authenticated()
                 )
