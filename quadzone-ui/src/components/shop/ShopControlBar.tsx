@@ -1,3 +1,4 @@
+import { useEffect, useRef } from 'react';
 import type { ViewMode, SortOption } from '../../types/shop';
 
 interface ShopControlBarProps {
@@ -25,6 +26,28 @@ const ShopControlBar = ({
   onPageChange,
   onToggleSidebar
 }: ShopControlBarProps) => {
+  const sortSelectRef = useRef<HTMLSelectElement>(null);
+  const itemsPerPageSelectRef = useRef<HTMLSelectElement>(null);
+
+  useEffect(() => {
+    // Reinitialize selectpickers when props change
+    const timer = setTimeout(() => {
+      // @ts-expect-error: jQuery is loaded globally via scripts
+      if (typeof window !== 'undefined' && window.jQuery && window.jQuery.HSCore) {
+        // @ts-expect-error: jQuery is loaded globally via scripts
+        const $ = window.jQuery;
+        if (sortSelectRef.current) {
+          $(sortSelectRef.current).selectpicker('refresh');
+        }
+        if (itemsPerPageSelectRef.current) {
+          $(itemsPerPageSelectRef.current).selectpicker('refresh');
+        }
+      }
+    }, 100);
+
+    return () => clearTimeout(timer);
+  }, [sortBy, itemsPerPage]);
+
   return (
     <div className="bg-gray-1 flex-center-between borders-radius-9 py-1">
       {/* Mobile Filter Toggle */}
@@ -49,17 +72,6 @@ const ShopControlBar = ({
             >
               <div className="d-md-flex justify-content-md-center align-items-md-center">
                 <i className="fa fa-th"></i>
-              </div>
-            </a>
-          </li>
-          <li className="nav-item">
-            <a 
-              className={`nav-link ${viewMode === 'grid-details' ? 'active' : ''}`}
-              href="javascript:;"
-              onClick={() => onViewModeChange('grid-details')}
-            >
-              <div className="d-md-flex justify-content-md-center align-items-md-center">
-                <i className="fa fa-align-justify"></i>
               </div>
             </a>
           </li>
@@ -92,14 +104,14 @@ const ShopControlBar = ({
       <div className="d-flex">
         {/* Sort By */}
         <form method="get">
-          <select 
+          <select
+            ref={sortSelectRef}
             className="js-select selectpicker dropdown-select max-width-200 max-width-160-sm right-dropdown-0 px-2 px-xl-0"
             value={sortBy}
             onChange={(e) => onSortChange(e.target.value as SortOption)}
           >
             <option value="default">Default sorting</option>
             <option value="popularity">Sort by popularity</option>
-            <option value="rating">Sort by average rating</option>
             <option value="latest">Sort by latest</option>
             <option value="price-low">Sort by price: low to high</option>
             <option value="price-high">Sort by price: high to low</option>
@@ -108,13 +120,15 @@ const ShopControlBar = ({
 
         {/* Items per Page */}
         <form method="POST" className="ml-2 d-none d-xl-block">
-          <select 
+          <select
+            ref={itemsPerPageSelectRef}
             className="js-select selectpicker dropdown-select max-width-120"
             value={itemsPerPage}
             onChange={(e) => onItemsPerPageChange(Number(e.target.value))}
           >
+            <option value="10">Show 10</option>
             <option value="20">Show 20</option>
-            <option value="40">Show 40</option>
+            <option value="50">Show 50</option>
             <option value="100">Show All</option>
           </select>
         </form>

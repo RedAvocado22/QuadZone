@@ -1,0 +1,92 @@
+import API from "./base";
+import type { ProductAdminResponse, PagedResponse } from "./types";
+
+// Re-export for convenience
+export type { ProductAdminResponse as Product } from "./types";
+export type { PagedResponse as ProductsResponse } from "./types";
+
+export const productsApi = {
+  // Get all products
+  getAll: async (params?: {
+    page?: number;
+    pageSize?: number;
+    search?: string;
+    category?: string;
+    price?: string;
+    gender?: string[];
+    colors?: string[];
+    rating?: string;
+  }): Promise<PagedResponse<ProductAdminResponse>> => {
+    const {
+      page = 0,
+      pageSize = 12,
+      search = '',
+      category,
+      price,
+      gender,
+      colors,
+      rating,
+    } = params ?? {};
+
+    const queryParams = new URLSearchParams({
+      page: page.toString(),
+      size: pageSize.toString(),
+      search,
+    });
+
+    if (category) queryParams.append('category', category);
+    if (price) queryParams.append('price', price);
+    if (gender) queryParams.append('gender', gender.join(','));
+    if (colors) queryParams.append('colors', colors.join(','));
+    if (rating) queryParams.append('rating', rating);
+
+    const response = await API.get<PagedResponse<ProductAdminResponse>>(`/admin/products?${queryParams.toString()}`);
+    return response.data;
+  },
+
+  // Get product by ID
+  getById: async (id: string | number): Promise<ProductAdminResponse> => {
+    const response = await API.get<ProductAdminResponse>(`/admin/products/${id}`);
+    return response.data;
+  },
+
+  // Create product
+  create: async (product: Omit<ProductAdminResponse, 'id' | 'subCategory' | 'category' | 'createdAt' | 'updatedAt'> & { subCategoryId?: number }): Promise<ProductAdminResponse> => {
+    const requestBody: any = {
+      name: product.name,
+      brand: product.brand || '',
+      modelNumber: '',
+      description: '',
+      stock: product.quantity || 0,
+      price: product.price,
+      costPrice: product.price * 0.8,
+      weight: 0,
+      color: '',
+      imageUrl: product.imageUrl || '',
+      subCategory: product.subCategoryId ? { id: product.subCategoryId } : null,
+    };
+
+    const response = await API.post<ProductAdminResponse>('/admin/products', requestBody);
+    return response.data;
+  },
+
+  // Update product
+  update: async (id: string | number, product: Partial<Omit<ProductAdminResponse, 'id' | 'subCategory' | 'category' | 'createdAt' | 'updatedAt'>> & { subCategoryId?: number; status?: string }): Promise<ProductAdminResponse> => {
+    const requestBody: any = {};
+    if (product.name !== undefined) requestBody.name = product.name;
+    if (product.brand !== undefined) requestBody.brand = product.brand;
+    if (product.price !== undefined) requestBody.price = product.price;
+    if (product.quantity !== undefined) requestBody.quantity = product.quantity;
+    if (product.imageUrl !== undefined) requestBody.imageUrl = product.imageUrl;
+    if (product.subCategoryId !== undefined) requestBody.subCategory = { id: product.subCategoryId };
+    if (product.status !== undefined) requestBody.isActive = product.status !== 'locked';
+
+    const response = await API.put<ProductAdminResponse>(`/admin/products/${id}`, requestBody);
+    return response.data;
+  },
+
+  // Delete product
+  delete: async (id: string | number): Promise<void> => {
+    await API.delete(`/admin/products/${id}`);
+  },
+};

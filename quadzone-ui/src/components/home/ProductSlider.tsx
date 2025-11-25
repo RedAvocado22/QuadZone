@@ -2,11 +2,11 @@ import Slider from "react-slick";
 import ProductCard from "../shared/ProductCard";
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
-import type { Product } from "../../types/Product";
+import type { PublicProductDTO } from "../../api/types";
 
 interface ProductSliderProps {
     title?: string;
-    products: Product[];
+    products: PublicProductDTO[];
 }
 
 const sliderStyle = {

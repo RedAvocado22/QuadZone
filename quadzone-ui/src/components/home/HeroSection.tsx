@@ -77,7 +77,7 @@ const HeroSection = () => {
                                     </span>
                                 </div>
                                 <Link
-                                    to="/products"
+                                    to="/shop"
                                     className="btn btn-primary transition-3d-hover rounded-lg font-weight-normal py-2 px-md-7 px-3 font-size-16">
                                     Start Buying
                                 </Link>
@@ -98,7 +98,7 @@ const HeroSection = () => {
                                         href="#"
                                         onClick={(e) => {
                                             e.preventDefault();
-                                            setActiveTab(tab.id);
+                                            setActiveTab(tab.id as TabId);
                                         }}>
                                         <span className="font-size-14">{tab.label}</span>
                                     </a>

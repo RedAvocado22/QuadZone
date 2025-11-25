@@ -2,15 +2,48 @@ import { useEffect, useState } from "react";
 import HeroSection from "../components/home/HeroSection";
 import ProductSlider from "../components/home/ProductSlider";
 import API from "@/api/base";
-import type { Product } from "../types/Product";
+import type { PublicProductDTO } from "../api/types";
 import { toast } from "react-toastify";
+import { useNavigate, useParams } from "react-router-dom";
+import { activateAccount } from "@/api/auth";
+import Swal from "sweetalert2";
 
 const HomePage = () => {
-    const [bestSellers, setBestSellers] = useState<Product[]>([]);
-    const [featured, setFeatured] = useState<Product[]>([]);
-    const [newArrivals, setNewArrivals] = useState<Product[]>([]);
+    const navigate = useNavigate();
+    const { token } = useParams();
+    const [bestSellers, setBestSellers] = useState<PublicProductDTO[]>([]);
+    const [featured, setFeatured] = useState<PublicProductDTO[]>([]);
+    const [newArrivals, setNewArrivals] = useState<PublicProductDTO[]>([]);
     const [loading, setLoading] = useState<boolean>(true);
     const [error, setError] = useState<string | null>(null);
+
+    useEffect(() => {
+        if (token) {
+            activateAccount(token)
+                .then(() => {
+                    Swal.fire({
+                        icon: "success",
+                        title: "Account activated",
+                        text: "Your account has been activated successfully. Please login."
+                    }).then(() => {
+                        navigate("/login", { replace: true });
+                    });
+                })
+                .catch((err) => {
+                    const msg = err.response?.data?.message || "Activation failed or link expired.";
+
+                    const isExpired = msg.toLowerCase().includes("expired");
+
+                    Swal.fire({
+                        icon: isExpired ? "info" : "error",
+                        title: isExpired ? "Link Expired" : "Activation Failed",
+                        text: msg
+                    }).then(() => {
+                        navigate("/login", { replace: true });
+                    });
+                });
+        }
+    }, [token, navigate]);
 
     useEffect(() => {
         const fetchHomeProducts = async () => {
