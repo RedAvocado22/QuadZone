@@ -20,3 +20,7 @@ TODO.md
 /.vscode/settings.json
 quadzone-ui/package-lock.json
 *.json
+TODO.md
+.github/copilot-instructions.md
+PRICE_FILTER_INTEGRATION.md
+

@@ -42,11 +42,15 @@ public class EmailSenderService {
 
     public void sendHtmlEmail(String to, String subject, String content) {
         try {
+            // MimeMessage is required for HTML emails (SimpleMailMessage doesn't support HTML)
             MimeMessage mail = sender.createMimeMessage();
             mail.setFrom(new InternetAddress(from));
             mail.setRecipient(Message.RecipientType.TO, new InternetAddress(to));
-            mail.setSubject(subject);
-            mail.setContent(content, "text/html");
+            // Encode subject with UTF-8 to support Vietnamese characters
+            mail.setSubject(subject, "UTF-8");
+            // Set content with UTF-8 charset
+            mail.setContent(content, "text/html; charset=UTF-8");
+            mail.saveChanges();
             sender.send(mail);
         } catch (AddressException e) {
             log.error("Invalid mail address", e);
@@ -322,5 +326,165 @@ public class EmailSenderService {
         mail.setSubject("Course approved");
         mail.setText(message);
         sender.send(mail);
+    }
+
+    /**
+     * Send order confirmation email to customer
+     * @param to Customer email address
+     * @param orderNumber Order number (e.g., ORD-00001)
+     * @param customerName Customer full name
+     * @param totalAmount Total order amount
+     * @param orderDate Order date
+     * @param itemsCount Number of items in the order
+     */
+    public void sendOrderConfirmationEmail(String to, String orderNumber, String customerName, 
+                                          Double totalAmount, java.time.LocalDateTime orderDate, 
+                                          int itemsCount) {
+        try {
+            String trackingUrl = feBaseUrl + "/track-order?orderNumber=" + orderNumber;
+            String htmlContent = buildOrderConfirmationEmailHtml(customerName, orderNumber, totalAmount, orderDate, itemsCount, trackingUrl);
+
+            MimeMessage mail = sender.createMimeMessage();
+            mail.setFrom(new InternetAddress(from));
+            mail.setRecipient(Message.RecipientType.TO, new InternetAddress(to));
+            // Encode subject with UTF-8 to support Vietnamese characters
+            mail.setSubject("Order Confirmation - " + orderNumber, "UTF-8");
+            // Set content with UTF-8 charset
+            mail.setContent(htmlContent, "text/html; charset=UTF-8");
+            mail.saveChanges();
+            sender.send(mail);
+            log.info("Order confirmation email sent successfully to: {}", to);
+        } catch (Exception e) {
+            log.error("Failed to send order confirmation email to: {}", to, e);
+            throw new RuntimeException("Failed to send order confirmation email: " + e.getMessage(), e);
+        }
+    }
+
+    private String buildOrderConfirmationEmailHtml(String customerName, String orderNumber, 
+                                                   Double totalAmount, java.time.LocalDateTime orderDate,
+                                                   int itemsCount, String trackingUrl) {
+        String formattedDate = orderDate.format(java.time.format.DateTimeFormatter.ofPattern("dd MMMM yyyy, HH:mm"));
+        String formattedAmount = String.format("$%.2f", totalAmount);
+        
+        return String.format("""
+            <!DOCTYPE html>
+            <html lang="en">
+            <head>
+                <meta charset="UTF-8">
+                <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                <title>Order Confirmation</title>
+            </head>
+            <body style="margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; background-color: #f4f4f4;">
+                <table role="presentation" style="width: 100%%; border-collapse: collapse; background-color: #f4f4f4;">
+                    <tr>
+                        <td style="padding: 40px 20px;">
+                            <table role="presentation" style="max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                                <!-- Header -->
+                                <tr>
+                                    <td style="padding: 40px 40px 30px; text-align: center; background: linear-gradient(135deg, #4CAF50 0%%, #45a049 100%%); border-radius: 8px 8px 0 0;">
+                                        <h1 style="margin: 0; color: #ffffff; font-size: 28px; font-weight: 600;">Order Confirmation</h1>
+                                    </td>
+                                </tr>
+
+                                <!-- Content -->
+                                <tr>
+                                    <td style="padding: 40px;">
+                                        <p style="margin: 0 0 20px; color: #333333; font-size: 16px; line-height: 1.6;">
+                                            Dear %s,
+                                        </p>
+                                        <p style="margin: 0 0 30px; color: #333333; font-size: 16px; line-height: 1.6;">
+                                            Thank you for your order! We have received your order and it is being processed. We'll send you a confirmation once your order ships.
+                                        </p>
+
+                                        <!-- Order Details -->
+                                        <table role="presentation" style="width: 100%%; margin: 30px 0; background-color: #f8f9fa; border-radius: 6px; border: 1px solid #e9ecef;">
+                                            <tr>
+                                                <td style="padding: 25px;">
+                                                    <table role="presentation" style="width: 100%%;">
+                                                        <tr>
+                                                            <td style="padding-bottom: 15px;">
+                                                                <p style="margin: 0; color: #666666; font-size: 14px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">Order Number</p>
+                                                                <p style="margin: 5px 0 0; color: #4CAF50; font-size: 24px; font-weight: 700;">%s</p>
+                                                            </td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td style="padding: 15px 0; border-top: 1px solid #e9ecef; border-bottom: 1px solid #e9ecef;">
+                                                                <table role="presentation" style="width: 100%%;">
+                                                                    <tr>
+                                                                        <td style="padding: 8px 0;">
+                                                                            <p style="margin: 0; color: #666666; font-size: 14px;">Order Date:</p>
+                                                                            <p style="margin: 5px 0 0; color: #333333; font-size: 16px; font-weight: 600;">%s</p>
+                                                                        </td>
+                                                                    </tr>
+                                                                    <tr>
+                                                                        <td style="padding: 8px 0;">
+                                                                            <p style="margin: 0; color: #666666; font-size: 14px;">Total Amount:</p>
+                                                                            <p style="margin: 5px 0 0; color: #333333; font-size: 16px; font-weight: 600;">%s</p>
+                                                                        </td>
+                                                                    </tr>
+                                                                    <tr>
+                                                                        <td style="padding: 8px 0;">
+                                                                            <p style="margin: 0; color: #666666; font-size: 14px;">Items:</p>
+                                                                            <p style="margin: 5px 0 0; color: #333333; font-size: 16px; font-weight: 600;">%d item(s)</p>
+                                                                        </td>
+                                                                    </tr>
+                                                                </table>
+                                                            </td>
+                                                        </tr>
+                                                    </table>
+                                                </td>
+                                            </tr>
+                                        </table>
+
+                                        <!-- CTA Button -->
+                                        <table role="presentation" style="width: 100%%; margin: 30px 0;">
+                                            <tr>
+                                                <td style="text-align: center;">
+                                                    <a href="%s" style="display: inline-block; padding: 14px 32px; background: linear-gradient(135deg, #4CAF50 0%%, #45a049 100%%); color: #ffffff; text-decoration: none; border-radius: 6px; font-weight: 600; font-size: 16px; box-shadow: 0 4px 6px rgba(76, 175, 80, 0.3);">Track Your Order</a>
+                                                </td>
+                                            </tr>
+                                        </table>
+
+                                        <!-- Alternative Link -->
+                                        <p style="margin: 30px 0 0; color: #666666; font-size: 14px; line-height: 1.6;">
+                                            You can also track your order by visiting:
+                                        </p>
+                                        <p style="margin: 10px 0 20px; word-break: break-all;">
+                                            <a href="%s" style="color: #4CAF50; text-decoration: none; font-size: 14px;">%s</a>
+                                        </p>
+
+                                        <!-- Support Note -->
+                                        <div style="margin-top: 30px; padding: 15px; background-color: #e8f5e9; border-left: 4px solid #4CAF50; border-radius: 4px;">
+                                            <p style="margin: 0; color: #2e7d32; font-size: 13px; line-height: 1.6;">
+                                                <strong style="color: #1b5e20;">Need Help?</strong> If you have any questions about your order, please contact our support team. We're here to help!
+                                            </p>
+                                        </div>
+
+                                        <p style="margin: 30px 0 0; color: #333333; font-size: 16px; line-height: 1.6;">
+                                            Best regards,<br>
+                                            <strong style="color: #4CAF50;">QuadZone Team</strong>
+                                        </p>
+                                    </td>
+                                </tr>
+
+                                <!-- Footer -->
+                                <tr>
+                                    <td style="padding: 30px 40px; background-color: #f8f9fa; border-radius: 0 0 8px 8px; border-top: 1px solid #e9ecef;">
+                                        <p style="margin: 0 0 10px; color: #666666; font-size: 14px; line-height: 1.6; text-align: center;">
+                                            This is an automated email. Please do not reply to this email.
+                                        </p>
+                                        <p style="margin: 0; color: #999999; font-size: 12px; line-height: 1.6; text-align: center;">
+                                            © %d QuadZone. All rights reserved.
+                                        </p>
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+                </table>
+            </body>
+            </html>
+            """, customerName, orderNumber, formattedDate, formattedAmount, itemsCount, 
+            trackingUrl, trackingUrl, trackingUrl, java.time.Year.now().getValue());
     }
 }

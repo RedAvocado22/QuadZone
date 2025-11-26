@@ -1,45 +1,71 @@
 import { Link } from "react-router-dom";
+import { useState, useEffect } from "react";
 import { useCart } from "../../contexts/CartContext";
 import { useCurrency } from "../../contexts/CurrencyContext";
 import { fCurrency } from "../../utils/formatters";
 import { defaultImages } from "../../constants/images";
-import type { PublicProductDTO } from "../../api/types";
-
-interface CartItem extends PublicProductDTO {
-    quantity: number;
-}
+import type { CartItemResponse, Product } from "../../api/types";
+import { getProductDetails } from "../../api/products";
 
 interface CartItemProps {
-    item: CartItem;
+    item: CartItemResponse;
 }
 
 const CartItem = ({ item }: CartItemProps) => {
     const { removeFromCart, updateQuantity } = useCart();
+    const [product, setProduct] = useState<Product & { quantity: number }>({
+        ...item,
+        quantity: item.quantity
+    });
+
+    // Fetch latest product data from database
+    useEffect(() => {
+        const fetchProductDetails = async () => {
+            try {
+                const updatedProduct = await getProductDetails(item.id);
+                setProduct({ ...updatedProduct, quantity: item.quantity });
+            } catch (err) {
+                console.error("Failed to fetch product details:", err);
+                // Fallback to item data if fetch fails
+                setProduct({ ...item, quantity: item.quantity });
+            }
+        };
+
+        fetchProductDetails();
+    }, [item.id, item]);
     const { currency, convertPrice } = useCurrency();
 
-    const handleQuantityChange = (newQuantity: number) => {
-        if (newQuantity > 0 && item.id) {
-            updateQuantity(item.id, newQuantity);
+    const handleQuantityChange = async (newQuantity: number) => {
+        if (newQuantity > 0 && product.id) {
+            try {
+                updateQuantity(product.id, newQuantity);
+            } catch (err) {
+                console.error("Failed to update quantity:", err);
+            }
         }
     };
 
     return (
         <tr>
             <td className="text-center">
-                <a
-                    href="#"
+                <button
+                    type="button"
+                    aria-label="Remove from cart"
                     className="text-gray-32 font-size-26"
-                    onClick={(e) => {
+                    onClick={async (e) => {
                         e.preventDefault();
-                        if (item.id) {
-                            removeFromCart(item.id);
+                        if (product.id) {
+                            try {
+                                removeFromCart(product.id);
+                            } catch (err) {
+                                console.error("Failed to remove from cart:", err);
+                                // Optional: show toast/notification
+                            }
                         }
-                    }}>
-                    ×
-                </a>
+                    }}></button>
             </td>
             <td className="d-none d-md-table-cell">
-                <Link to={`/product/${item.id}`}>
+                <Link to={`/product/${product.id}`}>
                     <img
                         className="img-fluid max-width-100 p-1 border border-color-1"
                         src={item.imageUrl || defaultImages.cart}
@@ -48,8 +74,8 @@ const CartItem = ({ item }: CartItemProps) => {
                 </Link>
             </td>
             <td data-title="Product">
-                <Link to={`/product/${item.id}`} className="text-gray-90">
-                    {item.name}
+                <Link to={`/product/${product.id}`} className="text-gray-90">
+                    {product.name}
                 </Link>
             </td>
             <td data-title="Price">
@@ -63,29 +89,29 @@ const CartItem = ({ item }: CartItemProps) => {
                             <input
                                 className="js-result form-control h-auto border-0 rounded p-0 shadow-none"
                                 type="text"
-                                value={item.quantity}
+                                value={product.quantity}
                                 readOnly
                             />
                         </div>
                         <div className="col-auto pr-1">
-                            <a
+                            <button
+                                type="button"
                                 className="js-minus btn btn-icon btn-xs btn-outline-secondary rounded-circle border-0"
-                                href="#"
                                 onClick={(e) => {
                                     e.preventDefault();
-                                    handleQuantityChange(item.quantity - 1);
+                                    handleQuantityChange(product.quantity - 1);
                                 }}>
                                 <small className="fas fa-minus btn-icon__inner"></small>
-                            </a>
-                            <a
+                            </button>
+                            <button
+                                type="button"
                                 className="js-plus btn btn-icon btn-xs btn-outline-secondary rounded-circle border-0"
-                                href="#"
                                 onClick={(e) => {
                                     e.preventDefault();
-                                    handleQuantityChange(item.quantity + 1);
+                                    handleQuantityChange(product.quantity + 1);
                                 }}>
                                 <small className="fas fa-plus btn-icon__inner"></small>
-                            </a>
+                            </button>
                         </div>
                     </div>
                 </div>

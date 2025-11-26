@@ -1,32 +1,34 @@
 import { useState, useEffect } from "react";
 import { getProducts } from "../api/products";
-import type { PublicProductDTO } from "../api/types";
+import type { Product } from "../api/types";
 
 export const useProducts = (page = 0, size = 20, query?: string) => {
-    const [products, setProducts] = useState<PublicProductDTO[]>([]);
+    const [products, setProducts] = useState<Product[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [totalPages, setTotalPages] = useState(0);
     const [totalElements, setTotalElements] = useState(0);
 
     useEffect(() => {
-        const fetchProducts = async () => {
-            try {
-                setLoading(true);
-                const response = await getProducts(page, size, query);
-                setProducts(response.content ?? []);
-                setTotalPages(response.totalPages);
-                setTotalElements(response.totalElements);
-            } catch (err) {
-                console.error("❌ Error loading products:", err);
-                setError(err instanceof Error ? err.message : "Failed to fetch products");
-            } finally {
-                setLoading(false);
-            }
-        };
+    const fetchProducts = async () => {
+        try {
+            setLoading(true);
 
-        fetchProducts();
-    }, [page, size, query]);
+            const response = await getProducts({ page, size, query });
+
+            setProducts(response.data ?? []);
+            setTotalPages(Math.ceil(response.total / size));
+            setTotalElements(response.total);
+        } catch (err) {
+            console.error("❌ Error loading products:", err);
+            setError(err instanceof Error ? err.message : "Failed to fetch products");
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    fetchProducts();
+}, [page, size, query]);
 
     return { products, loading, error, totalPages, totalElements };
 };

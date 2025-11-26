@@ -1,11 +1,7 @@
 package com.quadzone.exception;
 
 import com.quadzone.exception.product.ProductNotFoundException;
-import com.quadzone.exception.user.InactiveAccountException;
-import com.quadzone.exception.user.InvalidTokenException;
-import com.quadzone.exception.user.SuspendedAccountException;
-import com.quadzone.exception.user.UserAlreadyExistsException;
-import com.quadzone.exception.user.UserNotExistsException;
+import com.quadzone.exception.user.*;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -158,5 +154,19 @@ public class GlobalExceptionHandler {
         body.put("message", "An unexpected error occurred. Please try again later.");
 
         return new ResponseEntity<>(body, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+    /**
+     * Handles wrong password exception (HTTP 401).
+     * This is triggered when the password doesn't match the user's password.
+     */
+    @ExceptionHandler(WrongPasswordException.class)
+    public ResponseEntity<Map<String, Object>> handleWrongPasswordException(WrongPasswordException ex) {
+        Map<String, Object> body = new HashMap<>();
+        body.put("timestamp", LocalDateTime.now());
+        body.put("status", HttpStatus.UNAUTHORIZED.value());
+        body.put("error", "Unauthorized");
+        body.put("message", ex.getMessage());
+
+        return new ResponseEntity<>(body, HttpStatus.UNAUTHORIZED);
     }
 }
