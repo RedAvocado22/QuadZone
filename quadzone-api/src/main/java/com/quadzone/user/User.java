@@ -119,5 +119,9 @@ public class User implements UserDetails {
         if (request.role() != null) {
             this.setRole(request.role());
         }
+        if (request.status() !=null)
+        {
+            this.setStatus(request.status());
+        }
     }
 }

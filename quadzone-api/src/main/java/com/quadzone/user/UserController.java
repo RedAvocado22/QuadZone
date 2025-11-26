@@ -62,7 +62,7 @@ public class UserController {
             @ApiResponse(responseCode = "404", description = "User not found with the provided ID"),
             @ApiResponse(responseCode = "400", description = "Invalid user ID format")
     })
-    public ResponseEntity<UserResponse> getUserForAdmin(
+    public ResponseEntity<CurrentUserResponse> getUserForAdmin(
             @Parameter(description = "Unique identifier of the user", example = "1", required = true)
             @PathVariable Long id) {
         return ResponseEntity.ok(userService.findByIdForAdmin(id));

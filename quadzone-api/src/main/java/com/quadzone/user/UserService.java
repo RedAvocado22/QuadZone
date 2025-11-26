@@ -3,6 +3,7 @@ package com.quadzone.user;
 import com.quadzone.exception.user.UserAlreadyExistsException;
 import com.quadzone.exception.user.UserNotFoundException;
 import com.quadzone.global.dto.PagedResponse;
+import com.quadzone.user.dto.CurrentUserResponse;
 import com.quadzone.user.dto.UserRegisterRequest;
 import com.quadzone.user.dto.UserResponse;
 import com.quadzone.user.dto.UserUpdateRequest;
@@ -100,9 +101,9 @@ public class UserService {
     }
 
     @Transactional(readOnly = true)
-    public UserResponse findByIdForAdmin(Long id) {
+    public CurrentUserResponse findByIdForAdmin(Long id) {
         return userRepository.findById(id)
-                .map(objectMapper::toUserResponse)
+                .map(objectMapper::toCurrentUserResponse)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found: " + id));
     }
 }
