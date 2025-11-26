@@ -62,6 +62,9 @@ public class AuthenticationService {
         if (user.getStatus() == UserStatus.SUSPENDED) {
             throw new SuspendedAccountException("User account is suspended.");
         }
+        if (!passwordEncoder.matches(request.password(), user.getPassword())) {
+            throw new WrongPasswordException("Invalid username or password");
+        }
 
         if (user.getStatus() == UserStatus.UNACTIVE) {
             // Still authenticate to validate credentials before sending activation email
@@ -82,7 +85,7 @@ public class AuthenticationService {
                         request.password()
                 )
         );
-        
+
         var accessToken = jwtService.generateToken(user);
         var refreshToken = jwtService.generateRefreshToken(user);
 

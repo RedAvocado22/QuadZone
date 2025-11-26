@@ -1,12 +1,20 @@
-import React, { createContext, useContext, useState, useEffect, useMemo } from "react";
-import { getCart, addToCart as apiAddToCart, removeFromCart as apiRemoveFromCart, updateCartItemQuantity } from "../api/cart";
+import * as React from "react";
+import { createContext, useContext, useState, useEffect, useMemo } from "react";
+import {
+    getCart,
+    addToCart as apiAddToCart,
+    removeFromCart as apiRemoveFromCart,
+    updateCartItemQuantity,
+    mergeCart as apiMergeCart,
+    type CartMergeItem
+} from "../api/cart";
 import { useUser } from "../hooks/useUser";
 import { toast } from "react-toastify";
-import type { CartItemResponse, Product } from "../api/types";
+import type { CartItem, Product } from "../api/types";
 
 
 interface CartContextType {
-    items: CartItemResponse[];
+    items: CartItem[];
     addToCart: (product: Product, quantity?: number) => void;
     removeFromCart: (productId: number) => void;
     updateQuantity: (productId: number, quantity: number) => void;
@@ -18,10 +26,40 @@ interface CartContextType {
     refreshCart: () => Promise<void>;
 }
 
+const LOCAL_CART_STORAGE_KEY = "guest_cart_items";
+const isBrowser = typeof window !== "undefined";
+
+const readGuestCart = (): CartItem[] => {
+    if (!isBrowser) {
+        return [];
+    }
+    try {
+        const stored = localStorage.getItem(LOCAL_CART_STORAGE_KEY);
+        return stored ? (JSON.parse(stored) as CartItem[]) : [];
+    } catch (error) {
+        console.error("Failed to parse guest cart from storage:", error);
+        return [];
+    }
+};
+
+const writeGuestCart = (cartItems: CartItem[]) => {
+    if (!isBrowser) {
+        return;
+    }
+    localStorage.setItem(LOCAL_CART_STORAGE_KEY, JSON.stringify(cartItems));
+};
+
+const clearGuestCartStorage = () => {
+    if (!isBrowser) {
+        return;
+    }
+    localStorage.removeItem(LOCAL_CART_STORAGE_KEY);
+};
+
 const CartContext = createContext<CartContextType | undefined>(undefined);
 
 export const CartProvider = ({ children }: { children: React.ReactNode }) => {
-    const [items, setItems] = useState<CartItemResponse[]>([]);
+    const [items, setItems] = useState<CartItem[]>(() => readGuestCart());
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     
@@ -29,16 +67,21 @@ export const CartProvider = ({ children }: { children: React.ReactNode }) => {
 
     // Fetch cart from backend
     const refreshCart = async () => {
-        if (!user) return;
-        
+        if (!user) {
+            const localItems = readGuestCart();
+            setItems(localItems);
+            return;
+        }
+
         setLoading(true);
         setError(null);
         try {
             const cartResponse = await getCart(user.id);
             // Transform CartResponse to CartItem[]
-            const cartItems = cartResponse.cart_item_list.map((item: { productResponse: Product; quantity: number }) => ({
+            const cartItems = cartResponse.cart_item_list.map((item) => ({
                 ...item.productResponse,
-                quantity: item.quantity
+                quantity: item.quantity,
+                addedAt: item.addedAt
             }));
             setItems(cartItems);
         } catch (err) {
@@ -52,14 +95,70 @@ export const CartProvider = ({ children }: { children: React.ReactNode }) => {
 
     // Load cart on mount and when user changes
     useEffect(() => {
-        refreshCart();
+        const initializeCart = async () => {
+            if (!user) {
+                setItems(readGuestCart());
+                return;
+            }
+
+            const localItems = readGuestCart();
+            if (localItems.length) {
+                const payload: CartMergeItem[] = localItems.map((item) => ({
+                    productId: item.id,
+                    quantity: item.quantity
+                }));
+                try {
+                    await apiMergeCart(payload);
+                    clearGuestCartStorage();
+                } catch (err) {
+                    const errorMsg = err instanceof Error ? err.message : "Unable to sync local cart";
+                    toast.error(errorMsg, {
+                        position: "top-right",
+                        autoClose: 1500
+                    });
+                }
+            }
+
+            await refreshCart();
+        };
+
+        void initializeCart();
     }, [user?.id]);
 
-    const addToCart = async (product: Product) => {
+    const addToCart = async (product: Product, quantity = 1) => {
+        const qtyToAdd = quantity > 0 ? quantity : 1;
+
         if (!user) {
-            toast.error("Please log in to add items to cart");
+            setItems((prevItems) => {
+                const existingItem = prevItems.find((item) => item.id === product.id);
+                let updatedItems: CartItem[];
+
+                if (existingItem) {
+                    updatedItems = prevItems.map((item) =>
+                        item.id === product.id ? { ...item, quantity: item.quantity + qtyToAdd } : item
+                    );
+                } else {
+                    updatedItems = [
+                        ...prevItems,
+                        {
+                            ...product,
+                            quantity: qtyToAdd,
+                            addedAt: new Date().toISOString()
+                        }
+                    ];
+                }
+
+                writeGuestCart(updatedItems);
+                return updatedItems;
+            });
+
+            toast.success(`${product.name} added to cart!`, {
+                position: "top-right",
+                autoClose: 1500
+            });
             return;
         }
+
         try {
             await apiAddToCart(user.id, product.id);
             await refreshCart();
@@ -78,9 +177,23 @@ export const CartProvider = ({ children }: { children: React.ReactNode }) => {
     };
 
     const removeFromCart = async (productId: number) => {
-        if (!user) return;
-        
         const removedItem = items.find((item) => item.id === productId);
+
+        if (!user) {
+            setItems((prevItems) => {
+                const updatedItems = prevItems.filter((item) => item.id !== productId);
+                writeGuestCart(updatedItems);
+                return updatedItems;
+            });
+            if (removedItem) {
+                toast.error(`${removedItem.name} removed from cart`, {
+                    position: "top-right",
+                    autoClose: 1500
+                });
+            }
+            return;
+        }
+
         try {
             await apiRemoveFromCart(user.id, productId);
             await refreshCart();
@@ -101,7 +214,24 @@ export const CartProvider = ({ children }: { children: React.ReactNode }) => {
     };
 
     const updateQuantity = async (productId: number, quantity: number) => {
-        if (!user) return;
+        if (!user) {
+            if (quantity <= 0) {
+                setItems((prevItems) => {
+                    const updatedItems = prevItems.filter((item) => item.id !== productId);
+                    writeGuestCart(updatedItems);
+                    return updatedItems;
+                });
+                return;
+            }
+            setItems((prevItems) => {
+                const updatedItems = prevItems.map((item) =>
+                    item.id === productId ? { ...item, quantity } : item
+                );
+                writeGuestCart(updatedItems);
+                return updatedItems;
+            });
+            return;
+        }
         
         if (quantity <= 0) {
             await removeFromCart(productId);
@@ -128,6 +258,9 @@ export const CartProvider = ({ children }: { children: React.ReactNode }) => {
     const clearCart = async () => {
         try {
             setItems([]);
+            if (!user) {
+                clearGuestCartStorage();
+            }
             toast.warn("Cart cleared", {
                 position: "top-right",
                 autoClose: 1500

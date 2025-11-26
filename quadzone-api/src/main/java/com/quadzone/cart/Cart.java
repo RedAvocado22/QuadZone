@@ -27,7 +27,7 @@ public class Cart {
     private LocalDateTime updatedAt;
 
     @OneToMany(mappedBy = "cart", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<CartItem> items;
+    private List<CartItem> items = new ArrayList<>();
 
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "customer_id", nullable = false, unique = true)
@@ -39,10 +39,14 @@ public class Cart {
     }
 
     public void addCartItem(CartItem item) {
+        getItems().add(item);
+        item.setCart(this);
+    }
+
+    public List<CartItem> getItems() {
         if (items == null) {
             items = new ArrayList<>();
         }
-        items.add(item);
-        item.setCart(this);
+        return items;
     }
 }

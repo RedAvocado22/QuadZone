@@ -10,6 +10,11 @@ import com.quadzone.cart.service.CartService;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import java.util.List;
+import com.quadzone.cart.dto.CartItemRequest;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import com.quadzone.user.User;
+import com.quadzone.cart.Cart;
 
 @RestController
 @RequestMapping("/api/v1/cart")
@@ -89,5 +94,15 @@ public class CartController {
     @ExceptionHandler(RuntimeException.class)
     public ResponseEntity<String> handleRuntime(RuntimeException e) {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+    }
+
+    @PostMapping("/merge")
+    public ResponseEntity<CartResponse> mergeCart(@RequestBody List<CartItemRequest> localCartItems, 
+                                       @AuthenticationPrincipal User user) {
+        if (user == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+        Cart cart = cartService.mergeCart(user, localCartItems);
+        return ResponseEntity.ok(CartResponse.from(cart));
     }
 }

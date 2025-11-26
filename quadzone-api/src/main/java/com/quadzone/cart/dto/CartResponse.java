@@ -11,10 +11,14 @@ public record CartResponse(
         LocalDateTime updateAt,
         List<CartItemResponse> cart_item_list) {
     public static CartResponse from(Cart cart) {
+        List<CartItemResponse> items = cart.getItems() == null
+                ? List.of()
+                : cart.getItems().stream().map(CartItemResponse::from).toList();
+
         return new CartResponse(
                 cart.getId(),
                 cart.getUser().getId(),
                 cart.getUpdatedAt(),
-                cart.getItems().stream().map(CartItemResponse::from).toList());
+                items);
     }
 }
