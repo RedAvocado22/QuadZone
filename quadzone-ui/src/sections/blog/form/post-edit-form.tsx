@@ -130,7 +130,7 @@ export function PostEditForm({ postId, onSuccess, onCancel }: PostEditFormProps)
             reader.readAsDataURL(file);
 
             const uploadResult = await uploadApi.uploadImage(file);
-            setFormData((prev) => ({ ...prev, coverUrl: uploadResult.url }));
+            setFormData((prev) => ({ ...prev, coverUrl: uploadResult.imageUrl }));
         } catch (err) {
             setError(err instanceof Error ? err.message : "Failed to upload image");
         } finally {

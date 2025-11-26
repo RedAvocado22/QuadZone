@@ -41,6 +41,10 @@ public record ProductRegisterRequest(
         SubCategory subCategory  // Allow null for now, can be set later
 ) {
     public static Product toProduct(ProductRegisterRequest request) {
+        String imageUrl = request.imageUrl() != null && !request.imageUrl().trim().isEmpty()
+                ? request.imageUrl().trim()
+                : null;
+
         return Product.builder()
                 .name(request.name())
                 .brand(request.brand())
@@ -51,7 +55,7 @@ public record ProductRegisterRequest(
                 .costPrice(request.costPrice())
                 .weight(request.weight())
                 .color(request.color())
-                .imageUrl(request.imageUrl())
+                .imageUrl(imageUrl)
                 .subCategory(request.subCategory())  // Can be null, should be set via update
                 .build();
     }
