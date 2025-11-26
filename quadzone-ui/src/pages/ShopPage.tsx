@@ -26,20 +26,6 @@ const Shop: React.FC = () => {
     const [selectedBrand, setSelectedBrand] = useState<string | undefined>(undefined);
     const [selectedCategory, setSelectedCategory] = useState<number | undefined>(undefined);
     const [selectedSubcategory, setSelectedSubcategory] = useState<number | undefined>(undefined);
-    const handleApplyFilters = ({
-        brands,
-        priceRange
-    }: {
-        brands: string[];
-        priceRange: { min: number; max: number } | null;
-    }) => {
-        setSelectedBrand(brands.length === 1 ? brands[0] : undefined); // fallback if your API supports only one
-        // OR better: modify your backend to accept brand[] → then send brands directly
-
-        setMinPrice(priceRange?.min);
-        setMaxPrice(priceRange?.max);
-        setCurrentPage(1);
-    };
 
     // Data states
     const [allProducts, setAllProducts] = useState<Product[]>([]); // Full filtered list from server
@@ -118,20 +104,6 @@ const Shop: React.FC = () => {
     // ──────────────────────────────
     // Handlers
     // ──────────────────────────────
-    const handlePriceFilter = (range: { min: number; max: number }) => {
-        setMinPrice(range.min);
-        setMaxPrice(range.max);
-    };
-
-    const handleBrandFilter = (brand: string) => {
-        setSelectedBrand((prev) => (prev === brand ? undefined : brand));
-    };
-
-    const handleCategoryFilter = (categoryId: number, subcategoryId?: number) => {
-        setSelectedCategory(categoryId);
-        setSelectedSubcategory(subcategoryId);
-    };
-
     const handleSortChange = (newSort: SortOption) => {
         setSortBy(newSort);
         setCurrentPage(1);
@@ -143,9 +115,11 @@ const Shop: React.FC = () => {
     if (loading) {
         return (
             <div className="text-center py-5">
-                <div className="spinner-border" role="status">
-                    <span className="sr-only">Loading products...</span>
-                </div>
+                <output aria-live="polite" aria-busy="true">
+                    <div className="spinner-border">
+                        <span className="sr-only">Loading products...</span>
+                    </div>
+                </output>
             </div>
         );
     }
