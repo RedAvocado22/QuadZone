@@ -2,15 +2,15 @@ SET FOREIGN_KEY_CHECKS = 0;
 
 INSERT INTO _user (id, email, password, first_name, last_name, role, created_at, status)
 VALUES
-    (1, 'customer@example.com', '$2a$10$kmEi6ZSfjEB4fJ7fbJZQO.woGcPeh5aP8FiA6q.kX82fiT.Z.S21e', 'John', 'Doe', 'CUSTOMER', NOW(), 'ACTIVE'),
-    (2, 'admin@example.com', '$2a$10$kmEi6ZSfjEB4fJ7fbJZQO.woGcPeh5aP8FiA6q.kX82fiT.Z.S21e', 'Test', 'Admin', 'ADMIN', NOW(), 'ACTIVE'),
-    (3, 'staff@example.com', '$2a$10$kmEi6ZSfjEB4fJ7fbJZQO.woGcPeh5aP8FiA6q.kX82fiT.Z.S21e', 'Test', 'Staff', 'STAFF', NOW(),'ACTIVE'),
-    (4, 'shipper@example.com', '$2a$10$kmEi6ZSfjEB4fJ7fbJZQO.woGcPeh5aP8FiA6q.kX82fiT.Z.S21e', 'Test', 'Shipper', 'SHIPPER', NOW(), 'ACTIVE'),
-    (5, 'an.nguyen@example.com', '$$2a$10$kmEi6ZSfjEB4fJ7fbJZQO.woGcPeh5aP8FiA6q.kX82fiT.Z.S21e', 'Anna', 'Smith', 'CUSTOMER', NOW(), 'ACTIVE'),
-    (6, 'binh.le@example.com', '$2a$10$kmEi6ZSfjEB4fJ7fbJZQO.woGcPeh5aP8FiA6q.kX82fiT.Z.S21e', 'Ben', 'Lee', 'CUSTOMER', NOW(), 'ACTIVE'),
-    (7, 'chi.pham@example.com', '$2a$10$kmEi6ZSfjEB4fJ7fbJZQO.woGcPeh5aP8FiA6q.kX82fiT.Z.S21e', 'Chloe', 'Pham', 'CUSTOMER', NOW(), 'ACTIVE'),
-    (8, 'dung.tran@example.com', '$2a$10$kmEi6ZSfjEB4fJ7fbJZQO.woGcPeh5aP8FiA6q.kX82fiT.Z.S21e', 'David', 'Tran', 'CUSTOMER', NOW(), 'ACTIVE');
--- password:Abc1234@
+    (1, 'customer@example.com', '$2y$10$TyY0L134mVANXy0zQqTnrumSCgHtK4ShKvI3eg1mik/VK2XMCqC0i', 'John', 'Doe', 'CUSTOMER', NOW(), 'ACTIVE'),
+    (2, 'admin@example.com', '$2y$10$TyY0L134mVANXy0zQqTnrumSCgHtK4ShKvI3eg1mik/VK2XMCqC0i', 'Test', 'Admin', 'ADMIN', NOW(), 'ACTIVE'),
+    (3, 'staff@example.com', '$2y$10$TyY0L134mVANXy0zQqTnrumSCgHtK4ShKvI3eg1mik/VK2XMCqC0i', 'Test', 'Staff', 'STAFF', NOW(),'ACTIVE'),
+    (4, 'shipper@example.com', '$2y$10$TyY0L134mVANXy0zQqTnrumSCgHtK4ShKvI3eg1mik/VK2XMCqC0i', 'Test', 'Shipper', 'SHIPPER', NOW(), 'ACTIVE'),
+    (5, 'an.nguyen@example.com', '$2y$10$TyY0L134mVANXy0zQqTnrumSCgHtK4ShKvI3eg1mik/VK2XMCqC0i', 'Anna', 'Smith', 'CUSTOMER', NOW(), 'ACTIVE'),
+    (6, 'binh.le@example.com', '$2y$10$TyY0L134mVANXy0zQqTnrumSCgHtK4ShKvI3eg1mik/VK2XMCqC0i', 'Ben', 'Lee', 'CUSTOMER', NOW(), 'ACTIVE'),
+    (7, 'chi.pham@example.com', '$2y$10$TyY0L134mVANXy0zQqTnrumSCgHtK4ShKvI3eg1mik/VK2XMCqC0i', 'Chloe', 'Pham', 'CUSTOMER', NOW(), 'ACTIVE'),
+    (8, 'dung.tran@example.com', '$2y$10$TyY0L134mVANXy0zQqTnrumSCgHtK4ShKvI3eg1mik/VK2XMCqC0i', 'David', 'Tran', 'CUSTOMER', NOW(), 'ACTIVE');
+-- password:Abc@1234
 INSERT INTO category (id, name, is_active, image_url)
 VALUES
     (1, 'Electronics', true, 'https://example.com/images/electronics.jpg'),
@@ -31,12 +31,12 @@ VALUES
     (8, 'Operating Systems', 'Software to run your computer and devices.', true, 2),
     (9, 'Security & Antivirus', 'Protect your data and devices from threats.', true, 2),
     (10, 'Creative Software', 'Tools for design, video, and audio editing.', true, 2),
-
+    
     -- Home & Smart Devices (category_id 3)
     (11, 'Smart Lighting', 'App-controlled bulbs and light strips.', true, 3),
     (12, 'Smart Security', 'Cameras and alarm systems for home monitoring.', true, 3),
     (13, 'Voice Assistants', 'Smart speakers and displays.', true, 3),
-
+    
     -- Components & DIY (category_id 4)
     (14, 'Processors & CPUs', 'The brain of your computer.', true, 4),
     (15, 'Memory (RAM)', 'High-speed memory modules.', true, 4),
@@ -57,12 +57,12 @@ VALUES
     -- Software & Services (category_id 2)
     (11, 'Pro Video Editor License', 'EditMaster', 'EM-PRO-VID', 'Digital', '1-year license for professional video editing suite.', 199.99, 50.00, 0.0, 999, '/src/assets/img/212X200/img11.jpg', DATE_SUB(NOW(), INTERVAL 3 DAY), true, 10),
     (12, 'Ultimate Security Suite', 'GuardDog', 'GD-SEC-ULT', 'Digital', 'Lifetime license for 5-device comprehensive security.', 49.99, 15.00, 0.0, 800, '/src/assets/img/212X200/img12.jpg', DATE_SUB(NOW(), INTERVAL 1 DAY), true, 9),
-
+    
     -- Home & Smart Devices (category_id 3)
     (13, 'Smart Speaker Mini', 'QuadZone', 'QZ-SMT-SPKM', 'Charcoal', 'Compact smart speaker with voice assistant integration.', 49.00, 25.00, 0.25, 400, '/src/assets/img/212X200/img13.jpg', DATE_SUB(NOW(), INTERVAL 6 DAY), true, 13),
     (14, 'Outdoor Smart Cam Pro', 'SenseHome', 'SH-CAM-OUT', 'Black', 'Weatherproof outdoor camera with night vision and motion alerts.', 159.50, 80.00, 0.5, 120, '/src/assets/img/212X200/img14.jpg', DATE_SUB(NOW(), INTERVAL 14 DAY), true, 12),
     (15, 'E27 Smart Light Bulb', 'Lumi', 'LM-BULB-CLR', 'White', 'Color-changing smart bulb (E27 base) compatible with all major assistants.', 24.99, 10.00, 0.1, 750, '/src/assets/img/212X200/img15.jpg', DATE_SUB(NOW(), INTERVAL 9 DAY), true, 11),
-
+    
     -- Components & DIY (category_id 4)
     (16, 'M.2 NVMe SSD 1TB', 'Velocity', 'VEL-SSD-1TB', 'Black', 'High-speed 1TB M.2 solid-state drive.', 99.99, 60.00, 0.05, 180, '/src/assets/img/212X200/img16.jpg', DATE_SUB(NOW(), INTERVAL 2 DAY), true, 16),
     (17, 'DDR4 32GB (2x16GB) Kit', 'HyperData', 'HD-RAM-32', 'Red', '32GB kit of performance DDR4 desktop memory.', 119.00, 75.00, 0.1, 100, '/src/assets/img/212X200/img17.jpg', DATE_SUB(NOW(), INTERVAL 18 DAY), true, 15),

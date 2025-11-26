@@ -1,23 +1,21 @@
 package com.quadzone.product.category.dto;
 
+import java.util.List;
+
 import com.quadzone.product.category.Category;
+import com.quadzone.product.category.sub_category.dto.SubCategoryResponse;
 
 public record CategoryResponse(
         Long id,
         String name,
-        boolean active,
-        long productCount,
-        String imageUrl
-) {
+        List<SubCategoryResponse> subCategories) {
     public static CategoryResponse from(Category category) {
-        long productCount = category.getSubcategories() != null ? category.getSubcategories().size() : 0;
         return new CategoryResponse(
                 category.getId(),
                 category.getName(),
-                category.isActive(),
-                productCount,
-                category.getImageUrl()
-        );
+                category.getSubcategories().stream()
+                        .map(SubCategoryResponse::from)
+                        .toList());
     }
 }
 
