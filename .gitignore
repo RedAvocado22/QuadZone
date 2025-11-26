@@ -18,3 +18,5 @@ TODO.md
 
 /.idea/
 /.vscode/settings.json
+quadzone-ui/package-lock.json
+*.json
