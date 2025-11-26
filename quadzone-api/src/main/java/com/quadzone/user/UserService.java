@@ -105,4 +105,15 @@ public class UserService {
                 .map(objectMapper::toUserResponse)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found: " + id));
     }
+
+    /**
+     * Get all users by role
+     */
+    @Transactional(readOnly = true)
+    public List<UserResponse> getUsersByRole(UserRole role) {
+        List<User> users = userRepository.findByRole(role);
+        return users.stream()
+                .map(objectMapper::toUserResponse)
+                .toList();
+    }
 }

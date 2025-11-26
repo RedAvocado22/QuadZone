@@ -196,7 +196,7 @@ const CheckoutPage = () => {
 
             setTimeout(() => {
                 clearCart();
-                navigate(`/track-order?orderNumber=${orderResponse.orderNumber}`);
+                navigate(`/order-success?orderNumber=${orderResponse.orderNumber}`);
             }, 3000);
         } catch (error: any) {
             console.error("Checkout error:", error);

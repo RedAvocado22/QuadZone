@@ -18,6 +18,7 @@ import ContactUsPage from "./pages/ContactUsPage";
 import CheckoutPage from "@/pages/CheckoutPage.tsx";
 import "src/assets/css/global.css";
 import TrackOrderPage from "./pages/TrackOrderPage";
+import OrderSuccessPage from "./pages/OrderSuccessPage";
 
 import Shop from "./pages/Shop";
 
@@ -72,6 +73,7 @@ function App() {
                                 {/* Cart - accessible to everyone (guest and authenticated) */}
                                 <Route path="cart" element={<CartPage />} />
                                 <Route path="checkout" element={<CheckoutPage />} />
+                                <Route path="order-success" element={<OrderSuccessPage />} />
                                 <Route path="track-order" element={<TrackOrderPage />} />
 
                                 {/* Error Boundary */}
