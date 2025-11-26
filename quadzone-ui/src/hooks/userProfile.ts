@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { toast } from 'react-toastify';
 import { profileApi } from '../api/profile';
-import type { User, UpdateProfileRequest } from '../types/User';
+import type { UserProfile, UpdateProfileRequest } from '../api/types';
 import type { AxiosError } from 'axios';
 
 interface ErrorResponse {
@@ -11,7 +11,7 @@ interface ErrorResponse {
 }
 
 export const useProfile = () => {
-    const [profile, setProfile] = useState<User | null>(null);
+    const [profile, setProfile] = useState<UserProfile | null>(null);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [isInitialLoading, setIsInitialLoading] = useState(true);
@@ -41,13 +41,13 @@ export const useProfile = () => {
         try {
             const updated = await profileApi.updateProfile(data);
             setProfile(updated);
-            toast.success('✅ Profile updated successfully!');
+            toast.success(' Profile updated successfully!');
             return true;
         } catch (err) {
             const axiosError = err as AxiosError<ErrorResponse>;
             const message = axiosError.response?.data?.message || 'Failed to update profile';
             setError(message);
-            toast.error(`❌ ${message}`);
+            toast.error(` ${message}`);
             return false;
         } finally {
             setLoading(false);
@@ -58,14 +58,14 @@ export const useProfile = () => {
         // Validate file size (5MB)
         const maxSize = 5 * 1024 * 1024;
         if (file.size > maxSize) {
-            toast.error('❌ File size exceeds maximum limit of 5MB');
+            toast.error(' File size exceeds maximum limit of 5MB');
             return false;
         }
 
         // Validate file type
         const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
         if (!allowedTypes.includes(file.type)) {
-            toast.error('❌ Only JPG, PNG, GIF, WebP files are supported');
+            toast.error(' Only JPG, PNG, GIF, WebP files are supported');
             return false;
         }
 
@@ -74,20 +74,13 @@ export const useProfile = () => {
         try {
             const updated = await profileApi.uploadAvatar(file);
             setProfile(updated);
-            toast.success('✅ Avatar updated successfully!');
+            toast.success(' Avatar updated successfully!');
             return true;
         } catch (err) {
             const axiosError = err as AxiosError<ErrorResponse>;
-            
-            // Handle 501 - Feature not implemented
-            if (axiosError.response?.status === 501) {
-                toast.info('ℹ️ Avatar upload feature coming soon with Firebase Cloud Storage');
-                return false;
-            }
-
             const message = axiosError.response?.data?.message || 'Failed to upload avatar';
             setError(message);
-            toast.error(`❌ ${message}`);
+            toast.error(` ${message}`);
             return false;
         } finally {
             setLoading(false);

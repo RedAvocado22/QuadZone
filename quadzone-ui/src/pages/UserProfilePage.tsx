@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useProfile } from '../hooks/userProfile';
 import { format } from 'date-fns';
 import '../UserProfilePage.css';
@@ -9,7 +9,6 @@ const UserProfilePage = () => {
     const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
 
-    // Form state
     const [formData, setFormData] = useState({
         firstName: '',
         lastName: '',
@@ -19,8 +18,7 @@ const UserProfilePage = () => {
         dateOfBirth: '',
     });
 
-    // Update form when profile loads
-    useState(() => {
+    useEffect(() => {
         if (profile) {
             setFormData({
                 firstName: profile.firstName || '',
@@ -31,7 +29,7 @@ const UserProfilePage = () => {
                 dateOfBirth: profile.dateOfBirth || '',
             });
         }
-    });
+    }, [profile]);
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
         const { name, value } = e.target;
@@ -54,7 +52,6 @@ const UserProfilePage = () => {
         };
         reader.readAsDataURL(file);
 
-        // Upload
         uploadAvatar(file);
     };
 

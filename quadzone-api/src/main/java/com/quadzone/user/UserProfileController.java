@@ -1,5 +1,6 @@
 package com.quadzone.user;
 
+import com.quadzone.upload.service.ImgbbService;
 import com.quadzone.user.dto.UserProfileDTO;
 import com.quadzone.user.dto.UserProfileRequest;
 import jakarta.validation.Valid;
@@ -14,6 +15,7 @@ import org.springframework.web.multipart.MultipartFile;
 @RequiredArgsConstructor
 public class UserProfileController {
     private final UserService userService;
+    private final ImgbbService imgbbService;
     @GetMapping
     public ResponseEntity<UserProfileDTO> getMyProfile(@AuthenticationPrincipal User user) {
         UserProfileDTO profileDTO = userService.getUserProfile(user.getId());
@@ -28,13 +30,30 @@ public class UserProfileController {
     @PostMapping("/avatar")
     public ResponseEntity<?> uploadAvatar(@AuthenticationPrincipal User user,
                                          @RequestParam("file") MultipartFile fileData) {
-        // TODO: Implement Firebase Cloud Storage upload
-        // Reference: https://firebase.google.com/docs/storage/admin/start
-        
-        return ResponseEntity.status(501) // 501 Not Implemented
-                .body(java.util.Map.of(
-                    "message", "Avatar upload feature is not implemented yet. Will be available with Firebase Cloud Storage.",
-                    "timestamp", java.time.LocalDateTime.now()
-                ));
+        try {
+            if (fileData.isEmpty()) {
+                return ResponseEntity.badRequest()
+                        .body(java.util.Map.of("message", "File is empty"));
+            }
+
+            String contentType = fileData.getContentType();
+            if (contentType == null || !contentType.startsWith("image/")) {
+                return ResponseEntity.badRequest()
+                        .body(java.util.Map.of("message", "File must be an image"));
+            }
+
+            ImgbbService.ImgbbUploadResponse imgbbResponse = imgbbService.uploadImage(fileData);
+            
+            UserProfileDTO updatedProfile = userService.updateUserAvatar(user.getId(), imgbbResponse.getUrl());
+            
+            return ResponseEntity.ok(updatedProfile);
+            
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError()
+                    .body(java.util.Map.of(
+                        "message", "Failed to upload avatar: " + e.getMessage(),
+                        "timestamp", java.time.LocalDateTime.now()
+                    ));
+        }
     }
 }
