@@ -34,7 +34,8 @@ public class SecurityConfiguration {
             "/swagger-resources/**",
             "/api/v1/public/**",
             "/api/v1/orders/checkout",  // Allow guest checkout
-            "/api/v1/orders/public/**"  // Allow public order tracking
+            "/api/v1/orders/public/**", // Allow public order tracking
+            "/api/v1/coupons/**"        // Allow public coupon validation & creation if needed
     };
 
     @Value("${frontend.baseurl:http://localhost:5173}")

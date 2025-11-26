@@ -4,14 +4,14 @@ import { useCart } from "../../contexts/CartContext";
 import { useCurrency } from "../../contexts/CurrencyContext";
 import { fCurrency } from "../../utils/formatters";
 import { defaultImages } from "../../constants/images";
-import type { CartItemResponse, Product } from "../../api/types";
+import type { CartItem, Product } from "../../api/types";
 import { getProductDetails } from "../../api/products";
 
 interface CartItemProps {
-    item: CartItemResponse;
+    item: CartItem;
 }
 
-const CartItem = ({ item }: CartItemProps) => {
+const CartRow = ({ item }: CartItemProps) => {
     const { removeFromCart, updateQuantity } = useCart();
     const [product, setProduct] = useState<Product & { quantity: number }>({
         ...item,
@@ -123,4 +123,4 @@ const CartItem = ({ item }: CartItemProps) => {
     );
 };
 
-export default CartItem;
+export default CartRow;

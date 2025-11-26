@@ -17,6 +17,7 @@ import com.quadzone.user.User;
 import com.quadzone.user.UserRole;
 import com.quadzone.user.UserRepository;
 import com.quadzone.utils.email.EmailSenderService;
+import com.quadzone.discount.CouponService;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
@@ -46,6 +47,7 @@ public class OrderService {
     private final EmailSenderService emailSenderService;
     private final NotificationService notificationService;
     private final DeliveryRepository deliveryRepository;
+    private final CouponService couponService;
 
     public OrderResponse getOrder(Long id) {
         Order order = orderRepository.findById(id)
@@ -171,14 +173,34 @@ public class OrderService {
                     .orElse(null);
         }
 
+        // Calculate monetary fields, trusting server-side logic for discount
+        double subtotal = request.subtotal() != null ? request.subtotal() : 0.0;
+        double taxAmount = request.taxAmount() != null ? request.taxAmount() : 0.0;
+        double shippingCost = request.shippingCost() != null ? request.shippingCost() : 0.0;
+
+        double discountAmount = 0.0;
+        String couponCode = request.couponCode();
+        if (couponCode != null && !couponCode.isBlank()) {
+            // Recalculate discount on backend to tránh thao túng từ FE
+            discountAmount = couponService.calculateDiscount(couponCode.trim(), subtotal);
+        } else if (request.discountAmount() != null) {
+            // Fallback nếu không có coupon (trường hợp khuyến mãi khác)
+            discountAmount = request.discountAmount();
+        }
+
+        double totalAmount = subtotal + taxAmount + shippingCost - discountAmount;
+        if (totalAmount <= 0) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Total amount must be positive after discount");
+        }
+
         // Create order
         Order order = new Order();
         order.setOrderDate(LocalDateTime.now());
-        order.setSubtotal(request.subtotal() != null ? request.subtotal() : 0.0);
-        order.setTaxAmount(request.taxAmount() != null ? request.taxAmount() : 0.0);
-        order.setShippingCost(request.shippingCost() != null ? request.shippingCost() : 0.0);
-        order.setDiscountAmount(request.discountAmount() != null ? request.discountAmount() : 0.0);
-        order.setTotalAmount(request.totalAmount());
+        order.setSubtotal(subtotal);
+        order.setTaxAmount(taxAmount);
+        order.setShippingCost(shippingCost);
+        order.setDiscountAmount(discountAmount);
+        order.setTotalAmount(totalAmount);
         order.setOrderStatus(OrderStatus.PENDING);
         order.setNotes(request.notes());
 
@@ -253,6 +275,11 @@ public class OrderService {
 
         // Save order
         Order savedOrder = orderRepository.save(order);
+
+        // If coupon was applied, consume one usage (sau khi order tạo thành công)
+        if (couponCode != null && !couponCode.isBlank()) {
+            couponService.useCoupon(couponCode.trim());
+        }
 
         // Create payment
         Payment payment = new Payment();
