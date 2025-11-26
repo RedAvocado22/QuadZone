@@ -79,19 +79,34 @@ const UserProvider = ({ children }: UserProviderProps) => {
             return true;
         } catch (err: any) {
             let msg = "Please check your email and password.";
-            switch (err.response?.status) {
-                case 401:
-                    msg = "Incorrect email or password.";
-                    break;
-                case 404:
-                    msg = "Account does not exist.";
-                    break;
-                case 403:
-                    msg = "Account not active! Check your email for the activation link.";
-                    break;
-                default:
-                    msg = err.response?.data?.message || msg;
+            
+            // Priority 1: Use message from backend response if available
+            if (err.response?.data?.message) {
+                msg = err.response.data.message;
+                console.log(msg);
+            } 
+            // Priority 2: Use status-based messages if no backend message
+            else if (err.response?.status) {
+                switch (err.response.status) {
+                    case 401:
+                        msg = "Incorrect email or password.";
+                        break;
+                    case 404:
+                        msg = "Account does not exist.";
+                        break;
+                    case 403:
+                        msg = "Account not active! Check your email for the activation link.";
+                        break;
+                    default:
+                        msg = err.message || msg;
+                }
             }
+            // Priority 3: Use error message if available
+            else if (err.message) {
+                console.log(err.message);
+                msg = err.message;
+            }
+            
             toast.error(msg);
             return false;
         }

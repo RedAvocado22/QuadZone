@@ -32,7 +32,9 @@ public class SecurityConfiguration {
             "/swagger-ui.html",
             "/swagger-ui/**",
             "/swagger-resources/**",
-            "/api/v1/public/**"
+            "/api/v1/public/**",
+            "/api/v1/orders/checkout",  // Allow guest checkout
+            "/api/v1/orders/public/**"  // Allow public order tracking
     };
 
     @Value("${frontend.baseurl:http://localhost:5173}")

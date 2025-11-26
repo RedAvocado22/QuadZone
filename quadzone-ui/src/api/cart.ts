@@ -1,6 +1,11 @@
 import API from "./base";
-import type { CartResponse } from "../types/Cart";
+import type { CartResponse } from "./types";
 import { useUser } from "../hooks/useUser";
+
+export interface CartMergeItem {
+    productId: number;
+    quantity: number;
+}
 
 // Base functions that accept userId
 export const getCart = (userId: number): Promise<CartResponse> =>
@@ -14,6 +19,9 @@ export const removeFromCart = (userId: number, productId: number): Promise<CartR
 
 export const updateCartItemQuantity = (userId: number, productId: number, quantity: number): Promise<CartResponse> =>
     API.patch(`/cart/${userId}/update/${productId}?quantity=${quantity}`).then(res => res.data);
+
+export const mergeCart = (items: CartMergeItem[]): Promise<CartResponse> =>
+    API.post("/cart/merge", items).then(res => res.data);
 
 // Hook for use in components that need automatic userId from context
 export const useCartApi = () => {
@@ -35,6 +43,10 @@ export const useCartApi = () => {
         updateCartItemQuantity: (productId: number, quantity: number) => {
             if (!user) throw new Error("User not logged in");
             return updateCartItemQuantity(user.id, productId, quantity);
+        },
+        mergeCart: (items: CartMergeItem[]) => {
+            if (!user) throw new Error("User not logged in");
+            return mergeCart(items);
         }
     };
 };

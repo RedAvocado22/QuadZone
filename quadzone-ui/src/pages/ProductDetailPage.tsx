@@ -4,12 +4,15 @@ import { useCart } from "../contexts/CartContext";
 import type { ProductDetailsResponse } from "../api/types";
 import { getProductDetails } from "../api/products";
 import { toast } from "react-toastify";
+import { useCurrency } from "../contexts/CurrencyContext";
+import { fCurrency } from "../utils/formatters";
 
 const ProductDetailPage = () => {
     const { id } = useParams();
     const [product, setProduct] = useState<ProductDetailsResponse | null>(null);
     const [loading, setLoading] = useState(true);
     const { addToCart } = useCart();
+    const { currency, convertPrice } = useCurrency();
 
     useEffect(() => {
         if (!id) return;
@@ -74,7 +77,9 @@ const ProductDetailPage = () => {
                     {/* Add to Cart Box */}
                     <div className="border rounded-3 p-4 bg-light shadow-sm mt-3">
                         <div className="d-flex align-items-center justify-content-between mb-3">
-                            <h3 className="text-danger fw-bold mb-0">${product.price.toFixed(2)}</h3>
+                            <h3 className="text-danger fw-bold mb-0">
+                                {fCurrency(convertPrice(product.price), { currency })}
+                            </h3>
                             <span className="text-muted small">
                                 {product.quantity > 0 ? "In Stock" : "Out of Stock"}
                             </span>

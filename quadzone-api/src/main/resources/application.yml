@@ -5,6 +5,10 @@ application:
   uploads:
     path: uploads
 
+imgbb:
+  api:
+    key: ${IMGBB_API_KEY:0702ecdfadb86868e2e3d5f393c01740}
+
 spring:
   profiles:
     active: dev

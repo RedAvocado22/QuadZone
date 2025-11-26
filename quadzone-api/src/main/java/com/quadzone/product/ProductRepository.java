@@ -6,6 +6,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -31,6 +32,19 @@ public interface ProductRepository extends JpaRepository<Product, Long>, JpaSpec
                         """)
         Page<Product> findFeaturedProducts(Pageable pageable);
 
+    @Query("""
+            SELECT p
+            FROM Product p
+            WHERE p.isActive = true AND p.stock > 0
+            ORDER BY p.createdAt DESC
+            """)
+    Page<Product> findNewArrivalProducts(Pageable pageable);
+
+    @Modifying // Báo cho Spring đây là câu lệnh Update/Delete
+    @Query("UPDATE Product p SET p.stock = p.stock - :amount " +
+            "WHERE p.id = :id AND p.stock >= :amount")
+    int reduceStock(@Param("id") Long id, @Param("amount") int amount);
+
         @Query("""
                         SELECT p
                         FROM Product p LEFT JOIN p.orderItems oi
@@ -39,14 +53,6 @@ public interface ProductRepository extends JpaRepository<Product, Long>, JpaSpec
                         ORDER BY COALESCE(SUM(oi.quantity), 0) DESC
                         """)
         Page<Product> findBestSellingProducts(Pageable pageable);
-
-        @Query("""
-                        SELECT p
-                        FROM Product p
-                        WHERE p.isActive = true AND p.stock > 0
-                        ORDER BY p.createdAt DESC
-                        """)
-        Page<Product> findNewArrivalProducts(Pageable pageable);
 
         @Query("SELECT DISTINCT p.brand FROM Product p WHERE p.brand IS NOT NULL ORDER BY p.brand")
         List<String> findAllBrands();

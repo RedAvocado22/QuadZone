@@ -18,6 +18,8 @@ import AboutUsPage from "./pages/AboutUsPage";
 import ContactUsPage from "./pages/ContactUsPage";
 import CheckoutPage from "@/pages/CheckoutPage.tsx";
 import "src/assets/css/global.css";
+import TrackOrderPage from "./pages/TrackOrderPage";
+
 import Shop from "./pages/Shop";
 
 const AdminRoutes = lazy(() => import("./routing/AdminRoutes"));
@@ -71,7 +73,10 @@ function App() {
                                 {/* Cart - accessible to everyone (guest and authenticated) */}
                                 <Route path="cart" element={<CartPage />} />
                                 <Route path="checkout" element={<CheckoutPage />} />
+                                <Route path="track-order" element={<TrackOrderPage />} />
 
+                                {/* Error Boundary */}
+                                {/* <Route path="unauthorized" element={<Unauthorized />} />
                                 {/* Error Boundary */}
                                 {/* <Route path="unauthorized" element={<Unauthorized />} />
                         <Route path="*" element={<NotFound />} /> */}

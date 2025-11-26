@@ -183,6 +183,15 @@ export interface NotificationRequest {
 }
 
 // ============== CART TYPES ==============
+// Backend CartItemResponse structure
+export interface CartItemResponse {
+  id: number;
+  quantity: number;
+  addedAt: string; // ISO date string
+  productResponse: Product;
+}
+
+// Flattened CartItem for frontend use (extends Product with quantity and addedAt)
 export interface CartItem extends Product {
   quantity: number;
   addedAt: string; // ISO date string
@@ -192,11 +201,10 @@ export interface Cart {
   id: number;
   customerId: number;
   updateAt: string; // ISO date string
-  cart_item_list: CartItem[];
+  cart_item_list: CartItemResponse[];
 }
 
 export type CartResponse = Cart;
-export type CartItemResponse = CartItem;
 
 export interface AddToCartRequest {
   productId: number;

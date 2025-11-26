@@ -59,4 +59,26 @@ export const ordersApi = {
   delete: async (id: string | number): Promise<void> => {
     await API.delete(`/orders/${id}`);
   },
+
+  checkout: async (checkoutData: {
+    firstName: string;
+    lastName: string;
+    email: string;
+    phone: string;
+    address: string;
+    city?: string;
+    state?: string;
+    apartment?: string;
+    items: Array<{ productId: number; quantity: number }>;
+    subtotal: number;
+    taxAmount?: number;
+    shippingCost: number;
+    discountAmount?: number;
+    totalAmount: number;
+    paymentMethod: string;
+    notes?: string;
+  }): Promise<OrderResponse> => {
+    const response = await API.post<OrderResponse>('/orders/checkout', checkoutData);
+    return response.data;
+  },
 };
