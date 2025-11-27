@@ -4,25 +4,25 @@ import com.quadzone.user.User;
 import com.quadzone.user.UserRole;
 import com.quadzone.user.UserStatus;
 
-import java.time.LocalDateTime;
-
-public record UserResponse(
-        Long id,
-        String name,
+public record UserAdminResponse(
+        long id,
+        String firstName,
+        String lastName,
         String email,
+        String password,
         UserRole role,
-        LocalDateTime createdAt,
         UserStatus status
+
 ) {
-    public static UserResponse from(User user) {
-        return new UserResponse(
+    public static UserAdminResponse from(final User user) {
+        return new UserAdminResponse(
                 user.getId(),
-                user.getFullName(),
+                user.getFirstName(),
+                user.getLastName(),
                 user.getEmail(),
+                user.getPassword(),
                 user.getRole(),
-                user.getCreatedAt(),
                 user.getStatus()
         );
     }
 }
-

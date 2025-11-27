@@ -119,9 +119,13 @@ public class User implements UserDetails {
         if (request.role() != null) {
             this.setRole(request.role());
         }
+
+        for(int i=1;i<=5;i++)
+            System.out.println(request.status());
         if (request.status() !=null)
         {
             this.setStatus(request.status());
+            System.out.println(this.status+" "+request.status());
         }
     }
 }

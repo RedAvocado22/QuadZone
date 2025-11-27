@@ -42,7 +42,7 @@ interface FormValues {
     role: string;
     avatarUrl: string;
     isVerified: boolean;
-    status: "active" | "banned";
+    status: "ACTIVE" | "SUSPENDED" | "UNACTIVE";
     avatarMethod: "url" | "upload";
 }
 
@@ -53,7 +53,7 @@ const userEditSchema = yup.object({
     role: yup.string().required("Role is required"),
     avatarUrl: yupUrl,
     isVerified: yup.boolean(),
-    status: yup.string().oneOf(["active", "banned"]).required(),
+    status: yup.string().oneOf(["ACTIVE", "SUSPENDED", "UNACTIVE"]).required(),
     avatarMethod: yup.string().oneOf(["url", "upload"]).required()
 });
 
@@ -68,13 +68,12 @@ export function UserEditForm({ userId, onSuccess, onCancel }: UserEditFormProps)
             role: "CUSTOMER",
             avatarUrl: "",
             isVerified: false,
-            status: "active",
+            status: "ACTIVE",
             avatarMethod: "url"
         },
         validationSchema: userEditSchema,
         enableReinitialize: true,
         onSubmit: async (values, { setSubmitting, setFieldError, setStatus }) => {
-            console.log("ditmethangvinh");
             try {
                 const userData: Partial<User> = {
                     firstName: values.firstName,
@@ -117,7 +116,7 @@ export function UserEditForm({ userId, onSuccess, onCancel }: UserEditFormProps)
                     role: user.role || "CUSTOMER",
                     avatarUrl: user.avatarUrl || "",
                     isVerified: user.isVerified ?? false,
-                    status: user.status || "active",
+                    status: user.status,
                     avatarMethod
                 });
             } catch (error: any) {
@@ -372,13 +371,16 @@ export function UserEditForm({ userId, onSuccess, onCancel }: UserEditFormProps)
                                 <FormControlLabel
                                     control={
                                         <Switch
-                                            checked={formik.values.status === "active"}
+                                            checked={formik.values.status === "ACTIVE"}
                                             onChange={(e) =>
-                                                formik.setFieldValue("status", e.target.checked ? "active" : "banned")
+                                                formik.setFieldValue(
+                                                    "status",
+                                                    e.target.checked ? "ACTIVE" : "SUSPENDED"
+                                                )
                                             }
                                         />
                                     }
-                                    label={formik.values.status === "active" ? "Active" : "Banned"}
+                                    label={formik.values.status === "ACTIVE" ? "Active" : "SUSPENDED"}
                                 />
 
                                 <FormControlLabel

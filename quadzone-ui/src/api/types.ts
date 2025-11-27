@@ -4,7 +4,7 @@
 // ============== ENUMS ==============
 export type UserRole = "ADMIN" | "STAFF" | "CUSTOMER" | "SHIPPER";
 export type OrderStatus = "PENDING" | "CONFIRMED" | "PROCESSING" | "COMPLETED" | "CANCELLED";
-
+export type userStatus = "UNACTIVE" | "ACTIVE" | "SUSPENDED";
 // ============== PAGED RESPONSE ==============
 export interface PagedResponse<T> {
     content: T[];
@@ -127,8 +127,10 @@ export interface User {
     id: number;
     firstName: string;
     lastName: string;
+    password: string;
     email: string;
     role: UserRole;
+    status: userStatus;
     createdAt: string; // ISO date string
 }
 
