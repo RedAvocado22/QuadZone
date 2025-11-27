@@ -18,6 +18,7 @@ import ContactUsPage from "./pages/ContactUsPage";
 import CheckoutPage from "@/pages/CheckoutPage.tsx";
 import "src/assets/css/global.css";
 import TrackOrderPage from "./pages/TrackOrderPage";
+import OrderSuccessPage from "./pages/OrderSuccessPage";
 
 import ShopPage from "./pages/ShopPage";
 import { CompareProvider } from "./contexts/CompareContext";
@@ -80,6 +81,7 @@ function App() {
                                         <Route path="cart" element={<CartPage />} />
                                         <Route path="checkout" element={<CheckoutPage />} />
                                         <Route path="track-order" element={<TrackOrderPage />} />
+                                        <Route path="order-success" element={<OrderSuccessPage />} />
 
                                         {/* Error Boundary */}
                                         {/* <Route path="unauthorized" element={<Unauthorized />} />

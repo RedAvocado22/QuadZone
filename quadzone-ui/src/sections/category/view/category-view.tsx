@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useMemo } from 'react';
 
 import Box from '@mui/material/Box';
 import Card from '@mui/material/Card';
@@ -55,9 +55,49 @@ export function CategoryView() {
     page,
     pageSize: rowsPerPage,
     search: filterName,
-    sortBy: orderBy,
-    sortOrder: order,
+    // Remove sortBy and sortOrder from API call, we'll do client-side sorting
   });
+
+  // Apply client-side sorting
+  const sortedCategories = useMemo(() => {
+    const sorted = [...categories].sort((a, b) => {
+      let aValue: any;
+      let bValue: any;
+
+      // Map frontend field names to actual category properties
+      switch (orderBy) {
+        case 'name':
+          aValue = a.name;
+          bValue = b.name;
+          break;
+        case 'productCount':
+          aValue = a.productCount;
+          bValue = b.productCount;
+          break;
+        case 'active':
+          aValue = a.active ? 1 : 0;
+          bValue = b.active ? 1 : 0;
+          break;
+        default:
+          return 0;
+      }
+
+      if (aValue === undefined || bValue === undefined) return 0;
+
+      // Handle string and number comparisons
+      if (typeof aValue === 'string' && typeof bValue === 'string') {
+        const comparison = aValue.toLowerCase().localeCompare(bValue.toLowerCase());
+        return order === 'asc' ? comparison : -comparison;
+      }
+
+      // Handle number comparisons
+      if (order === 'asc') {
+        return (aValue as number) - (bValue as number);
+      }
+      return (bValue as number) - (aValue as number);
+    });
+    return sorted;
+  }, [categories, orderBy, order]);
 
   const handleCreateCategory = useCallback(() => {
     router.push('/admin/category/create');
@@ -98,11 +138,11 @@ export function CategoryView() {
 
   const onSelectAllRows = useCallback((checked: boolean) => {
     if (checked) {
-      setSelected(categories.map((cat) => cat.id.toString()));
+      setSelected(sortedCategories.map((cat) => cat.id.toString()));
       return;
     }
     setSelected([]);
-  }, [categories]);
+  }, [sortedCategories]);
 
   const onSelectRow = useCallback(
     (id: string) => {
@@ -114,7 +154,7 @@ export function CategoryView() {
     [selected]
   );
 
-  const notFound = !categories.length && !!filterName && !loading;
+  const notFound = !sortedCategories.length && !!filterName && !loading;
 
   return (
     <DashboardContent>
@@ -154,7 +194,7 @@ export function CategoryView() {
                   <UserTableHead
                     order={order}
                     orderBy={orderBy}
-                    rowCount={categories.length}
+                    rowCount={sortedCategories.length}
                     numSelected={selected.length}
                     onSort={onSort}
                     onSelectAllRows={onSelectAllRows}
@@ -166,7 +206,7 @@ export function CategoryView() {
                     ]}
                   />
                   <TableBody>
-                    {categories.map((row) => (
+                    {sortedCategories.map((row) => (
                       <CategoryTableRow
                         key={row.id}
                         row={{
@@ -187,7 +227,7 @@ export function CategoryView() {
                     {!notFound && (
                       <TableEmptyRows
                         height={68}
-                        emptyRows={emptyRows(page, rowsPerPage, categories.length)}
+                        emptyRows={emptyRows(page, rowsPerPage, sortedCategories.length)}
                         colSpan={5}
                       />
                     )}

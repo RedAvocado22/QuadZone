@@ -1,6 +1,7 @@
 package com.quadzone.order;
 
 import com.quadzone.global.dto.PagedResponse;
+import com.quadzone.order.dto.AssignOrderToShipperRequest;
 import com.quadzone.order.dto.CheckoutRequest;
 import com.quadzone.order.dto.OrderRegisterRequest;
 import com.quadzone.order.dto.OrderResponse;
@@ -177,5 +178,28 @@ public class OrderController {
         } catch (RuntimeException e) {
             return ResponseEntity.notFound().build();
         }
+    }
+
+    @PostMapping("/admin/{orderId}/assign-shipper")
+    @Operation(
+            summary = "Assign order to shipper (Staff)",
+            description = "Assign an order to a shipper for delivery. This endpoint is available for Staff users. " +
+                    "Creates or updates a delivery record with shipper information, tracking number, and delivery details. " +
+                    "The assigned shipper will receive a notification about the assignment."
+    )
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Order assigned to shipper successfully"),
+            @ApiResponse(responseCode = "400", description = "Invalid input data, user is not a shipper, or invalid request"),
+            @ApiResponse(responseCode = "404", description = "Order or shipper not found"),
+            @ApiResponse(responseCode = "403", description = "Forbidden - only Staff can assign orders"),
+            @ApiResponse(responseCode = "500", description = "Internal server error during assignment")
+    })
+    public ResponseEntity<OrderResponse> assignOrderToShipper(
+            @Parameter(description = "Unique identifier of the order to assign", example = "1", required = true)
+            @PathVariable Long orderId,
+            @Parameter(description = "Request containing shipper ID and delivery details", required = true)
+            @Valid @RequestBody AssignOrderToShipperRequest request) {
+        OrderResponse assignedOrder = orderService.assignOrderToShipper(orderId, request);
+        return ResponseEntity.ok(assignedOrder);
     }
 }
