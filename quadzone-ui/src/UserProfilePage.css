@@ -1,0 +1,402 @@
+/* User Profile Page Styles */
+
+.axil-dashboard-area {
+    padding: 50px 0;
+}
+
+.axil-dashboard-warp {
+    background: #fff;
+    padding: 30px;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+/* Profile Header */
+.axil-dashboard-author {
+    margin-bottom: 40px;
+    padding-bottom: 30px;
+    border-bottom: 1px solid #eee;
+}
+
+.axil-dashboard-author .media {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+.axil-dashboard-author .thumbnail {
+    position: relative;
+}
+
+.avatar-edit-btn {
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: var(--primary, #fed700);
+    border: 2px solid #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.avatar-edit-btn:hover {
+    background: #e5c200;
+    transform: scale(1.1);
+}
+
+.avatar-edit-btn i {
+    font-size: 12px;
+    color: #333;
+}
+
+.axil-dashboard-author .media-body .title {
+    font-size: 24px;
+    font-weight: 600;
+    margin-bottom: 5px;
+}
+
+.axil-dashboard-author .joining-date {
+    color: #666;
+    font-size: 14px;
+}
+
+/* Sidebar Navigation */
+.axil-dashboard-aside {
+    background: #f8f9fa;
+    border-radius: 8px;
+    padding: 20px;
+}
+
+.axil-dashboard-nav .nav-link {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 16px;
+    margin-bottom: 8px;
+    border-radius: 6px;
+    border: none;
+    background: transparent;
+    color: #333;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    text-decoration: none;
+    width: 100%;
+    text-align: left;
+}
+
+.axil-dashboard-nav .nav-link:hover {
+    background: #e9ecef;
+    color: var(--primary, #fed700);
+}
+
+.axil-dashboard-nav .nav-link.active {
+    background: var(--primary, #fed700);
+    color: #333;
+}
+
+.axil-dashboard-nav .nav-link i {
+    font-size: 16px;
+    width: 20px;
+}
+
+/* Dashboard Overview */
+.axil-dashboard-overview {
+    padding: 20px;
+}
+
+.welcome-text {
+    font-size: 18px;
+    margin-bottom: 15px;
+    font-weight: 500;
+}
+
+.welcome-text span {
+    color: var(--primary, #fed700);
+    font-weight: 600;
+}
+
+/* Cards */
+.card {
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    transition: box-shadow 0.3s ease;
+}
+
+.card:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.card-title {
+    font-size: 16px;
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 15px;
+}
+
+.card-title i {
+    color: var(--primary, #fed700);
+    margin-right: 8px;
+}
+
+.card-text {
+    font-size: 14px;
+    line-height: 1.8;
+    color: #555;
+}
+
+.card-text strong {
+    color: #333;
+    font-weight: 600;
+    min-width: 120px;
+    display: inline-block;
+}
+
+/* Forms */
+.account-details-form .form-group {
+    margin-bottom: 20px;
+}
+
+.account-details-form label {
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 8px;
+    display: block;
+}
+
+.account-details-form .form-control {
+    border-radius: 6px;
+    border: 1px solid #ddd;
+    padding: 10px 15px;
+    font-size: 14px;
+    transition: border-color 0.3s ease;
+}
+
+.account-details-form .form-control:focus {
+    border-color: var(--primary, #fed700);
+    box-shadow: 0 0 0 0.2rem rgba(254, 215, 0, 0.25);
+}
+
+.account-details-form .form-control:disabled {
+    background-color: #f8f9fa;
+    cursor: not-allowed;
+}
+
+/* Buttons */
+.btn {
+    padding: 10px 24px;
+    border-radius: 6px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.btn-primary {
+    background-color: var(--primary, #fed700);
+    border-color: var(--primary, #fed700);
+    color: #333;
+}
+
+.btn-primary:hover {
+    background-color: #e5c200;
+    border-color: #e5c200;
+    color: #333;
+}
+
+.btn-primary:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+/* Profile Button Container */
+.profile-buttons-wrapper {
+    display: flex;
+    gap: 15px;
+    margin-top: 30px;
+    padding-top: 20px;
+    border-top: 1px solid #eee;
+}
+
+.profile-button {
+    flex: 1;
+    min-width: 150px;
+    padding: 12px 24px;
+    font-size: 15px;
+    font-weight: 600;
+}
+
+.profile-button i {
+    margin-right: 8px;
+}
+
+.btn-warning {
+    background-color: #ffc107;
+    border-color: #ffc107;
+    color: #333;
+}
+
+.btn-warning:hover {
+    background-color: #e0a800;
+    border-color: #d39e00;
+    color: #333;
+}
+
+.btn-outline-secondary {
+    border-color: #ddd;
+    color: #666;
+}
+
+.btn-outline-secondary:hover {
+    background-color: #f8f9fa;
+    border-color: #ccc;
+    color: #333;
+}
+
+/* Badges */
+.badge {
+    padding: 4px 12px;
+    font-size: 12px;
+    font-weight: 600;
+    border-radius: 4px;
+}
+
+.bg-success {
+    background-color: #28a745 !important;
+}
+
+.bg-danger {
+    background-color: #dc3545 !important;
+}
+
+.bg-warning {
+    background-color: #ffc107 !important;
+    color: #333 !important;
+}
+
+/* Orders Section */
+.axil-dashboard-order {
+    padding: 20px;
+}
+
+/* Empty State */
+.text-muted {
+    color: #6c757d !important;
+}
+
+.fa-3x {
+    font-size: 3rem;
+}
+
+/* Alerts */
+.alert {
+    border-radius: 6px;
+    padding: 12px 16px;
+    margin-bottom: 20px;
+}
+
+.alert-info {
+    background-color: #d1ecf1;
+    border-color: #bee5eb;
+    color: #0e7283;
+}
+
+.alert-danger {
+    background-color: #f8d7da;
+    border-color: #f5c6cb;
+    color: #721c24;
+}
+
+/* Loading Spinner */
+.spinner-border {
+    width: 2rem;
+    height: 2rem;
+    border-width: 0.25em;
+}
+
+.spinner-border-sm {
+    width: 1rem;
+    height: 1rem;
+    border-width: 0.15em;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .axil-dashboard-warp {
+        padding: 20px;
+    }
+
+    .axil-dashboard-author .media {
+        flex-direction: column;
+        text-align: center;
+    }
+
+    .axil-dashboard-author .thumbnail {
+        margin-bottom: 15px;
+    }
+
+    .axil-dashboard-aside {
+        margin-bottom: 30px;
+    }
+
+    .axil-dashboard-nav .nav-link {
+        padding: 10px;
+        font-size: 14px;
+    }
+
+    .welcome-text {
+        font-size: 16px;
+    }
+
+    /* Profile Buttons Responsive */
+    .profile-buttons-wrapper {
+        flex-direction: column;
+        gap: 12px;
+    }
+
+    .profile-button {
+        width: 100%;
+        min-width: auto;
+    }
+}
+
+/* Utility Classes */
+.mt-3 {
+    margin-top: 1rem !important;
+}
+
+.mb-3 {
+    margin-bottom: 1rem !important;
+}
+
+.mt-4 {
+    margin-top: 1.5rem !important;
+}
+
+.mb-4 {
+    margin-bottom: 1.5rem !important;
+}
+
+.py-5 {
+    padding-top: 3rem !important;
+    padding-bottom: 3rem !important;
+}
+
+.text-center {
+    text-align: center !important;
+}
+
+.visually-hidden {
+    position: absolute !important;
+    width: 1px !important;
+    height: 1px !important;
+    padding: 0 !important;
+    margin: -1px !important;
+    overflow: hidden !important;
+    clip: rect(0, 0, 0, 0) !important;
+    white-space: nowrap !important;
+    border-width: 0 !important;
+}
+
