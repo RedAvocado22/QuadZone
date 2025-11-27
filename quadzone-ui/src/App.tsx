@@ -13,6 +13,7 @@ import LoginPage from "./pages/LoginPage";
 import RegisterPage from "./pages/RegisterPage";
 import ResetPasswordPage from "./pages/ResetPasswordPage";
 import ProductDetailPage from "./pages/ProductDetailPage";
+import UserProfilePage from "./pages/UserProfilePage";
 import AboutUsPage from "./pages/AboutUsPage";
 import ContactUsPage from "./pages/ContactUsPage";
 import CheckoutPage from "@/pages/CheckoutPage.tsx";
@@ -82,6 +83,7 @@ function App() {
                                         <Route path="checkout" element={<CheckoutPage />} />
                                         <Route path="track-order" element={<TrackOrderPage />} />
                                         <Route path="order-success" element={<OrderSuccessPage />} />
+                                        <Route path="profile" element={<UserProfilePage />} />
 
                                         {/* Error Boundary */}
                                         {/* <Route path="unauthorized" element={<Unauthorized />} />
