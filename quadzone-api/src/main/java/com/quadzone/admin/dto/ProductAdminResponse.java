@@ -25,6 +25,16 @@ public record ProductAdminResponse(
         CategoryResponse category
 ) {
     public static ProductAdminResponse from(Product product) {
+        SubCategoryResponse subCategoryResponse = null;
+        CategoryResponse categoryResponse = null;
+        
+        if (product.getSubCategory() != null) {
+            subCategoryResponse = SubCategoryResponse.from(product.getSubCategory());
+            if (product.getSubCategory().getCategory() != null) {
+                categoryResponse = CategoryResponse.from(product.getSubCategory().getCategory());
+            }
+        }
+        
         return new ProductAdminResponse(
                 product.getId(),
                 product.getName(),
@@ -40,8 +50,8 @@ public record ProductAdminResponse(
                 product.isActive(),
                 product.getCreatedAt(),
                 product.getUpdatedAt(),
-                SubCategoryResponse.from(product.getSubCategory()),
-                CategoryResponse.from(product.getSubCategory().getCategory())
+                subCategoryResponse,
+                categoryResponse
         );
     }
 }
