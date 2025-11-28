@@ -5,6 +5,15 @@ application:
   uploads:
     path: uploads
 
+imgbb:
+  api:
+    key: ${IMGBB_API_KEY:0702ecdfadb86868e2e3d5f393c01740}
+
+vnpayment:
+  tmn-code: ${VNPAYMENT_TMN_CODE:V75DEA4S}
+  hash-secret: ${VNPAYMENT_HASH_SECRET:Z7OCQBFF1GT5BLU67K6TTZPXGPX6SVFY}
+  url: ${VNPAYMENT_URL:https://sandbox.vnpayment.vn/paymentv2/vpcpay.html}
+
 spring:
   profiles:
     active: dev

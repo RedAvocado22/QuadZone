@@ -73,14 +73,17 @@ export function ProductEditForm({ productId, onSuccess, onCancel }: ProductEditF
           formik.setStatus('Invalid product ID');
           return;
         }
+        // Prepare product data - imageUrl comes from coverUrl which contains the imgbb URL
+        // after the image is uploaded via handleFileChange (or existing URL if not changed)
         const productData = {
           name: values.name,
           price: values.price,
-          imageUrl: values.coverUrl || '',
+          imageUrl: values.coverUrl && values.coverUrl.trim() ? values.coverUrl.trim() : '',
           description: values.description || '',
           status: values.status || '',
         } as Partial<Product> & { status?: string };
 
+        // Update product - the imageUrl (from imgbb) will be saved to the database
         await productsApi.update(id, productData);
 
         if (onSuccess) {
@@ -152,8 +155,10 @@ export function ProductEditForm({ productId, onSuccess, onCancel }: ProductEditF
 
     formik.setSubmitting(true);
     try {
+      // Upload image to imgbb and get the URL
       const result = await uploadApi.uploadImage(file);
-      formik.setFieldValue('coverUrl', result.url);
+      // Set the imgbb URL to coverUrl - this will be saved as imageUrl when product is updated
+      formik.setFieldValue('coverUrl', result.imageUrl);
       formik.setFieldError('coverUrl', undefined);
     } catch (error: any) {
       formik.setFieldError('coverUrl', error?.message || 'Failed to upload image');

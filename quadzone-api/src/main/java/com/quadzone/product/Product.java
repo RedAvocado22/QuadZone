@@ -106,7 +106,8 @@ public class Product {
             this.setColor(request.color());
         }
         if (request.imageUrl() != null) {
-            this.setImageUrl(request.imageUrl());
+            String imageUrl = request.imageUrl().trim().isEmpty() ? null : request.imageUrl().trim();
+            this.setImageUrl(imageUrl);
         }
         if (request.subCategory() != null) {
             this.setSubCategory(request.subCategory());
