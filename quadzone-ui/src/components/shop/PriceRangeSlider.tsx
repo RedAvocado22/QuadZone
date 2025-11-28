@@ -108,9 +108,9 @@ const PriceRangeSlider: React.FC<PriceRangeSliderProps> = ({ min = 0, max = 3456
             </div>
 
             {/* Filter Button */}
-            <button type="button" onClick={handleFilter} className="btn btn-primary-dark-w px-4 py-2 rounded-lg w-100">
+            {/* <button type="button" onClick={handleFilter} className="btn btn-primary-dark-w px-4 py-2 rounded-lg w-100">
                 Filter
-            </button>
+            </button> */}
 
             <style>{`
                 input[type="range"]::-webkit-slider-thumb {

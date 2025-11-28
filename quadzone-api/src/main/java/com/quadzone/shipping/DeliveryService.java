@@ -19,16 +19,16 @@ public class DeliveryService {
     private final UserRepository userRepository;
     private final OrderRepository orderRepository;
 
-public Delivery findDeliveryByUserId(long userId) {
-    return deliveryRepository.findByUser_Id(userId);
-}
+// public Delivery findDeliveryByUserId(long userId) {
+//     return deliveryRepository.findByUser_Id(userId);
+// }
 
-    // // public Delivery addDelivery(long staffId, long orderId) {
-    // //     if(orderRepository.findById(orderId).isPresent()) {
-    // //         Order order = orderRepository.findById(orderId).get();
-    // //     } 
+//     // public Delivery addDelivery(long staffId, long orderId) {
+//     //     if(orderRepository.findById(orderId).isPresent()) {
+//     //         Order order = orderRepository.findById(orderId).get();
+//     //     } 
 
         
 
-    // // }
+//     // }
 }

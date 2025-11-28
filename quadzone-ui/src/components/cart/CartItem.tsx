@@ -59,7 +59,9 @@ const CartItemComponent = ({ item }: CartItemProps) => {
                                 // Optional: show toast/notification
                             }
                         }
-                    }}></button>
+                    }}>
+                        
+                    </button>
             </td>
             <td className="d-none d-md-table-cell">
                 <Link to={`/product/${product.id}`}>
