@@ -14,14 +14,22 @@ public record ReviewResponse(
         Long userId
 ) {
     public static ReviewResponse from(final Review review) {
+        String userName = null;
+        Long userId = null;
+        
+        if (review.getUser() != null) {
+            userName = review.getUser().getFullName();
+            userId = review.getUser().getId();
+        }
+        
         return new ReviewResponse(
                 review.getId(),
                 review.getRating(),
                 review.getTitle(),
                 review.getText(),
                 review.getCreatedAt(),
-                review.getUser().getFullName(),
-                review.getUser().getId()
+                userName,
+                userId
         );
     }
 }
