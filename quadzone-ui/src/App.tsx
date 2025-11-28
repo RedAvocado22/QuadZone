@@ -19,8 +19,13 @@ import ContactUsPage from "./pages/ContactUsPage";
 import CheckoutPage from "@/pages/CheckoutPage.tsx";
 import "src/assets/css/global.css";
 import TrackOrderPage from "./pages/TrackOrderPage";
+import OrderSuccessPage from "./pages/OrderSuccessPage";
 
-import Shop from "./pages/Shop";
+import ShopPage from "./pages/ShopPage";
+import { CompareProvider } from "./contexts/CompareContext";
+import ComparePage from "./pages/ComparePage";
+import WishlistPage from "./pages/WishListPage";
+import { WishlistProvider } from "./contexts/WishListContext";
 
 const AdminRoutes = lazy(() => import("./routing/AdminRoutes"));
 
@@ -46,44 +51,51 @@ function App() {
         <ThemeProvider>
             <UserProvider>
                 <CurrencyProvider>
-                    <CartProvider>
-                        <Routes>
-                            <Route
-                                path="/admin/*"
-                                element={
-                                    <Suspense fallback={<div>Loading admin...</div>}>
-                                        <AdminRoutes />
-                                    </Suspense>
-                                }
-                            />
+                    <WishlistProvider>
+                        <CompareProvider>
+                            <CartProvider>
+                                <Routes>
+                                    <Route
+                                        path="/admin/*"
+                                        element={
+                                            <Suspense fallback={<div>Loading admin...</div>}>
+                                                <AdminRoutes />
+                                            </Suspense>
+                                        }
+                                    />
 
-                            <Route element={<SiteLayout />}>
-                                {/* Public Routes */}
-                                <Route index element={<HomePage />} />
-                                <Route path="demo" element={<DemoPage />} />
-                                <Route path="/login" element={<LoginPage />} />
-                                <Route path="/activate/:token" element={<HomePage />} />
-                                <Route path="/register" element={<RegisterPage />} />
-                                <Route path="/reset-password/:token" element={<ResetPasswordPage />} />
-                                <Route path="/product/:id" element={<ProductDetailPage />} />
-                                <Route path="/shop" element={<Shop />} />
-                                <Route path="/about-us" element={<AboutUsPage />} />
-                                <Route path="/contact" element={<ContactUsPage />} />
-                                <Route path="profile" element={<UserProfilePage />} />
-                                {/* Cart - accessible to everyone (guest and authenticated) */}
-                                <Route path="cart" element={<CartPage />} />
-                                <Route path="checkout" element={<CheckoutPage />} />
-                                <Route path="track-order" element={<TrackOrderPage />} />
+                                    <Route element={<SiteLayout />}>
+                                        {/* Public Routes */}
+                                        <Route index element={<HomePage />} />
+                                        <Route path="demo" element={<DemoPage />} />
+                                        <Route path="/login" element={<LoginPage />} />
+                                        <Route path="/activate/:token" element={<HomePage />} />
+                                        <Route path="/register" element={<RegisterPage />} />
+                                        <Route path="/reset-password/:token" element={<ResetPasswordPage />} />
+                                        <Route path="/product/:id" element={<ProductDetailPage />} />
+                                        <Route path="/shop" element={<ShopPage />} />
+                                        <Route path="/about-us" element={<AboutUsPage />} />
+                                        <Route path="/contact" element={<ContactUsPage />} />
+                                        <Route path="/compare" element={<ComparePage />} />
+                                        <Route path="/wishlist" element={<WishlistPage />} />
+                                        {/* Cart - accessible to everyone (guest and authenticated) */}
+                                        <Route path="cart" element={<CartPage />} />
+                                        <Route path="checkout" element={<CheckoutPage />} />
+                                        <Route path="track-order" element={<TrackOrderPage />} />
+                                        <Route path="order-success" element={<OrderSuccessPage />} />
+                                        <Route path="profile" element={<UserProfilePage />} />
 
+                                        {/* Error Boundary */}
+                                        {/* <Route path="unauthorized" element={<Unauthorized />} />
                                 {/* Error Boundary */}
-                                {/* <Route path="unauthorized" element={<Unauthorized />} />
-                                {/* Error Boundary */}
-                                {/* <Route path="unauthorized" element={<Unauthorized />} />
+                                        {/* <Route path="unauthorized" element={<Unauthorized />} />
                         <Route path="*" element={<NotFound />} /> */}
-                            </Route>
-                        </Routes>
-                        <ToastContainer position="top-right" style={{ zIndex: 999999 }} />
-                    </CartProvider>
+                                    </Route>
+                                </Routes>
+                                <ToastContainer position="top-right" style={{ zIndex: 999999 }} />
+                            </CartProvider>
+                        </CompareProvider>
+                    </WishlistProvider>
                 </CurrencyProvider>
             </UserProvider>
         </ThemeProvider>

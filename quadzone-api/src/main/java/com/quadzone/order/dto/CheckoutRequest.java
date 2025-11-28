@@ -61,7 +61,10 @@ public record CheckoutRequest(
         String paymentMethod,
 
         // Optional fields
-        String notes
+        String notes,
+
+        // Optional coupon code applied at checkout
+        String couponCode
 ) {
     public record CheckoutItemRequest(
             @NotNull(message = "Product ID is required")

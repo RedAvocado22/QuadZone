@@ -4,6 +4,7 @@ import type { Product, Category, Brand, ProductDetails, PagedResponse } from "..
 export interface ProductFilterParams {
     page?: number;
     size?: number;
+    search?:string;
     brand?: string;
     categoryId?: number;
     subcategoryId?: number;
@@ -11,30 +12,31 @@ export interface ProductFilterParams {
     maxPrice?: number;
     sortBy?: string;
     query?: string;
+    sortOrder?: "asc" | "desc";
 }
 
 
 export const getProducts = async (params: ProductFilterParams = {}): Promise<PagedResponse<Product>> => {
     try {
-        const requestParams = {
+        const requestParams: Record<string, any> = {
             page: params.page ?? 0,
             size: params.size ?? 10,
-            ...(params.brand && { brand: params.brand }),
-            ...(params.categoryId && { categoryId: params.categoryId }),
-            ...(params.subcategoryId && { subcategoryId: params.subcategoryId }),
-            ...(params.minPrice !== undefined && { minPrice: params.minPrice }),
-            ...(params.maxPrice !== undefined && { maxPrice: params.maxPrice }),
-            ...(params.sortBy && { sortBy: params.sortBy }),
-            ...(params.query && { query: params.query })
         };
-        console.log(" Requesting products with params:", requestParams);
-        const response = await API.get(`/public/products`, {
-            params: requestParams
-        });
-        console.log(" Products response received:", response.data);
+
+        // Add optional filters only if they exist
+        if (params.search) requestParams.search = params.search;
+        if (params.categoryId !== undefined) requestParams.categoryId = params.categoryId;
+        if (params.subcategoryId !== undefined) requestParams.subcategoryId = params.subcategoryId;
+        if (params.brand) requestParams.brands = params.brand;
+        if (params.minPrice !== undefined) requestParams.minPrice = params.minPrice;
+        if (params.maxPrice !== undefined) requestParams.maxPrice = params.maxPrice;
+        if (params.sortBy) requestParams.sortBy = params.sortBy;
+        if (params.sortOrder) requestParams.sortOrder = params.sortOrder;
+
+        const response = await API.get(`/public/products`, { params: requestParams });
         return response.data;
     } catch (error) {
-        console.error(" Error fetching products:", error);
+        console.error("Error fetching products:", error);
         throw error;
     }
 };

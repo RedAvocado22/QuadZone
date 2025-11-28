@@ -53,6 +53,11 @@ const ShopSidebar: React.FC<ShopSidebarProps> = ({ isOpen, onClose, onApplyFilte
         setSelectedBrands((prev) => (prev.includes(brand) ? prev.filter((b) => b !== brand) : [...prev, brand]));
     };
 
+    const handleCategorySelect = (categoryId: number, subcategoryId?: number) => {
+        setSelectedCategoryId(categoryId);
+        setSelectedSubcategoryId(subcategoryId);
+    };
+
     const handleApply = () => {
         onApplyFilters({
             brands: selectedBrands,
@@ -67,6 +72,14 @@ const ShopSidebar: React.FC<ShopSidebarProps> = ({ isOpen, onClose, onApplyFilte
         setPriceRange(null);
         setSelectedCategoryId(undefined);
         setSelectedSubcategoryId(undefined);
+        
+        // Also notify parent to clear filters
+        onApplyFilters({
+            brands: [],
+            priceRange: null,
+            categoryId: undefined,
+            subcategoryId: undefined
+        });
     };
 
     const handlePriceFilter = (range: { min: number; max: number }) => {
@@ -89,10 +102,9 @@ const ShopSidebar: React.FC<ShopSidebarProps> = ({ isOpen, onClose, onApplyFilte
                     showMoreCategories={showMoreCategories}
                     setShowMoreCategories={setShowMoreCategories}
                     onPriceFilter={handlePriceFilter}
-                    onCategorySelect={(catId, subId) => {
-                        setSelectedCategoryId(catId);
-                        setSelectedSubcategoryId(subId);
-                    }}
+                    onCategorySelect={handleCategorySelect}
+                    selectedCategoryId={selectedCategoryId}
+                    selectedSubcategoryId={selectedSubcategoryId}
                     onApply={handleApply}
                     onClear={handleClear}
                 />
@@ -126,10 +138,9 @@ const ShopSidebar: React.FC<ShopSidebarProps> = ({ isOpen, onClose, onApplyFilte
                             showMoreCategories={showMoreCategories}
                             setShowMoreCategories={setShowMoreCategories}
                             onPriceFilter={handlePriceFilter}
-                            onCategorySelect={(catId, subId) => {
-                                setSelectedCategoryId(catId);
-                                setSelectedSubcategoryId(subId);
-                            }}
+                            onCategorySelect={handleCategorySelect}
+                            selectedCategoryId={selectedCategoryId}
+                            selectedSubcategoryId={selectedSubcategoryId}
                             onApply={() => {
                                 handleApply();
                                 onClose();
@@ -145,7 +156,7 @@ const ShopSidebar: React.FC<ShopSidebarProps> = ({ isOpen, onClose, onApplyFilte
 
 export default ShopSidebar;
 
-/* ===================== SidebarContent (your original style 100% preserved) ===================== */
+/* ===================== SidebarContent ===================== */
 interface SidebarContentProps {
     categories: PublicCategoryDTO[];
     brands: PublicBrandDTO[];
@@ -159,6 +170,8 @@ interface SidebarContentProps {
     setShowMoreCategories: (v: boolean) => void;
     onPriceFilter: (range: { min: number; max: number }) => void;
     onCategorySelect: (categoryId: number, subcategoryId?: number) => void;
+    selectedCategoryId?: number;
+    selectedSubcategoryId?: number;
     onApply: () => void;
     onClear: () => void;
 }
@@ -176,12 +189,14 @@ const SidebarContent: React.FC<SidebarContentProps> = ({
     setShowMoreCategories,
     onPriceFilter,
     onCategorySelect,
+    selectedCategoryId,
+    selectedSubcategoryId,
     onApply,
     onClear
 }) => {
     return (
         <>
-            {/* Categories - exactly your original code */}
+            {/* Categories */}
             <div className="mb-6 border border-width-2 border-color-3 borders-radius-6">
                 <ul id="sidebarNav" className="list-unstyled mb-0 sidebar-navbar view-all">
                     <li>
@@ -192,9 +207,18 @@ const SidebarContent: React.FC<SidebarContentProps> = ({
                         <li key={category.id}>
                             <button
                                 type="button"
-                                className="dropdown-toggle dropdown-toggle-collapse btn-reset"
-                                onClick={() => toggleCategory(index)}>
+                                className={`dropdown-toggle dropdown-toggle-collapse btn-reset ${
+                                    selectedCategoryId === category.id && !selectedSubcategoryId ? 'text-primary font-weight-bold' : ''
+                                }`}
+                                onClick={() => {
+                                    toggleCategory(index);
+                                    // Also select the category when clicking the header
+                                    onCategorySelect(category.id, undefined);
+                                }}>
                                 {category.name}
+                                {selectedCategoryId === category.id && !selectedSubcategoryId && (
+                                    <span className="ml-2">✓</span>
+                                )}
                             </button>
 
                             {expandedCategories[index] && category.subCategories?.length > 0 && (
@@ -204,9 +228,14 @@ const SidebarContent: React.FC<SidebarContentProps> = ({
                                             <li key={sub.id}>
                                                 <button
                                                     type="button"
-                                                    className="dropdown-item btn-reset"
+                                                    className={`dropdown-item btn-reset ${
+                                                        selectedSubcategoryId === sub.id ? 'text-primary font-weight-bold' : ''
+                                                    }`}
                                                     onClick={() => onCategorySelect(category.id, sub.id)}>
                                                     {sub.name}
+                                                    {selectedSubcategoryId === sub.id && (
+                                                        <span className="ml-2">✓</span>
+                                                    )}
                                                 </button>
                                             </li>
                                         ))}
@@ -235,7 +264,7 @@ const SidebarContent: React.FC<SidebarContentProps> = ({
                     <h3 className="section-title section-title__sm mb-0 pb-2 font-size-18">Filters</h3>
                 </div>
 
-                {/* Brands - now 100% safe & multi-select */}
+                {/* Brands */}
                 <div className="border-bottom pb-4 mb-4">
                     <h4 className="font-size-14 mb-3 font-weight-bold">Brands</h4>
 
@@ -283,7 +312,7 @@ const SidebarContent: React.FC<SidebarContentProps> = ({
                 {/* Price Range */}
                 <PriceRangeSlider min={0} max={5000} onFilter={onPriceFilter} />
 
-                {/* Apply & Clear Buttons - your style */}
+                {/* Apply & Clear Buttons */}
                 <div className="mt-5 d-flex gap-3">
                     <button onClick={onApply} className="btn btn-primary btn-block transition-3d-hover height-60px">
                         Apply Filters

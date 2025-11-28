@@ -76,7 +76,7 @@ const AddressFieldsSection = ({ title, address, onChange, prefix }: AddressField
                     />
                 </div>
             </div>
-            <div className="col-md-6">
+            <div className="col-md-12">
                 <div className="form-group">
                     <label className="form-label" htmlFor={`${prefix}-city`}>
                         District <span className="text-danger">*</span>

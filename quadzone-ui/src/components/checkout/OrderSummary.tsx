@@ -11,10 +11,12 @@ interface OrderSummaryProps {
     items: OrderSummaryItem[];
     subtotal: string;
     shipping: ReactNode;
+    /** Optional: formatted discount amount, e.g. "-$10.00" */
+    discount?: string;
     total: string;
 }
 
-const OrderSummary = ({ items, subtotal, shipping, total }: OrderSummaryProps) => (
+const OrderSummary = ({ items, subtotal, shipping, discount, total }: OrderSummaryProps) => (
     <div className="bg-gray-1 rounded-lg p-4">
         <div className="border-bottom border-color-1 mb-4">
             <h3 className="section-title mb-0 pb-2 font-size-25">Your order</h3>
@@ -46,20 +48,26 @@ const OrderSummary = ({ items, subtotal, shipping, total }: OrderSummaryProps) =
                 )}
                 </tbody>
                 <tfoot>
-                <tr>
-                    <th>Subtotal</th>
-                    <td className="text-right">{subtotal}</td>
-                </tr>
-                <tr>
-                    <th>Shipping</th>
-                    <td className="text-right">{shipping}</td>
-                </tr>
-                <tr>
-                    <th>Total</th>
-                    <td className="text-right">
-                        <strong>{total}</strong>
-                    </td>
-                </tr>
+                    <tr>
+                        <th>Subtotal</th>
+                        <td className="text-right">{subtotal}</td>
+                    </tr>
+                    <tr>
+                        <th>Shipping</th>
+                        <td className="text-right">{shipping}</td>
+                    </tr>
+                    {discount && (
+                        <tr>
+                            <th>Discount</th>
+                            <td className="text-right text-success">{discount}</td>
+                        </tr>
+                    )}
+                    <tr>
+                        <th>Total</th>
+                        <td className="text-right">
+                            <strong>{total}</strong>
+                        </td>
+                    </tr>
                 </tfoot>
             </table>
         </div>

@@ -60,22 +60,33 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         try {
             email = jwtService.extractUsername(token);
         } catch (Exception e) {
-            log.warn("Failed to extract username from token: {}", e.getMessage());
+            log.warn("Failed to extract username from token (token may be expired or invalid): {}", e.getMessage());
+            // If token is invalid/expired and this is a protected endpoint, return 401
+            // Let Spring Security handle it - it will return 401 for unauthenticated requests
             filterChain.doFilter(request, response);
             return;
         }
 
         if (email != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-            UserDetails userDetails = this.userDetailsService.loadUserByUsername(email);
+            try {
+                UserDetails userDetails = this.userDetailsService.loadUserByUsername(email);
 
-            if (jwtService.validateToken(token, userDetails)) {
-                UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
-                        userDetails,
-                        null,
-                        userDetails.getAuthorities()
-                );
-                authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-                SecurityContextHolder.getContext().setAuthentication(authentication);
+                if (jwtService.validateToken(token, userDetails)) {
+                    UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
+                            userDetails,
+                            null,
+                            userDetails.getAuthorities()
+                    );
+                    authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+                    SecurityContextHolder.getContext().setAuthentication(authentication);
+                } else {
+                    // Token is invalid or expired - clear context to ensure proper 401 response
+                    log.warn("Token validation failed for user: {}", email);
+                    SecurityContextHolder.clearContext();
+                }
+            } catch (Exception e) {
+                log.error("Error loading user details for token: {}", e.getMessage());
+                SecurityContextHolder.clearContext();
             }
         }
 

@@ -1,6 +1,7 @@
 package com.quadzone.product;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -32,18 +33,18 @@ public interface ProductRepository extends JpaRepository<Product, Long>, JpaSpec
                         """)
         Page<Product> findFeaturedProducts(Pageable pageable);
 
-    @Query("""
-            SELECT p
-            FROM Product p
-            WHERE p.isActive = true AND p.stock > 0
-            ORDER BY p.createdAt DESC
-            """)
-    Page<Product> findNewArrivalProducts(Pageable pageable);
+        @Query("""
+                        SELECT p
+                        FROM Product p
+                        WHERE p.isActive = true AND p.stock > 0
+                        ORDER BY p.createdAt DESC
+                        """)
+        Page<Product> findNewArrivalProducts(Pageable pageable);
 
-    @Modifying // Báo cho Spring đây là câu lệnh Update/Delete
-    @Query("UPDATE Product p SET p.stock = p.stock - :amount " +
-            "WHERE p.id = :id AND p.stock >= :amount")
-    int reduceStock(@Param("id") Long id, @Param("amount") int amount);
+        @Modifying // Báo cho Spring đây là câu lệnh Update/Delete
+        @Query("UPDATE Product p SET p.stock = p.stock - :amount " +
+                        "WHERE p.id = :id AND p.stock >= :amount")
+        int reduceStock(@Param("id") Long id, @Param("amount") int amount);
 
         @Query("""
                         SELECT p
@@ -54,17 +55,29 @@ public interface ProductRepository extends JpaRepository<Product, Long>, JpaSpec
                         """)
         Page<Product> findBestSellingProducts(Pageable pageable);
 
-        @Query("SELECT DISTINCT p.brand FROM Product p WHERE p.brand IS NOT NULL ORDER BY p.brand")
-        List<String> findAllBrands();
+        /**
+         * Find all distinct brands
+         */
+        @Query("SELECT DISTINCT p.brand FROM Product p WHERE p.brand IS NOT NULL AND p.isActive = true ORDER BY p.brand")
+        List<String> findAllDistinctBrands();
 
-        @Query("""
-                        SELECT p FROM Product p
-                        WHERE (:brand IS NULL OR LOWER(p.brand) = LOWER(:brand))
-                        AND (:categoryId IS NULL OR p.subCategory.category.id = :categoryId)
-                        AND (:subcategoryId IS NULL OR p.subCategory.id = :subcategoryId)
-                        AND p.isActive = true AND p.stock > 0
-                        """)
-        Page<Product> searchProducts(String brand, Long categoryId, Long subcategoryId, Pageable pageable);
+        /**
+         * Find active products by subcategory
+         */
+        Page<Product> findBySubCategoryIdAndIsActiveTrue(Long subcategoryId, Pageable pageable);
 
-        // Page<Product> findAll(Specification<Product> spec, Pageable pageable);
+        /**
+         * Find active products by category (through subCategory)
+         */
+        @Query("SELECT p FROM Product p WHERE p.subCategory.category.id = :categoryId AND p.isActive = true")
+        Page<Product> findByCategoryId(@Param("categoryId") Long categoryId, Pageable pageable);
+
+        /**
+         * Find product by ID with subcategory and category loaded
+         */
+        @Query("SELECT p FROM Product p " +
+                        "LEFT JOIN FETCH p.subCategory sc " +
+                        "LEFT JOIN FETCH sc.category " +
+                        "WHERE p.id = :id")
+        Optional<Product> findByIdWithCategory(@Param("id") Long id);
 }

@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useMemo } from 'react';
 
 import Box from '@mui/material/Box';
 import Card from '@mui/material/Card';
@@ -47,7 +47,7 @@ type OrderRow = {
 export function OrderView() {
   const router = useRouter();
   const [page, setPage] = useState(0);
-  const [orderBy, setOrderBy] = useState('createdAt');
+  const [orderBy, setOrderBy] = useState('orderDate');
   const [rowsPerPage, setRowsPerPage] = useState(5);
   const [selected, setSelected] = useState<string[]>([]);
   const [order, setOrder] = useState<'asc' | 'desc'>('desc');
@@ -57,9 +57,62 @@ export function OrderView() {
     page,
     pageSize: rowsPerPage,
     search: filterName,
-    sortBy: orderBy,
-    sortOrder: order,
+    // Remove sortBy and sortOrder from API call, we'll do client-side sorting
   });
+
+  // Apply client-side sorting
+  const sortedOrders = useMemo(() => {
+    const sorted = [...orders].sort((a, b) => {
+      let aValue: any;
+      let bValue: any;
+
+      // Map frontend field names to actual order properties
+      switch (orderBy) {
+        case 'orderNumber':
+          aValue = a.orderNumber;
+          bValue = b.orderNumber;
+          break;
+        case 'customerName':
+          aValue = a.customerName;
+          bValue = b.customerName;
+          break;
+        case 'itemsCount':
+          aValue = a.itemsCount;
+          bValue = b.itemsCount;
+          break;
+        case 'totalAmount':
+          aValue = a.totalAmount;
+          bValue = b.totalAmount;
+          break;
+        case 'status':
+          aValue = a.status;
+          bValue = b.status;
+          break;
+        case 'orderDate':
+        case 'createdAt':
+          aValue = new Date(a.orderDate).getTime();
+          bValue = new Date(b.orderDate).getTime();
+          break;
+        default:
+          return 0;
+      }
+
+      if (aValue === undefined || bValue === undefined) return 0;
+
+      // Handle string and number comparisons
+      if (typeof aValue === 'string' && typeof bValue === 'string') {
+        const comparison = aValue.toLowerCase().localeCompare(bValue.toLowerCase());
+        return order === 'asc' ? comparison : -comparison;
+      }
+
+      // Handle number comparisons
+      if (order === 'asc') {
+        return (aValue as number) - (bValue as number);
+      }
+      return (bValue as number) - (aValue as number);
+    });
+    return sorted;
+  }, [orders, orderBy, order]);
 
   const handleCreateOrder = useCallback(() => {
     router.push('/admin/order/create');
@@ -106,11 +159,11 @@ export function OrderView() {
 
   const onSelectAllRows = useCallback((checked: boolean) => {
     if (checked) {
-      setSelected(orders.map((ord) => ord.id.toString()));
+      setSelected(sortedOrders.map((ord) => ord.id.toString()));
       return;
     }
     setSelected([]);
-  }, [orders]);
+  }, [sortedOrders]);
 
   const onSelectRow = useCallback(
     (id: string) => {
@@ -122,7 +175,7 @@ export function OrderView() {
     [selected]
   );
 
-  const notFound = !orders.length && !!filterName && !loading;
+  const notFound = !sortedOrders.length && !!filterName && !loading;
 
   return (
     <DashboardContent>
@@ -162,7 +215,7 @@ export function OrderView() {
                   <UserTableHead
                     order={order}
                     orderBy={orderBy}
-                    rowCount={orders.length}
+                    rowCount={sortedOrders.length}
                     numSelected={selected.length}
                     onSort={onSort}
                     onSelectAllRows={onSelectAllRows}
@@ -177,7 +230,7 @@ export function OrderView() {
                     ]}
                   />
                   <TableBody>
-                    {orders.map((row) => (
+                    {sortedOrders.map((row) => (
                       <OrderTableRow
                         key={row.id}
                         row={{
@@ -200,7 +253,7 @@ export function OrderView() {
                     {!notFound && (
                       <TableEmptyRows
                         height={68}
-                        emptyRows={emptyRows(page, rowsPerPage, orders.length)}
+                        emptyRows={emptyRows(page, rowsPerPage, sortedOrders.length)}
                         colSpan={9}
                       />
                     )}
