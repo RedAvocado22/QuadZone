@@ -35,7 +35,8 @@ public class SecurityConfiguration {
             "/api/v1/public/**",
             "/api/v1/orders/checkout",  // Allow guest checkout
             "/api/v1/orders/public/**", // Allow public order tracking
-            "/api/v1/coupons/**"        // Allow public coupon validation & creation if needed
+            "/api/v1/coupons/**",        // Allow public coupon validation & creation if needed
+            "/api/v1/shipping/**"        // Allow shipping cost calculation
     };
 
     @Value("${frontend.baseurl:http://localhost:5173}")

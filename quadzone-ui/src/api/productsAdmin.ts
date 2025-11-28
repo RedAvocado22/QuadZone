@@ -51,7 +51,7 @@ export const productsApi = {
   },
 
   // Create product
-  create: async (product: Omit<ProductAdminResponse, 'id' | 'subCategory' | 'category' | 'createdAt' | 'updatedAt'> & { subCategoryId?: number }): Promise<ProductAdminResponse> => {
+  create: async (product: Omit<ProductAdminResponse, 'id' | 'subCategory' | 'category' | 'createdAt' | 'updatedAt'> & { subCategoryId?: number; categoryId?: number }): Promise<ProductAdminResponse> => {
     const requestBody: any = {
       name: product.name,
       brand: product.brand || '',
@@ -64,6 +64,7 @@ export const productsApi = {
       color: '',
       imageUrl: product.imageUrl || '',
       subCategory: product.subCategoryId ? { id: product.subCategoryId } : null,
+      category: product.categoryId ? { id: product.categoryId } : null,
     };
 
     const response = await API.post<ProductAdminResponse>('/admin/products', requestBody);
@@ -71,7 +72,7 @@ export const productsApi = {
   },
 
   // Update product
-  update: async (id: string | number, product: Partial<Omit<ProductAdminResponse, 'id' | 'subCategory' | 'category' | 'createdAt' | 'updatedAt'>> & { subCategoryId?: number; status?: string }): Promise<ProductAdminResponse> => {
+  update: async (id: string | number, product: Partial<Omit<ProductAdminResponse, 'id' | 'subCategory' | 'category' | 'createdAt' | 'updatedAt'>> & { subCategoryId?: number; categoryId?: number; status?: string }): Promise<ProductAdminResponse> => {
     const requestBody: any = {};
     if (product.name !== undefined) requestBody.name = product.name;
     if (product.brand !== undefined) requestBody.brand = product.brand;
@@ -79,6 +80,7 @@ export const productsApi = {
     if (product.quantity !== undefined) requestBody.quantity = product.quantity;
     if (product.imageUrl !== undefined) requestBody.imageUrl = product.imageUrl;
     if (product.subCategoryId !== undefined) requestBody.subCategory = { id: product.subCategoryId };
+    if (product.categoryId !== undefined) requestBody.category = { id: product.categoryId };
     if (product.status !== undefined) requestBody.isActive = product.status !== 'locked';
 
     const response = await API.put<ProductAdminResponse>(`/admin/products/${id}`, requestBody);

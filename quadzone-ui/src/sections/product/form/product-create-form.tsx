@@ -1,4 +1,4 @@
-import { useRef } from 'react';
+import { useRef, useState, useEffect } from 'react';
 import { useFormik } from 'formik';
 import * as yup from 'yup';
 
@@ -21,7 +21,7 @@ import { Iconify } from 'src/components/iconify';
 import { DashboardContent } from 'src/layouts/dashboard';
 import { productsApi, type Product } from 'src/api/productsAdmin';
 import { uploadApi } from 'src/api/upload';
-import { yupName, yupPrice, yupUrl, yupOptionalNumber } from 'src/utils/Validation';
+import {  categoriesApi , type Category } from 'src/api/categories';
 
 // ----------------------------------------------------------------------
 
@@ -32,53 +32,93 @@ interface ProductCreateFormProps {
 
 interface FormValues {
   name: string;
-  price: number;
-  priceSale: number | null;
-  coverUrl: string;
-  status: string;
+  brand: string;
+  modelNumber: string;
   description: string;
+  stock: number;
+  price: number;
+  costPrice: number;
+  weight: number;
+  color: string;
+  imageUrl: string;
+  categoryId: number | '';
+  subCategoryId: number | '';
   imageMethod: 'url' | 'upload';
 }
 
 const productCreateSchema = yup.object({
-  name: yupName,
-  price: yupPrice,
-  priceSale: yupOptionalNumber,
-  coverUrl: yupUrl,
-  status: yup.string(),
-  description: yup.string().nullable(),
-  imageMethod: yup.string().oneOf(['url', 'upload']).required(),
+  name: yup.string()
+    .required('Product name is required')
+    .min(3, 'Product name must be at least 3 characters')
+    .max(255, 'Product name cannot exceed 255 characters'),
+  brand: yup.string()
+    .required('Brand name is required')
+    .max(100, 'Brand name cannot exceed 100 characters'),
+  modelNumber: yup.string().nullable(),
+  description: yup.string()
+    .max(1000, 'Description cannot exceed 1000 characters')
+    .nullable(),
+  stock: yup.number()
+    .required('Stock quantity is required')
+    .min(0, 'Stock cannot be negative')
+    .integer('Stock must be a whole number'),
+  price: yup.number()
+    .required('Price is required')
+    .positive('Price must be greater than 0'),
+  costPrice: yup.number()
+    .required('Cost price is required')
+    .positive('Cost price must be greater than 0'),
+  weight: yup.number()
+    .positive('Weight must be greater than 0')
+    .nullable(),
+  color: yup.string().nullable(),
+  imageUrl: yup.string().url('Must be a valid URL').nullable(),
+  categoryId: yup.number().required('Category is required'),
+  subCategoryId: yup.number().required('Subcategory is required'),
+  imageMethod: yup.string().oneOf(['url', 'upload']).required()
 });
 
 export function ProductCreateForm({ onSuccess, onCancel }: ProductCreateFormProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
+const [categories, setCategories] = useState<Category[]>([]);
+  const [subCategories, setSubCategories] = useState<SubCategory[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [loadingSubCategories, setLoadingSubCategories] = useState(false);
 
   const formik = useFormik<FormValues>({
     initialValues: {
       name: '',
-      price: 0,
-      priceSale: null,
-      coverUrl: '',
-      status: '',
+      brand: '',
+      modelNumber: '',
       description: '',
+      stock: 0,
+      price: 0,
+      costPrice: 0,
+      weight: 0,
+      color: '',
+      imageUrl: '',
+      categoryId: '',
+      subCategoryId: '',
       imageMethod: 'url',
     },
+    
     validationSchema: productCreateSchema,
     onSubmit: async (values, { setSubmitting, setStatus, resetForm }) => {
       try {
         const productData = {
           name: values.name,
-          price: values.price,
-          imageUrl: values.coverUrl || '',
+          brand: values.brand,
+          modelNumber: values.modelNumber || '',
           description: values.description || '',
-          brand: null,
-          modelNumber: null,
-          color: null,
-          costPrice: null,
-          weight: null,
-          quantity: 0,
-          isActive: values.status !== 'locked',
-        } as Omit<Product, 'id' | 'subCategory' | 'category' | 'createdAt' | 'updatedAt'> & { subCategoryId?: number };
+          quantity: values.stock,  // Map stock to quantity
+          price: values.price,
+          costPrice: values.costPrice,
+          weight: values.weight || 0,
+          color: values.color || '',
+          imageUrl: values.imageUrl && values.imageUrl.trim() ? values.imageUrl.trim() : '',
+          subCategoryId: values.subCategoryId as number,
+          categoryId: values.categoryId as number
+        };
 
         await productsApi.create(productData);
 
@@ -95,13 +135,59 @@ export function ProductCreateForm({ onSuccess, onCancel }: ProductCreateFormProp
     },
   });
 
+  // Fetch categories on mount
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const categoriesData = await  categoriesApi.getAllCategories();
+        setCategories(categoriesData);
+      } catch (error) {
+        console.error('Failed to fetch categories:', error);
+        formik.setStatus('Failed to load categories. Please refresh the page.');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchCategories();
+  }, []);
+
+useEffect(() => {
+  const fetchSubCategories = async () => {
+    const categoryId = formik.values.categoryId;
+
+    if (!categoryId) {
+      setSubCategories([]);
+      formik.setFieldValue('subCategoryId', '');
+      return;
+    }
+
+    setLoadingSubCategories(true);
+    try {
+      const data = await categoriesApi. getSubCategoriesByCategoryId(Number(categoryId));
+      setSubCategories(data);
+
+      // Reset subcategory when category changes
+      formik.setFieldValue('subCategoryId', '');
+    } catch (error) {
+      console.error('Failed to fetch subcategories:', error);
+      formik.setStatus('Failed to load subcategories.');
+    } finally {
+      setLoadingSubCategories(false);
+    }
+  };
+
+  fetchSubCategories();
+}, [formik.values.categoryId]);
+
+
   const handleImageMethodChange = (
-    _event: React.MouseEvent<HTMLElement>,
+_event: React.MouseEvent<HTMLElement>,
     newMethod: 'url' | 'upload' | null
   ) => {
     if (newMethod !== null) {
       formik.setFieldValue('imageMethod', newMethod);
-      formik.setFieldValue('coverUrl', '');
+      formik.setFieldValue('imageUrl', '');
     }
   };
 
@@ -110,37 +196,47 @@ export function ProductCreateForm({ onSuccess, onCancel }: ProductCreateFormProp
     if (!file) return;
 
     if (!file.type.startsWith('image/')) {
-      formik.setFieldError('coverUrl', 'Please select an image file');
+      formik.setFieldError('imageUrl', 'Please select an image file');
       return;
     }
 
     if (file.size > 5 * 1024 * 1024) {
-      formik.setFieldError('coverUrl', 'Image size must be less than 5MB');
+      formik.setFieldError('imageUrl', 'Image size must be less than 5MB');
       return;
     }
 
     formik.setSubmitting(true);
     try {
       const result = await uploadApi.uploadImage(file);
-      formik.setFieldValue('coverUrl', result.url);
-      formik.setFieldError('coverUrl', undefined);
+      formik.setFieldValue('imageUrl', result.imageUrl);
+      formik.setFieldError('imageUrl', undefined);
     } catch (error: any) {
-      formik.setFieldError('coverUrl', error?.message || 'Failed to upload image');
+      formik.setFieldError('imageUrl', error?.message || 'Failed to upload image');
     } finally {
       formik.setSubmitting(false);
     }
   };
 
   const handleRemoveImage = () => {
-    formik.setFieldValue('coverUrl', '');
+    formik.setFieldValue('imageUrl', '');
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
     }
   };
 
-  const previewUrl = formik.values.coverUrl && formik.values.imageMethod === 'upload'
-    ? formik.values.coverUrl
+  const previewUrl = formik.values.imageUrl && formik.values.imageMethod === 'upload'
+    ? formik.values.imageUrl
     : '';
+
+  if (loading) {
+    return (
+      <DashboardContent>
+        <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: 400 }}>
+          <CircularProgress />
+        </Box>
+      </DashboardContent>
+    );
+  }
 
   return (
     <DashboardContent>
@@ -161,6 +257,9 @@ export function ProductCreateForm({ onSuccess, onCancel }: ProductCreateFormProp
                 </Alert>
               )}
 
+              {/* Basic Information */}
+              <Typography variant="h6" sx={{ mt: 2 }}>Basic Information</Typography>
+              
               <TextField
                 fullWidth
                 label="Product Name"
@@ -176,43 +275,26 @@ export function ProductCreateForm({ onSuccess, onCancel }: ProductCreateFormProp
               <Box sx={{ display: 'flex', gap: 2 }}>
                 <TextField
                   fullWidth
-                  label="Price"
-                  name="price"
-                  type="number"
+                  label="Brand"
+                  name="brand"
                   required
-                  value={formik.values.price || ''}
-                  onChange={(e) => formik.setFieldValue('price', parseFloat(e.target.value) || 0)}
+value={formik.values.brand}
+                  onChange={formik.handleChange}
                   onBlur={formik.handleBlur}
-                  error={!!(formik.touched.price && formik.errors.price)}
-                  helperText={formik.touched.price && formik.errors.price}
+                  error={!!(formik.touched.brand && formik.errors.brand)}
+                  helperText={formik.touched.brand && formik.errors.brand}
                 />
                 <TextField
                   fullWidth
-                  label="Sale Price (optional)"
-                  name="priceSale"
-                  type="number"
-                  value={formik.values.priceSale || ''}
-                  onChange={(e) => formik.setFieldValue('priceSale', e.target.value ? parseFloat(e.target.value) : null)}
-                  onBlur={formik.handleBlur}
-                  error={!!(formik.touched.priceSale && formik.errors.priceSale)}
-                  helperText={formik.touched.priceSale && formik.errors.priceSale}
-                />
-              </Box>
-
-              <FormControl fullWidth>
-                <InputLabel>Status</InputLabel>
-                <Select
-                  name="status"
-                  value={formik.values.status}
+                  label="Model Number"
+                  name="modelNumber"
+                  value={formik.values.modelNumber}
                   onChange={formik.handleChange}
                   onBlur={formik.handleBlur}
-                  label="Status"
-                >
-                  <MenuItem value="">None</MenuItem>
-                  <MenuItem value="sale">Sale</MenuItem>
-                  <MenuItem value="new">New</MenuItem>
-                </Select>
-              </FormControl>
+                  error={!!(formik.touched.modelNumber && formik.errors.modelNumber)}
+                  helperText={formik.touched.modelNumber && formik.errors.modelNumber}
+                />
+              </Box>
 
               <TextField
                 fullWidth
@@ -227,10 +309,147 @@ export function ProductCreateForm({ onSuccess, onCancel }: ProductCreateFormProp
                 helperText={formik.touched.description && formik.errors.description}
               />
 
-              <Box>
-                <Typography variant="subtitle2" sx={{ mb: 2 }}>
-                  Product Image
-                </Typography>
+              {/* Category Selection */}
+              <Typography variant="h6" sx={{ mt: 2 }}>Category</Typography>
+
+              <Box sx={{ display: 'flex', gap: 2 }}>
+                <FormControl fullWidth required error={!!(formik.touched.categoryId && formik.errors.categoryId)}>
+                  <InputLabel>Category</InputLabel>
+                  <Select
+                    name="categoryId"
+                    value={formik.values.categoryId}
+                    onChange={formik.handleChange}
+                    onBlur={formik.handleBlur}
+                    label="Category"
+                  >
+                    <MenuItem value="">Select Category</MenuItem>
+                    {categories.map((category) => (
+                      <MenuItem key={category.id} value={category.id}>
+                        {category.name}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                  {formik.touched.categoryId && formik.errors.categoryId && (
+                    <Typography variant="caption" color="error" sx={{ mt: 0.5, ml: 2 }}>
+                      {formik.errors.categoryId}
+                    </Typography>
+                  )}
+                </FormControl>
+
+                <FormControl 
+                  fullWidth 
+                  required 
+                  disabled={!formik.values.categoryId || loadingSubCategories}
+                  error={!!(formik.touched.subCategoryId && formik.errors.subCategoryId)}
+                >
+                  <InputLabel>Subcategory</InputLabel>
+                  <Select
+                    name="subCategoryId"
+                    value={formik.values.subCategoryId}
+onChange={formik.handleChange}
+                    onBlur={formik.handleBlur}
+                    label="Subcategory"
+                    startAdornment={
+                      loadingSubCategories ? (
+                        <CircularProgress size={20} sx={{ ml: 1 }} />
+                      ) : null
+                    }
+                  >
+                    <MenuItem value="">
+                      {loadingSubCategories ? 'Loading...' : 'Select Subcategory'}
+                    </MenuItem>
+                    {subCategories.map((subCategory) => (
+                      <MenuItem key={subCategory.id} value={subCategory.id}>
+                        {subCategory.name}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                  {formik.touched.subCategoryId && formik.errors.subCategoryId && (
+                    <Typography variant="caption" color="error" sx={{ mt: 0.5, ml: 2 }}>
+                      {formik.errors.subCategoryId}
+                    </Typography>
+                  )}
+                </FormControl>
+              </Box>
+
+              {/* Pricing & Stock */}
+              <Typography variant="h6" sx={{ mt: 2 }}>Pricing & Stock</Typography>
+
+              <Box sx={{ display: 'flex', gap: 2 }}>
+                <TextField
+                  fullWidth
+                  label="Price"
+                  name="price"
+                  type="number"
+                  required
+                  value={formik.values.price || ''}
+                  onChange={(e) => formik.setFieldValue('price', parseFloat(e.target.value) || 0)}
+                  onBlur={formik.handleBlur}
+                  error={!!(formik.touched.price && formik.errors.price)}
+                  helperText={formik.touched.price && formik.errors.price}
+                  InputProps={{ inputProps: { min: 0, step: 0.01 } }}
+                />
+                <TextField
+                  fullWidth
+                  label="Cost Price"
+                  name="costPrice"
+                  type="number"
+                  required
+                  value={formik.values.costPrice || ''}
+                  onChange={(e) => formik.setFieldValue('costPrice', parseFloat(e.target.value) || 0)}
+                  onBlur={formik.handleBlur}
+                  error={!!(formik.touched.costPrice && formik.errors.costPrice)}
+                  helperText={formik.touched.costPrice && formik.errors.costPrice}
+                  InputProps={{ inputProps: { min: 0, step: 0.01 } }}
+                />
+              </Box>
+
+              <TextField
+                fullWidth
+                label="Stock Quantity"
+                name="stock"
+                type="number"
+                required
+                value={formik.values.stock || ''}
+                onChange={(e) => formik.setFieldValue('stock', parseInt(e.target.value) || 0)}
+                onBlur={formik.handleBlur}
+                error={!!(formik.touched.stock && formik.errors.stock)}
+helperText={formik.touched.stock && formik.errors.stock}
+                InputProps={{ inputProps: { min: 0, step: 1 } }}
+              />
+
+              {/* Additional Details */}
+              <Typography variant="h6" sx={{ mt: 2 }}>Additional Details</Typography>
+
+              <Box sx={{ display: 'flex', gap: 2 }}>
+                <TextField
+                  fullWidth
+                  label="Weight (kg)"
+                  name="weight"
+                  type="number"
+                  value={formik.values.weight || ''}
+                  onChange={(e) => formik.setFieldValue('weight', parseFloat(e.target.value) || 0)}
+                  onBlur={formik.handleBlur}
+                  error={!!(formik.touched.weight && formik.errors.weight)}
+                  helperText={formik.touched.weight && formik.errors.weight}
+                  InputProps={{ inputProps: { min: 0, step: 0.01 } }}
+                />
+                <TextField
+                  fullWidth
+                  label="Color"
+                  name="color"
+                  value={formik.values.color}
+                  onChange={formik.handleChange}
+                  onBlur={formik.handleBlur}
+                  error={!!(formik.touched.color && formik.errors.color)}
+                  helperText={formik.touched.color && formik.errors.color}
+                />
+              </Box>
+
+              {/* Product Image */}
+              <Typography variant="h6" sx={{ mt: 2 }}>Product Image</Typography>
+
+              <Box> 
                 <ToggleButtonGroup
                   value={formik.values.imageMethod}
                   exclusive
@@ -250,12 +469,12 @@ export function ProductCreateForm({ onSuccess, onCancel }: ProductCreateFormProp
                   <TextField
                     fullWidth
                     label="Image URL"
-                    name="coverUrl"
-                    value={formik.values.coverUrl}
+                    name="imageUrl"
+                    value={formik.values.imageUrl}
                     onChange={formik.handleChange}
                     onBlur={formik.handleBlur}
-                    error={!!(formik.touched.coverUrl && formik.errors.coverUrl)}
-                    helperText={formik.touched.coverUrl && formik.errors.coverUrl}
+                    error={!!(formik.touched.imageUrl && formik.errors.imageUrl)}
+                    helperText={formik.touched.imageUrl && formik.errors.imageUrl}
                     placeholder="https://example.com/image.jpg"
                   />
                 ) : (
@@ -268,7 +487,7 @@ export function ProductCreateForm({ onSuccess, onCancel }: ProductCreateFormProp
                       style={{ display: 'none' }}
                     />
                     <Button
-                      variant="outlined"
+variant="outlined"
                       onClick={() => fileInputRef.current?.click()}
                       disabled={formik.isSubmitting}
                       sx={{ mr: 2 }}
@@ -276,7 +495,7 @@ export function ProductCreateForm({ onSuccess, onCancel }: ProductCreateFormProp
                     >
                       {formik.isSubmitting ? 'Uploading...' : 'Choose Image'}
                     </Button>
-                    {formik.values.coverUrl && (
+                    {formik.values.imageUrl && (
                       <Button
                         variant="outlined"
                         color="error"
@@ -286,9 +505,9 @@ export function ProductCreateForm({ onSuccess, onCancel }: ProductCreateFormProp
                         Remove
                       </Button>
                     )}
-                    {formik.errors.coverUrl && (
+                    {formik.errors.imageUrl && (
                       <Typography variant="caption" color="error" sx={{ display: 'block', mt: 1 }}>
-                        {formik.errors.coverUrl}
+                        {formik.errors.imageUrl}
                       </Typography>
                     )}
                     {previewUrl && (
@@ -308,7 +527,8 @@ export function ProductCreateForm({ onSuccess, onCancel }: ProductCreateFormProp
                 )}
               </Box>
 
-              <Box sx={{ display: 'flex', gap: 2, justifyContent: 'flex-end' }}>
+              {/* Action Buttons */}
+              <Box sx={{ display: 'flex', gap: 2, justifyContent: 'flex-end', mt: 3 }}>
                 <Button variant="outlined" onClick={onCancel} disabled={formik.isSubmitting}>
                   Cancel
                 </Button>

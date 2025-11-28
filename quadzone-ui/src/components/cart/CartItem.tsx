@@ -51,7 +51,6 @@ const CartRow = ({ item }: CartItemProps) => {
                 <button
                     type="button"
                     aria-label="Remove from cart"
-                    className="text-gray-32 font-size-26"
                     onClick={async (e) => {
                         e.preventDefault();
                         if (product.id) {
@@ -62,7 +61,9 @@ const CartRow = ({ item }: CartItemProps) => {
                                 // Optional: show toast/notification
                             }
                         }
-                    }}></button>
+                    }}>
+                    X
+                </button>
             </td>
             <td className="d-none d-md-table-cell">
                 <Link to={`/product/${product.id}`}>

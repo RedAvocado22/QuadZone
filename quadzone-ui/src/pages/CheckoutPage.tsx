@@ -1,4 +1,4 @@
-import { useMemo, useState, useEffect, type FormEvent } from "react";
+import { useState, useEffect, type FormEvent, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { useCart } from "../contexts/CartContext";
 import { useCurrency } from "../contexts/CurrencyContext";
@@ -6,6 +6,7 @@ import { fCurrency } from "../utils/formatters";
 import { useUser } from "../hooks/useUser";
 import { ordersApi } from "../api/orders";
 import { couponsApi } from "../api/coupons";
+import { shippingApi } from "../api/shipping";
 import { toast } from "react-toastify";
 import CheckoutBreadcrumb from "../components/checkout/CheckoutBreadcrumb";
 import CouponSection from "../components/checkout/CouponSection";
@@ -22,13 +23,14 @@ const emptyAddress: AddressFields = {
     lastName: "",
     address: "",
     apartment: "",
+    block: "",
+    district: "",
     city: "",
-    state: "",
     email: "",
     phone: ""
 };
 
-const SHIPPING_FLAT_RATE = 300;
+const SHIPPING_FLAT_RATE = 10;
 
 const CheckoutPage = () => {
     const navigate = useNavigate();
@@ -45,6 +47,10 @@ const CheckoutPage = () => {
     const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("bank-transfer");
     const [termsAccepted, setTermsAccepted] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [shippingCost, setShippingCost] = useState(SHIPPING_FLAT_RATE);
+    const [shippingMessage, setShippingMessage] = useState<string | null>(null);
+    const [isShippingDirty, setIsShippingDirty] = useState(false);
+    const [isCalculatingShipping, setIsCalculatingShipping] = useState(false);
 
     // Auto-fill billing information for logged-in users
     useEffect(() => {
@@ -60,15 +66,53 @@ const CheckoutPage = () => {
 
     const formatPrice = (value: number) => fCurrency(convertPrice(value), { currency });
 
-    const { shippingCost } = useMemo(() => {
-        const shippingAmount = items.length ? SHIPPING_FLAT_RATE : 0;
-        return {
-            shippingCost: shippingAmount
-        };
-    }, [items.length, totalPrice]);
+    // Check if address is complete enough to calculate shipping
+    const isAddressComplete = useCallback((address: AddressFields): boolean => {
+        return !!(
+            address.address &&
+            address.district &&
+            address.city &&
+            address.address.trim() !== "" &&
+            address.district.trim() !== "" &&
+            address.city.trim() !== ""
+        );
+    }, []);
+
+    // Calculate shipping cost when address is complete
+    const calculateShippingCost = useCallback(async (address: AddressFields) => {
+        if (!isAddressComplete(address) || !items.length) {
+            return;
+        }
+
+        setIsCalculatingShipping(true);
+        try {
+            const response = await shippingApi.calculate({
+                address: address.address,
+                apartment: address.apartment || undefined,
+                block: address.block || undefined,
+                district: address.district,
+                city: address.city,
+            });
+            setShippingCost(response.shippingCost);
+            setShippingMessage(response.message);
+            setIsShippingDirty(false);
+        } catch (error: any) {
+            console.error("Error calculating shipping cost:", error);
+            setShippingCost(SHIPPING_FLAT_RATE);
+            setShippingMessage("Unable to calculate shipping. Using default rate.");
+        } finally {
+            setIsCalculatingShipping(false);
+        }
+    }, [isAddressComplete, items.length]);
 
     const handleBillingChange = (field: keyof AddressFields, value: string) => {
-        setBilling((prev) => ({ ...prev, [field]: value }));
+        const updatedBilling = { ...billing, [field]: value };
+        setBilling(updatedBilling);
+        
+        if (field === "address" || field === "apartment" || field === "block" || field === "district" || field === "city") {
+            setIsShippingDirty(true);
+            setShippingMessage(null);
+        }
     };
 
     const handleApplyCoupon = async (event: FormEvent) => {
@@ -135,8 +179,10 @@ const CheckoutPage = () => {
             !billing.email ||
             !billing.phone ||
             !billing.address ||
-            !billing.city ||
-            !billing.state
+            !billing.apartment ||
+            !billing.block ||
+            !billing.district ||
+            !billing.city
         ) {
             toast.error("Please fill out all required billing details before placing your order.");
             return;
@@ -176,9 +222,10 @@ const CheckoutPage = () => {
                 email: billing.email,
                 phone: billing.phone,
                 address: billing.address,
-                city: billing.city || "",
-                state: billing.state || "",
                 apartment: billing.apartment || "",
+                block: billing.block || "",
+                district: billing.district || "",
+                city: billing.city || "",
                 items: items.map((item) => ({
                     productId: item.id!,
                     quantity: item.quantity
@@ -212,6 +259,18 @@ const CheckoutPage = () => {
         }
     };
 
+    const handleManualShippingCalculation = () => {
+        if (!items.length) {
+            toast.error("Add items to your cart before calculating shipping.");
+            return;
+        }
+        if (!isAddressComplete(billing)) {
+            toast.error("Please complete the address fields before calculating shipping.");
+            return;
+        }
+        calculateShippingCost(billing);
+    };
+
     const summaryItems = items.map((item, index) => ({
         id: item.id ?? `cart-item-${index}`,
         name: item.name,
@@ -219,10 +278,36 @@ const CheckoutPage = () => {
         total: formatPrice(item.price * item.quantity)
     }));
 
-    const shippingDisplay = items.length ? (
-        `Flat rate ${formatPrice(shippingCost)}`
-    ) : (
-        <span className="text-muted small">Add items to calculate shipping</span>
+    const canCalculateShipping = items.length > 0 && isAddressComplete(billing);
+
+    const shippingDisplay = (
+        <div className="d-flex flex-column align-items-end">
+            <div>
+                {items.length ? (
+                    isCalculatingShipping ? (
+                        <span className="text-muted small">Calculating shipping...</span>
+                    ) : (
+                        formatPrice(shippingCost)
+                    )
+                ) : (
+                    <span className="text-muted small">Add items to calculate shipping</span>
+                )}
+            </div>
+            <button
+                type="button"
+                className="btn btn-sm btn-outline-primary mt-2"
+                disabled={isCalculatingShipping || !canCalculateShipping}
+                onClick={handleManualShippingCalculation}
+            >
+                {isCalculatingShipping ? "Calculating..." : "Calculate shipping"}
+            </button>
+            {shippingMessage && (
+                <small className="text-muted mt-1 text-right w-100">{shippingMessage}</small>
+            )}
+            {isShippingDirty && (
+                <small className="text-warning mt-1 text-right w-100">Address changed — recalculate for accurate fee.</small>
+            )}
+        </div>
     );
 
     return (
