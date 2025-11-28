@@ -25,6 +25,15 @@ export const categoriesApi = {
     return response.data;
   },
 
+  getAllCategories: async (): Promise<CategoryResponse[]> => {
+      const response = await API.get<CategoryResponse[]>('/categories/admin/all');
+      return response.data;
+    },  
+     getSubCategoriesByCategoryId: async (categoryId: number): Promise<SubCategory[]> => {
+    const response = await API.get<SubCategory[]>(`categories/${categoryId}/subcategories`);
+    return response.data;
+  },
+
   getById: async (id: string | number): Promise<CategoryResponse> => {
     const response = await API.get<CategoryResponse>(`/admin/categories/${id}`);
     return response.data;

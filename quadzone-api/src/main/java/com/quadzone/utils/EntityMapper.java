@@ -1,7 +1,10 @@
 package com.quadzone.utils;
 
 import com.quadzone.product.Product;
+import com.quadzone.product.category.sub_category.SubCategory;
+import com.quadzone.product.category.sub_category.dto.SubCategoryResponse;
 import com.quadzone.product.dto.ProductDetailsResponse;
+import com.quadzone.product.dto.ProductRegisterRequest;
 import com.quadzone.product.dto.ProductResponse;
 import com.quadzone.review.Review;
 import com.quadzone.review.dto.ReviewResponse;
@@ -23,11 +26,14 @@ public class EntityMapper {
     public ProductResponse toProductResponse(Product product) {
         return ProductResponse.from(product);
     }
-
+    public Product toProduct(ProductRegisterRequest  product) {
+        return ProductRegisterRequest.toProduct(product);
+    }
     public ReviewResponse toReviewResponse(Review review) {
         return ReviewResponse.from(review);
     }
     public ProductDetailsResponse toProductDetailsResponse(Product product) {
         return ProductDetailsResponse.from(product);
     }
+
 }

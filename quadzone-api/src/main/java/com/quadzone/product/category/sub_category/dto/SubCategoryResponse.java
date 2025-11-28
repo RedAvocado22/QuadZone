@@ -1,7 +1,6 @@
 package com.quadzone.product.category.sub_category.dto;
 
 import com.quadzone.product.category.sub_category.SubCategory;
-
 public record SubCategoryResponse(
         Long id,
         String name

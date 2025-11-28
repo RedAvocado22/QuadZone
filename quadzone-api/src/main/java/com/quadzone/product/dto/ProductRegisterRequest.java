@@ -1,6 +1,7 @@
 package com.quadzone.product.dto;
 
 import com.quadzone.product.Product;
+import com.quadzone.product.category.Category;
 import com.quadzone.product.category.sub_category.SubCategory;
 import jakarta.validation.constraints.*;
 
@@ -38,7 +39,9 @@ public record ProductRegisterRequest(
 
         String imageUrl,  // Allow null or empty, validation can be done in service
 
-        SubCategory subCategory  // Allow null for now, can be set later
+        SubCategory subCategory,  // Allow null for now, can be set later
+
+        Category category
 ) {
     public static Product toProduct(ProductRegisterRequest request) {
         String imageUrl = request.imageUrl() != null && !request.imageUrl().trim().isEmpty()

@@ -17,5 +17,6 @@ public record CategoryResponse(
                         .map(SubCategoryResponse::from)
                         .toList());
     }
+
 }
 
