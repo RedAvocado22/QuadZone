@@ -13,6 +13,7 @@ import LoginPage from "./pages/LoginPage";
 import RegisterPage from "./pages/RegisterPage";
 import ResetPasswordPage from "./pages/ResetPasswordPage";
 import ProductDetailPage from "./pages/ProductDetailPage";
+import UserProfilePage from "./pages/UserProfilePage";
 import AboutUsPage from "./pages/AboutUsPage";
 import ContactUsPage from "./pages/ContactUsPage";
 import CheckoutPage from "@/pages/CheckoutPage.tsx";
@@ -68,7 +69,7 @@ function App() {
                                 <Route path="/shop" element={<Shop />} />
                                 <Route path="/about-us" element={<AboutUsPage />} />
                                 <Route path="/contact" element={<ContactUsPage />} />
-
+                                <Route path="profile" element={<UserProfilePage />} />
                                 {/* Cart - accessible to everyone (guest and authenticated) */}
                                 <Route path="cart" element={<CartPage />} />
                                 <Route path="checkout" element={<CheckoutPage />} />
