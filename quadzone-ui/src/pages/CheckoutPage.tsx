@@ -5,6 +5,7 @@ import { useCurrency } from "../contexts/CurrencyContext";
 import { fCurrency } from "../utils/formatters";
 import { useUser } from "../hooks/useUser";
 import { ordersApi } from "../api/orders";
+import { paymentsApi } from "../api/payments";
 import { couponsApi } from "../api/coupons";
 import { shippingApi } from "../api/shipping";
 import { toast } from "react-toastify";
@@ -44,7 +45,7 @@ const CheckoutPage = () => {
     const [appliedCouponCode, setAppliedCouponCode] = useState<string | null>(null);
     const [discountAmount, setDiscountAmount] = useState(0);
     const [orderNotes, setOrderNotes] = useState("");
-    const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("bank-transfer");
+    const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("vnpay");
     const [termsAccepted, setTermsAccepted] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [shippingCost, setShippingCost] = useState(SHIPPING_FLAT_RATE);
@@ -210,10 +211,9 @@ const CheckoutPage = () => {
         try {
             // Map payment method from frontend to backend format
             const paymentMethodMap: Record<PaymentMethod, string> = {
-                "bank-transfer": "BANK_TRANSFER",
-                "cheque": "BANK_TRANSFER",
                 "cod": "CASH_ON_DELIVERY",
-                "paypal": "CREDIT_CARD"
+                "paypal": "CREDIT_CARD",
+                "vnpay": "VNPAY",
             };
 
             const checkoutData = {
@@ -236,11 +236,33 @@ const CheckoutPage = () => {
                 discountAmount: discountAmount,
                 totalAmount: totalPrice + shippingCost - discountAmount,
                 couponCode: appliedCouponCode || undefined,
-                paymentMethod: paymentMethodMap[paymentMethod] || "BANK_TRANSFER",
+                paymentMethod: paymentMethodMap[paymentMethod] || "VNPAY",
                 notes: orderNotes || undefined
             };
 
             const orderResponse = await ordersApi.checkout(checkoutData);
+
+            if (paymentMethod === "vnpay") {
+                try {
+                    const returnUrl = `${window.location.origin}/vnpay-result`;
+                    const paymentUrl = await paymentsApi.createVnPayPayment({
+                        orderId: orderResponse.orderNumber,
+                        amount: orderResponse.totalAmount ?? checkoutData.totalAmount,
+                        orderInfo: `Thanh toán đơn hàng ${orderResponse.orderNumber}`,
+                        returnUrl,
+                    });
+                    toast.info("Redirecting to VNPay to complete your payment...");
+                    window.location.href = paymentUrl;
+                    return;
+                } catch (error: any) {
+                    console.error("VNPay redirect error:", error);
+                    const errorMessage = error.response?.data?.message ||
+                        error.message ||
+                        "Không thể tạo liên kết VNPay. Vui lòng thử lại.";
+                    toast.error(errorMessage);
+                    return;
+                }
+            }
 
             toast.success(`Order placed successfully! Your order number is ${orderResponse.orderNumber}. A confirmation email has been sent to ${billing.email}.`);
 

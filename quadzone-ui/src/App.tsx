@@ -20,6 +20,7 @@ import CheckoutPage from "@/pages/CheckoutPage.tsx";
 import "src/assets/css/global.css";
 import TrackOrderPage from "./pages/TrackOrderPage";
 import OrderSuccessPage from "./pages/OrderSuccessPage";
+import VnPayResultPage from "./pages/VnPayResultPage";
 
 import Shop from "./pages/Shop";
 
@@ -75,6 +76,7 @@ function App() {
                                 <Route path="cart" element={<CartPage />} />
                                 <Route path="checkout" element={<CheckoutPage />} />
                                 <Route path="order-success" element={<OrderSuccessPage />} />
+                                <Route path="vnpay-result" element={<VnPayResultPage />} />
                                 <Route path="track-order" element={<TrackOrderPage />} />
 
                                 {/* Error Boundary */}

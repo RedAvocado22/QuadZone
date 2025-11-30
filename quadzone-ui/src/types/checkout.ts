@@ -15,4 +15,4 @@ export type AlertState =
     | { type: "error"; message: string }
     | { type: "success"; message: string };
 
-export type PaymentMethod = "bank-transfer" | "cheque" | "cod" | "paypal";
+export type PaymentMethod = "cod" | "paypal" | "vnpay";
