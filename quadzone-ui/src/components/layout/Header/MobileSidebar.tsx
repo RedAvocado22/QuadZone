@@ -28,7 +28,7 @@ const MobileSidebar = () => {
                                     <li className="u-has-submenu u-header-collapse__submenu">
                                         <a
                                             className="u-header-collapse__nav-link u-header-collapse__nav-pointer"
-                                            href="#">
+                                            href="/">
                                             Home 
                                         </a>
                                     </li>
@@ -37,7 +37,7 @@ const MobileSidebar = () => {
                                     <li className="u-has-submenu u-header-collapse__submenu">
                                         <a
                                             className="u-header-collapse__nav-link u-header-collapse__nav-pointer"
-                                            href="#">
+                                            href="/shop">
                                             Shop Pages
                                         </a>
                                     </li>
@@ -46,26 +46,8 @@ const MobileSidebar = () => {
                                     <li className="u-has-submenu u-header-collapse__submenu">
                                         <a
                                             className="u-header-collapse__nav-link u-header-collapse__nav-pointer"
-                                            href="#">
-                                            Product Categories
-                                        </a>
-                                    </li>
-
-                                    {/* Single Product Pages */}
-                                    <li className="u-has-submenu u-header-collapse__submenu">
-                                        <a
-                                            className="u-header-collapse__nav-link u-header-collapse__nav-pointer"
-                                            href="#">
-                                            Single Product Pages
-                                        </a>
-                                    </li>
-
-                                    {/* Ecommerce Pages */}
-                                    <li className="u-has-submenu u-header-collapse__submenu">
-                                        <a
-                                            className="u-header-collapse__nav-link u-header-collapse__nav-pointer"
-                                            href="#">
-                                            Ecommerce Pages
+                                            href="/track-order">
+                                            Track Your Order
                                         </a>
                                     </li>
 
@@ -73,7 +55,7 @@ const MobileSidebar = () => {
                                     <li className="u-has-submenu u-header-collapse__submenu">
                                         <a
                                             className="u-header-collapse__nav-link u-header-collapse__nav-pointer"
-                                            href="#">
+                                            href="/blogs">
                                             Blog Pages
                                         </a>
                                     </li>

@@ -1,5 +1,7 @@
 package com.quadzone.utils;
 
+import com.quadzone.blog.Blog;
+import com.quadzone.blog.dto.BlogOverviewResponse;
 import com.quadzone.product.Product;
 import com.quadzone.product.dto.ProductDetailsResponse;
 import com.quadzone.product.dto.ProductResponse;
@@ -29,5 +31,9 @@ public class EntityMapper {
     }
     public ProductDetailsResponse toProductDetailsResponse(Product product) {
         return ProductDetailsResponse.from(product);
+    }
+
+    public BlogOverviewResponse toBlogResponse(Blog blog) {
+        return BlogOverviewResponse.from(blog);
     }
 }

@@ -1,6 +1,10 @@
 package com.quadzone.global;
 
+import com.quadzone.blog.BlogService;
+import com.quadzone.blog.dto.BlogDetailResponse;
+import com.quadzone.blog.dto.BlogOverviewResponse;
 import com.quadzone.global.dto.HomeResponse;
+import com.quadzone.global.dto.PagedResponse;
 import com.quadzone.product.ProductService;
 import com.quadzone.product.category.CategoryRepository;
 import com.quadzone.product.category.CategoryService;
@@ -8,6 +12,8 @@ import com.quadzone.product.category.dto.CategoryResponse;
 import com.quadzone.product.dto.BrandResponse;
 import com.quadzone.product.dto.ProductDetailsResponse;
 import com.quadzone.product.dto.ProductResponse;
+
+import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -27,6 +33,7 @@ public class PublicController {
     private final ProductService productService;
     private final CategoryRepository categoryRepository;
     private final CategoryService categoryService;
+    private final BlogService blogService;
 
     @GetMapping()
     public ResponseEntity<HomeResponse> getHome() {
@@ -101,6 +108,61 @@ public ResponseEntity<Page<ProductResponse>> listProducts(
         } catch (RuntimeException e) {
             return ResponseEntity.notFound().build();
         }
+    }
+
+    @GetMapping("/blogs")
+    @Operation(summary = "Get all blog posts")
+    public ResponseEntity<PagedResponse<BlogOverviewResponse>> getBlogs(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
+        Pageable pageable = PageRequest.of(page, size);
+        Page<BlogOverviewResponse> blogs = blogService.getBlogs(pageable);
+        return ResponseEntity.ok(new PagedResponse<>(
+                blogs.getContent(),
+                blogs.getTotalElements(),
+                blogs.getNumber(),
+                blogs.getSize()
+        ));
+    }
+
+    /**
+     * Get blog by slug
+     */
+    @GetMapping("/blogs/{slug}")
+    @Operation(summary = "Get blog post by slug")
+    public ResponseEntity<BlogDetailResponse> getBlogBySlug(@PathVariable String slug) {
+        BlogDetailResponse blog = blogService.getBlogBySlug(slug);
+        return ResponseEntity.ok(blog);
+    }
+
+    /**
+     * Get recent blog posts (alias for /api/v1/public/blogs with default params)
+     */
+    @GetMapping("/blog")
+    @Operation(summary = "Get recent blog posts")
+    public ResponseEntity<PagedResponse<BlogOverviewResponse>> getRecentBlogs(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "5") int size) {
+        Pageable pageable = PageRequest.of(page, size);
+        Page<BlogOverviewResponse> blogs = blogService.getBlogs(pageable);
+        return ResponseEntity.ok(new PagedResponse<>(
+                blogs.getContent(),
+                blogs.getTotalElements(),
+                blogs.getNumber(),
+                blogs.getSize()
+        ));
+    }
+
+    /**
+     * Add a comment to a blog post
+     */
+    @PostMapping("/blogs/{blogId}/comments")
+    @Operation(summary = "Add a comment to a blog post")
+    public ResponseEntity<Void> addCommentToBlog(
+            @PathVariable Long blogId,
+            @RequestBody com.quadzone.blog.comment.dto.AddCommentRequest request) {
+        blogService.addCommentToBlog(blogId, request);
+        return ResponseEntity.ok().build();
     }
 
 }

@@ -26,6 +26,8 @@ import { CompareProvider } from "./contexts/CompareContext";
 import ComparePage from "./pages/ComparePage";
 import WishlistPage from "./pages/WishListPage";
 import { WishlistProvider } from "./contexts/WishListContext";
+import BlogListPage from "./pages/BlogListPage";
+import BlogDetailPage from "./pages/BlogDetailPage";
 
 const AdminRoutes = lazy(() => import("./routing/AdminRoutes"));
 
@@ -78,6 +80,8 @@ function App() {
                                         <Route path="/contact" element={<ContactUsPage />} />
                                         <Route path="/compare" element={<ComparePage />} />
                                         <Route path="/wishlist" element={<WishlistPage />} />
+                                        <Route path="/blogs" element={<BlogListPage />} />
+                                        <Route path="/blogs/:slug" element={<BlogDetailPage/>}/>
                                         {/* Cart - accessible to everyone (guest and authenticated) */}
                                         <Route path="cart" element={<CartPage />} />
                                         <Route path="checkout" element={<CheckoutPage />} />
