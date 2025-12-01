@@ -39,16 +39,12 @@ public class VnPaymentService {
         this.orderService = orderService;
     }
 
-    /**
-     * Tạo URL thanh toán
-     */
     public String createPaymentUrl(HttpServletRequest request, VnPaymentRequest vnpRequest) {
         Map<String, String> vnpParams = new HashMap<>();
         vnpParams.put("vnp_Version", "2.1.0");
         vnpParams.put("vnp_Command", "pay");
         vnpParams.put("vnp_TmnCode", tmnCode);
         
-        // Tính toán số tiền (đảm bảo là số nguyên long)
         long amount = (long) (vnpRequest.amount() * 100 * exchangeRateService.getUsdToVnd());
         vnpParams.put("vnp_Amount", String.valueOf(amount));
         
@@ -59,7 +55,6 @@ public class VnPaymentService {
         vnpParams.put("vnp_Locale", "vn");
         vnpParams.put("vnp_ReturnUrl", buildCallbackUrl(request, vnpRequest.returnUrl()));
         
-        // Lấy IP thực tế (quan trọng khi lên production)
         vnpParams.put("vnp_IpAddr", getIpAddress(request));
 
         Calendar cld = Calendar.getInstance(TimeZone.getTimeZone("Asia/Ho_Chi_Minh"));
@@ -71,24 +66,20 @@ public class VnPaymentService {
         cld.add(Calendar.MINUTE, 15);
         vnpParams.put("vnp_ExpireDate", dateFormat.format(cld.getTime()));
 
-        // Build Query & Hash
         return buildQueryUrl(vnpParams);
     }
 
     /**
-     * Verify payment response hash (FIXED: Dùng HttpServletRequest)
-     * * @param request Request gửi về từ VNPay
-     * @return true nếu chữ ký hợp lệ
+     * Verify payment response hash
+     * @param request Request sends back from VNPay
+     * @return true
      */
     public boolean verifyPaymentResponse(HttpServletRequest request) {
         try {
             Map<String, String> fields = new HashMap<>();
             
-            // 1. Lấy tất cả tham số từ URL - chỉ lấy các tham số từ VNPay (bắt đầu bằng vnp_)
             for (Enumeration<String> params = request.getParameterNames(); params.hasMoreElements(); ) {
                 String fieldName = params.nextElement();
-                // Chỉ lấy các tham số bắt đầu bằng "vnp_" (tham số từ VNPay)
-                // Loại bỏ các tham số khác như "redirect" từ callback URL
                 if (fieldName.startsWith("vnp_")) {
                     String fieldValue = request.getParameter(fieldName);
                     if (fieldValue != null && !fieldValue.isEmpty()) {
@@ -97,11 +88,9 @@ public class VnPaymentService {
                 }
             }
 
-            // Log để debug
             log.info("VNPay callback parameters count: {}", fields.size());
             log.debug("VNPay callback parameters: {}", fields);
 
-            // 2. Lấy Secure Hash từ VNPay gửi về
             String vnp_SecureHash = request.getParameter("vnp_SecureHash");
             
             if (vnp_SecureHash == null || vnp_SecureHash.isEmpty()) {
@@ -109,7 +98,6 @@ public class VnPaymentService {
                 return false;
             }
 
-            // 3. Xóa các trường không cần thiết khỏi map để tính toán hash
             if (fields.containsKey("vnp_SecureHashType")) {
                 fields.remove("vnp_SecureHashType");
             }
@@ -117,13 +105,10 @@ public class VnPaymentService {
                 fields.remove("vnp_SecureHash");
             }
 
-            // 4. Tính toán Hash và so sánh
-            // Logic hash giống hệt lúc tạo URL (Sort -> Encode -> Hash)
             String signValue = hashAllFields(fields);
             
             log.info("Hash verification - Calculated: {}, Received: {}", signValue, vnp_SecureHash);
             
-            // So sánh hash (case-insensitive vì VNPay có thể trả về uppercase hoặc lowercase)
             boolean isValid = signValue.equalsIgnoreCase(vnp_SecureHash);
             
             if (!isValid) {
@@ -141,9 +126,6 @@ public class VnPaymentService {
         }
     }
 
-    // --- CÁC HÀM HỖ TRỢ (HELPER METHODS) ---
-
-    // Hàm build query url (Dùng cho createPaymentUrl)
     private String buildQueryUrl(Map<String, String> vnpParams) {
         List<String> fieldNames = new ArrayList<>(vnpParams.keySet());
         Collections.sort(fieldNames);
@@ -155,17 +137,14 @@ public class VnPaymentService {
             String fieldValue = vnpParams.get(fieldName);
             if (fieldValue != null && !fieldValue.isEmpty()) {
                 try {
-                    // Build Hash Data
                     signData.append(fieldName);
                     signData.append('=');
-                    // QUAN TRỌNG: Encode value
-                    signData.append(URLEncoder.encode(fieldValue, StandardCharsets.UTF_8.toString()));
+                    signData.append(URLEncoder.encode(fieldValue, StandardCharsets.UTF_8));
                     signData.append('&');
 
-                    // Build Query URL
-                    query.append(URLEncoder.encode(fieldName, StandardCharsets.UTF_8.toString()));
+                    query.append(URLEncoder.encode(fieldName, StandardCharsets.UTF_8));
                     query.append('=');
-                    query.append(URLEncoder.encode(fieldValue, StandardCharsets.UTF_8.toString()));
+                    query.append(URLEncoder.encode(fieldValue, StandardCharsets.UTF_8));
                     query.append('&');
                 } catch (Exception e) {
                     log.error("Error formatting params", e);
@@ -173,7 +152,6 @@ public class VnPaymentService {
             }
         }
 
-        // Remove last '&'
         String queryUrl = query.length() > 0 ? query.substring(0, query.length() - 1) : "";
         String signDataStr = signData.length() > 0 ? signData.substring(0, signData.length() - 1) : "";
 
@@ -189,7 +167,7 @@ public class VnPaymentService {
 
         if (clientReturnUrl != null && !clientReturnUrl.isBlank()) {
             try {
-                callbackUrl += "?redirect=" + URLEncoder.encode(clientReturnUrl, StandardCharsets.UTF_8.toString());
+                callbackUrl += "?redirect=" + URLEncoder.encode(clientReturnUrl, StandardCharsets.UTF_8);
             } catch (Exception e) {
                 log.error("Failed to encode client return URL", e);
             }
@@ -197,7 +175,6 @@ public class VnPaymentService {
         return callbackUrl;
     }
 
-    // Hàm hash các field (Dùng cho verifyPaymentResponse)
     private String hashAllFields(Map<String, String> fields) {
         List<String> fieldNames = new ArrayList<>(fields.keySet());
         Collections.sort(fieldNames);
@@ -211,9 +188,7 @@ public class VnPaymentService {
                 sb.append(fieldName);
                 sb.append("=");
                 try {
-                    // QUAN TRỌNG: Phải Encode lại giá trị khi verify vì Spring đã Decode URL
-                    // VNPay sử dụng URL encoding, nên cần encode lại để match với hash ban đầu
-                    String encodedValue = URLEncoder.encode(fieldValue, StandardCharsets.UTF_8.toString());
+                    String encodedValue = URLEncoder.encode(fieldValue, StandardCharsets.UTF_8);
                     sb.append(encodedValue);
                 } catch (Exception e) {
                     log.warn("Failed to encode field value: {}", fieldValue, e);
@@ -264,29 +239,18 @@ public class VnPaymentService {
         return ipAdress;
     }
 
-    // Hàm lấy thông báo lỗi
-    public String getPaymentStatusMessage(String responseCode) {
-        // ... (Giữ nguyên logic cũ của bạn) ...
-        return switch (responseCode) {
-            case "00" -> "Giao dịch thành công";
-            default -> "Giao dịch lỗi: " + responseCode;
-        };
-    }
-
     /**
-     * Xử lý callback từ VNPay sau khi thanh toán
-     * Gọi OrderService để cập nhật order và payment status
+     * Handle callback from VNPay after payment
+     * Call OrderService to update order và payment status
      *
-     * @param responseDto Thông tin phản hồi từ VNPay
-     * @return VnPaymentResponse với thông tin đã xử lý
+     * @param responseDto Response from VNPay
+     * @return VnPaymentResponse Updated response
      */
     public VnPaymentResponse processPaymentCallback(VnPaymentResponse responseDto) {
         String orderNumber = responseDto.vnp_TxnRef();
         String responseCode = responseDto.vnp_ResponseCode();
 
-        // Kiểm tra Response Code
         if ("00".equals(responseCode)) {
-            // Thanh toán thành công - gọi OrderService để cập nhật
             try {
                 orderService.confirmPayment(
                         orderNumber,
@@ -309,15 +273,13 @@ public class VnPaymentService {
                     responseDto.vnp_TransactionNo(),
                     responseDto.vnp_BankCode(),
                     responseDto.vnp_PayDate(),
-                    "Giao dịch thành công");
+                    "Success payment");
         } else {
-            // Thanh toán thất bại - gọi OrderService để cập nhật
             try {
                 orderService.markPaymentAsFailed(orderNumber);
                 log.info("Payment marked as failed for order: {}", orderNumber);
             } catch (Exception e) {
                 log.error("Error marking payment as failed for order: {}", orderNumber, e);
-                // Không throw exception để không ảnh hưởng đến response
             }
             
             return new VnPaymentResponse(
@@ -330,7 +292,7 @@ public class VnPaymentService {
                     responseDto.vnp_TransactionNo(),
                     responseDto.vnp_BankCode(),
                     responseDto.vnp_PayDate(),
-                    "Giao dịch thất bại");
+                    "Failed to confirm payment");
         }
     }
 }

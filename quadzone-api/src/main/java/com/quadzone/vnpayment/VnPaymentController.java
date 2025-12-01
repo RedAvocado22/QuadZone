@@ -11,6 +11,8 @@ import java.io.IOException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+
 @RestController
 @RequestMapping("/api/v1/payments")
 public class VnPaymentController {
@@ -21,11 +23,10 @@ public class VnPaymentController {
         this.vnPaymentService = vnPaymentService;
     }
 
-    // API Tạo thanh toán
     @PostMapping("/create")
     public ResponseEntity<?> createPayment(
             HttpServletRequest request,
-            @RequestBody @Valid VnPaymentRequest vnPaymentRequest // Validate request
+            @RequestBody @Valid VnPaymentRequest vnPaymentRequest
     ) {
         String paymentUrl = vnPaymentService.createPaymentUrl(request, vnPaymentRequest);
         return ResponseEntity.ok(paymentUrl);
@@ -37,25 +38,16 @@ public class VnPaymentController {
             HttpServletResponse response,
             @ModelAttribute VnPaymentResponse responseDto) throws IOException {
 
-        // Kiểm tra xem có param "redirect" không
-        // Nếu có "redirect" param -> đây là request từ VNPay (redirect)
-        // Nếu không có "redirect" param -> đây là request từ frontend (AJAX)
         String redirectParam = request.getParameter("redirect");
         boolean isVnPayRedirect = redirectParam != null && !redirectParam.isEmpty();
 
         if (isVnPayRedirect) {
-            // Request từ VNPay - redirect về frontend
             handleVnPayCallback(request, response, responseDto);
         } else {
-            // Request từ frontend - trả về JSON response
             handleFrontendRequest(request, response, responseDto);
         }
     }
 
-    /**
-     * Xử lý request từ frontend (AJAX/API call)
-     * Chỉ verify và trả về response, không xử lý payment lại (đã xử lý ở lần redirect đầu)
-     */
     private void handleFrontendRequest(
             HttpServletRequest request,
             HttpServletResponse response,
@@ -64,7 +56,6 @@ public class VnPaymentController {
         response.setContentType("application/json");
         response.setCharacterEncoding("UTF-8");
 
-        // Verify chữ ký từ VNPay
         boolean isValidSignature = vnPaymentService.verifyPaymentResponse(request);
 
         if (!isValidSignature) {
@@ -73,7 +64,6 @@ public class VnPaymentController {
             return;
         }
 
-        // Build response từ request params (đảm bảo lấy đúng giá trị)
         try {
             String vnpTxnRef = request.getParameter("vnp_TxnRef");
             String vnpAmount = request.getParameter("vnp_Amount");
@@ -84,7 +74,6 @@ public class VnPaymentController {
             String vnpBankCode = request.getParameter("vnp_BankCode");
             String vnpPayDate = request.getParameter("vnp_PayDate");
             
-            // Build response
             VnPaymentResponse paymentResponse = new VnPaymentResponse(
                     vnpTxnRef != null ? vnpTxnRef : "",
                     vnpAmount != null ? vnpAmount : "",
@@ -95,7 +84,7 @@ public class VnPaymentController {
                     vnpTransactionNo,
                     vnpBankCode,
                     vnpPayDate,
-                    "00".equals(vnpResponseCode) ? "Giao dịch thành công" : "Giao dịch thất bại"
+                    "00".equals(vnpResponseCode) ? "Payment successful" : "Failed to confirm payment"
             );
             
             response.setStatus(200);
@@ -106,24 +95,17 @@ public class VnPaymentController {
         }
     }
 
-    /**
-     * Xử lý callback từ VNPay (redirect)
-     */
     private void handleVnPayCallback(
             HttpServletRequest request,
             HttpServletResponse response,
             @ModelAttribute VnPaymentResponse responseDto) throws IOException {
 
-        // Lấy redirect URL từ tham số (nếu có) - đây là URL frontend được truyền từ CheckoutPage
         String redirectUrl = request.getParameter("redirect");
         
-        // Build frontend URL - mặc định là localhost:5173/vnpay-result
         String frontendBaseUrl;
         if (redirectUrl != null && !redirectUrl.isEmpty()) {
             try {
-                // Decode redirect URL nếu đã được encode
-                frontendBaseUrl = java.net.URLDecoder.decode(redirectUrl, java.nio.charset.StandardCharsets.UTF_8.toString());
-                // Loại bỏ query string nếu có (chỉ lấy base URL)
+                frontendBaseUrl = java.net.URLDecoder.decode(redirectUrl, UTF_8);
                 int queryIndex = frontendBaseUrl.indexOf('?');
                 if (queryIndex > 0) {
                     frontendBaseUrl = frontendBaseUrl.substring(0, queryIndex);
@@ -135,26 +117,18 @@ public class VnPaymentController {
             frontendBaseUrl = "http://localhost:5173/vnpay-result";
         }
 
-        // Verify chữ ký từ VNPay
         boolean isValidSignature = vnPaymentService.verifyPaymentResponse(request);
 
         if (!isValidSignature) {
-            // Checksum sai - redirect về frontend với error
             String errorUrl = frontendBaseUrl + "?error=InvalidChecksum";
             response.sendRedirect(errorUrl);
             return;
         }
 
-        // Xử lý payment callback và cập nhật order/payment trong database
         try {
-            // Process payment callback - cập nhật order và payment status trong database
             vnPaymentService.processPaymentCallback(responseDto);
-            
-            // Build query string với TẤT CẢ params từ VNPay (để frontend có thể verify lại)
             StringBuilder queryString = new StringBuilder();
             boolean firstParam = true;
-            
-            // Lấy tất cả params từ VNPay (loại bỏ redirect param)
             for (var paramNames = request.getParameterNames(); paramNames.hasMoreElements(); ) {
                 String paramName = paramNames.nextElement();
                 if (!"redirect".equals(paramName)) {
@@ -164,10 +138,9 @@ public class VnPaymentController {
                             queryString.append("&");
                         }
                         try {
-                            // Encode lại để đảm bảo URL hợp lệ
                             queryString.append(paramName)
                                        .append("=")
-                                       .append(java.net.URLEncoder.encode(paramValue, java.nio.charset.StandardCharsets.UTF_8.toString()));
+                                       .append(java.net.URLEncoder.encode(paramValue, UTF_8));
                         } catch (Exception e) {
                             queryString.append(paramName).append("=").append(paramValue);
                         }
@@ -176,13 +149,11 @@ public class VnPaymentController {
                 }
             }
             
-            // Redirect về frontend với tất cả params từ VNPay
-            String finalUrl = frontendBaseUrl + "?" + queryString.toString();
+            String finalUrl = frontendBaseUrl + "?" + queryString;
             response.sendRedirect(finalUrl);
             
         } catch (Exception e) {
-            // Xử lý lỗi khi process payment
-            String errorUrl = frontendBaseUrl + "?error=ProcessingError&orderNumber=" + 
+            String errorUrl = frontendBaseUrl + "?error=ProcessingError&orderNumber=" +
                             (responseDto.vnp_TxnRef() != null ? responseDto.vnp_TxnRef() : "");
             response.sendRedirect(errorUrl);
         }
