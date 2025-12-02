@@ -66,10 +66,12 @@ export function ProductCreateForm({ onSuccess, onCancel }: ProductCreateFormProp
     validationSchema: productCreateSchema,
     onSubmit: async (values, { setSubmitting, setStatus, resetForm }) => {
       try {
+        // Prepare product data - imageUrl comes from coverUrl which contains the imgbb URL
+        // after the image is uploaded via handleFileChange
         const productData = {
           name: values.name,
           price: values.price,
-          imageUrl: values.coverUrl || '',
+          imageUrl: values.coverUrl && values.coverUrl.trim() ? values.coverUrl.trim() : '',
           description: values.description || '',
           brand: null,
           modelNumber: null,
@@ -80,6 +82,7 @@ export function ProductCreateForm({ onSuccess, onCancel }: ProductCreateFormProp
           isActive: values.status !== 'locked',
         } as Omit<Product, 'id' | 'subCategory' | 'category' | 'createdAt' | 'updatedAt'> & { subCategoryId?: number };
 
+        // Create product - the imageUrl (from imgbb) will be saved to the database
         await productsApi.create(productData);
 
         if (onSuccess) {
@@ -121,8 +124,10 @@ export function ProductCreateForm({ onSuccess, onCancel }: ProductCreateFormProp
 
     formik.setSubmitting(true);
     try {
+      // Upload image to imgbb and get the URL
       const result = await uploadApi.uploadImage(file);
-      formik.setFieldValue('coverUrl', result.url);
+      // Set the imgbb URL to coverUrl - this will be saved as imageUrl when product is created
+      formik.setFieldValue('coverUrl', result.imageUrl);
       formik.setFieldError('coverUrl', undefined);
     } catch (error: any) {
       formik.setFieldError('coverUrl', error?.message || 'Failed to upload image');

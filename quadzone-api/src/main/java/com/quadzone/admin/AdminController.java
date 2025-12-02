@@ -9,6 +9,9 @@ import com.quadzone.product.category.dto.CategoryRegisterRequest;
 import com.quadzone.product.category.dto.CategoryUpdateRequest;
 import com.quadzone.product.dto.ProductRegisterRequest;
 import com.quadzone.product.dto.ProductUpdateRequest;
+import com.quadzone.upload.dto.UploadResponse;
+import com.quadzone.upload.dto.UploadUpdateRequest;
+import com.quadzone.upload.service.UploadService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -17,18 +20,21 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 @RequestMapping("/api/v1/admin")
 @RequiredArgsConstructor
 @CrossOrigin(origins = "http://localhost:5173")
-@Tag(name = "Admin API", description = "Comprehensive admin management API for products and categories. Provides full CRUD operations with pagination, search, and filtering capabilities.")
+@Tag(name = "Admin API", description = "Comprehensive admin management API for products, categories, and image uploads. Provides full CRUD operations with pagination, search, and filtering capabilities.")
 public class AdminController {
 
     private final ProductService productService;
     private final CategoryService categoryService;
+    private final UploadService uploadService;
 
     @GetMapping("/products")
     @Operation(
@@ -239,6 +245,111 @@ public class AdminController {
             @PathVariable Long id) {
         try {
             categoryService.deleteCategory(id);
+            return ResponseEntity.noContent().build();
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
+        }
+    }
+
+    @PostMapping(value = "/upload/image", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @Operation(
+            summary = "Upload image (Admin)",
+            description = "Upload an image file to ImgBB and store its metadata. Accepts image files up to 50MB. " +
+                    "Returns the uploaded image URL and metadata including thumbnail URL."
+    )
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "201", description = "Image uploaded successfully"),
+            @ApiResponse(responseCode = "400", description = "Invalid file or file format"),
+            @ApiResponse(responseCode = "500", description = "Internal server error during upload")
+    })
+    public ResponseEntity<UploadResponse> uploadImage(
+            @Parameter(description = "Image file to upload", required = true)
+            @RequestParam("file") MultipartFile file,
+            @Parameter(description = "Optional description for the image")
+            @RequestParam(value = "description", required = false) String description) {
+        UploadResponse response = uploadService.uploadImage(file, description);
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
+    }
+
+    @GetMapping("/upload")
+    @Operation(
+            summary = "Get all uploaded images (Admin)",
+            description = "Retrieve a paginated list of all uploaded images with optional search functionality. " +
+                    "Supports pagination and filtering by file name. Returns image metadata including URLs and descriptions."
+    )
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Successfully retrieved uploads list"),
+            @ApiResponse(responseCode = "400", description = "Invalid pagination parameters"),
+            @ApiResponse(responseCode = "500", description = "Internal server error")
+    })
+    public ResponseEntity<PagedResponse<UploadResponse>> getAllUploads(
+            @Parameter(description = "Page number (0-indexed)", example = "0")
+            @RequestParam(defaultValue = "0") int page,
+            @Parameter(description = "Number of items per page", example = "10")
+            @RequestParam(defaultValue = "10") int size,
+            @Parameter(description = "Search query to filter uploads by file name", example = "image")
+            @RequestParam(defaultValue = "") String search) {
+        return ResponseEntity.ok(uploadService.getAllUploads(page, size, search));
+    }
+
+    @GetMapping("/upload/{id}")
+    @Operation(
+            summary = "Get uploaded image by ID (Admin)",
+            description = "Retrieve detailed information about a specific uploaded image by its unique identifier. " +
+                    "Returns complete image metadata including URLs, file size, and upload timestamp."
+    )
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Upload found and returned successfully"),
+            @ApiResponse(responseCode = "404", description = "Upload not found with the provided ID"),
+            @ApiResponse(responseCode = "400", description = "Invalid upload ID format")
+    })
+    public ResponseEntity<UploadResponse> getUploadById(
+            @Parameter(description = "Unique identifier of the upload", example = "1", required = true)
+            @PathVariable Long id) {
+        return ResponseEntity.ok(uploadService.getUploadById(id));
+    }
+
+    @PutMapping("/upload/{id}")
+    @Operation(
+            summary = "Update uploaded image metadata (Admin)",
+            description = "Update metadata of an existing uploaded image (e.g., description). " +
+                    "Note: This does not replace the image file itself, only updates metadata."
+    )
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Upload updated successfully"),
+            @ApiResponse(responseCode = "404", description = "Upload not found with the provided ID"),
+            @ApiResponse(responseCode = "400", description = "Invalid input data or validation failed"),
+            @ApiResponse(responseCode = "500", description = "Internal server error during update")
+    })
+    public ResponseEntity<UploadResponse> updateUpload(
+            @Parameter(description = "Unique identifier of the upload to update", example = "1", required = true)
+            @PathVariable Long id,
+            @Parameter(description = "Upload update request with fields to modify", required = true)
+            @Valid @RequestBody UploadUpdateRequest request) {
+        try {
+            UploadResponse updatedUpload = uploadService.updateUpload(id, request);
+            return ResponseEntity.ok(updatedUpload);
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
+        }
+    }
+
+    @DeleteMapping("/upload/{id}")
+    @Operation(
+            summary = "Delete uploaded image record (Admin)",
+            description = "Delete an uploaded image record from the database. " +
+                    "This removes the metadata record but note that the image may still exist on ImgBB servers."
+    )
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "204", description = "Upload deleted successfully"),
+            @ApiResponse(responseCode = "404", description = "Upload not found with the provided ID"),
+            @ApiResponse(responseCode = "500", description = "Internal server error during deletion")
+    })
+    public ResponseEntity<Void> deleteUpload(
+            @Parameter(description = "Unique identifier of the upload to delete", example = "1", required = true)
+            @PathVariable Long id) {
+        try {
+            uploadService.deleteUpload(id);
             return ResponseEntity.noContent().build();
         } catch (RuntimeException e) {
             return ResponseEntity.notFound().build();

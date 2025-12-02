@@ -148,6 +148,30 @@ export interface CurrentUser {
     createdAt: string; // ISO date string
 }
 
+export interface UserProfile {
+  id: number;
+  email: string;
+  firstName: string;
+  lastName: string;
+  phoneNumber?: string;
+  address?: string;
+  city?: string;
+  dateOfBirth?: string;
+  avatarUrl?: string;
+  role: UserRole;
+  createdAt: string;
+  updatedAt?: string;
+}
+
+export interface UpdateProfileRequest {
+  firstName: string;
+  lastName: string;
+  phoneNumber?: string;
+  address?: string;
+  city?: string;
+  dateOfBirth?: string;
+}
+
 // Legacy type aliases for backward compatibility
 export type UserResponse = User;
 export type CurrentUserResponse = CurrentUser;

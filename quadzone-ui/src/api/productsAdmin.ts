@@ -55,13 +55,13 @@ export const productsApi = {
     const requestBody: any = {
       name: product.name,
       brand: product.brand || '',
-      modelNumber: '',
-      description: '',
+      modelNumber: product.modelNumber || '',
+      description: product.description || '',
       stock: product.quantity || 0,
       price: product.price,
-      costPrice: product.price * 0.8,
-      weight: 0,
-      color: '',
+      costPrice: product.costPrice || (product.price * 0.8),
+      weight: product.weight || 0,
+      color: product.color || '',
       imageUrl: product.imageUrl || '',
       subCategory: product.subCategoryId ? { id: product.subCategoryId } : null,
     };
@@ -77,6 +77,7 @@ export const productsApi = {
     if (product.brand !== undefined) requestBody.brand = product.brand;
     if (product.price !== undefined) requestBody.price = product.price;
     if (product.quantity !== undefined) requestBody.quantity = product.quantity;
+    if (product.description !== undefined) requestBody.description = product.description;
     if (product.imageUrl !== undefined) requestBody.imageUrl = product.imageUrl;
     if (product.subCategoryId !== undefined) requestBody.subCategory = { id: product.subCategoryId };
     if (product.status !== undefined) requestBody.isActive = product.status !== 'locked';

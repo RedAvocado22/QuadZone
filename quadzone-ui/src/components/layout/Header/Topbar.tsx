@@ -40,7 +40,7 @@ const Topbar = () => {
                                 <>
                                     <li className="list-inline-item mr-0 u-header-topbar__nav-item u-header-topbar__nav-item-border">
                                         {/* Assuming your user object has a firstName property */}
-                                        <Link to="/my-account" className="u-header-topbar__nav-link">
+                                        <Link to="/profile" className="u-header-topbar__nav-link">
                                             <i className="ec ec-user mr-1"></i>
                                             Hi, {user ? `${user.firstName} ${user.lastName}`.trim() : "My Account"}
                                         </Link>

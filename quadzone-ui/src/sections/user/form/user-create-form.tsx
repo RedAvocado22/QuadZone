@@ -129,7 +129,7 @@ export function UserCreateForm({ onSuccess, onCancel }: UserCreateFormProps) {
         formik.setSubmitting(true);
         try {
             const result = await uploadApi.uploadImage(file);
-            formik.setFieldValue("avatarUrl", result.url);
+            formik.setFieldValue("avatarUrl", result.imageUrl);
             formik.setFieldError("avatarUrl", undefined);
         } catch (error: any) {
             formik.setFieldError("avatarUrl", error?.message || "Failed to upload image");

@@ -1,0 +1,979 @@
+<!doctype html>
+<html class="no-js" lang="en" xmlns:th="http://www.thymeleaf.org">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Hồ sơ cá nhân</title>
+<!-- Font Awesome -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+<body class="sticky-header">
+
+<a href="#top" class="back-to-top" id="backto-top"><i class="fal fa-arrow-up"></i></a>
+
+<header class="header axil-header header-style-5">
+  <div th:replace="~{user/fragments/header2 :: header}"></div>
+</header>
+
+<main class="main-wrapper">
+  <!-- Start My Account Area  -->
+  <div class="axil-dashboard-area axil-section-gap">
+    <div class="container">
+      <!-- Success message display -->
+      <div th:if="${success}" class="alert alert-success alert-dismissible fade show" role="alert">
+        <i class="fas fa-check-circle"></i>
+        <span th:text="${success}"></span>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+      </div>
+
+      <!-- Error message display -->
+      <div th:if="${error}" class="alert alert-danger alert-dismissible fade show" role="alert">
+        <i class="fas fa-exclamation-circle"></i>
+        <span th:text="${error}"></span>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+      </div>
+
+      <div class="axil-dashboard-warp" th:if="${user}">
+        <div class="axil-dashboard-author">
+          <div class="media">
+            <div class="thumbnail">
+              <img th:src="${user.image != null && !user.image.isEmpty()} ?
+                                @{'/uploads/avatars/' + ${user.image}} :
+                                @{/assets/images/product/author1.png}" alt="User Avatar" class="rounded-circle"
+                   style="width: 60px; height: 60px; object-fit: cover;">
+            </div>
+            <div class="media-body">
+              <h5 class="title mb-0">Xin chào <span th:text="${user.fullName}"></span>!</h5>
+              <span class="joining-date">Thành viên từ <span
+                      th:text="${#temporals.format(user.createdAt, 'MMM yyyy')}"></span></span>
+            </div>
+          </div>
+        </div>
+        <div class="row">
+          <div class="col-xl-3 col-md-4">
+            <aside class="axil-dashboard-aside">
+              <nav class="axil-dashboard-nav">
+                <div class="nav nav-tabs" role="tablist">
+                  <a class="nav-item nav-link active" data-bs-toggle="tab"
+                     href="#nav-account-info" role="tab" aria-selected="true"><i
+                          class="fas fa-user"></i>Thông tin tài khoản</a>
+                  <a class="nav-item nav-link" data-bs-toggle="tab" href="#nav-orders" role="tab"
+                     aria-selected="false"><i class="fas fa-shopping-basket"></i>Đơn hàng</a>
+                  <a class="nav-item nav-link" data-bs-toggle="tab" href="#nav-avatar" role="tab"
+                     aria-selected="false"><i class="fas fa-camera"></i>Upload ảnh</a>
+                  <a class="nav-item nav-link" data-bs-toggle="tab" href="#nav-edit-info"
+                     role="tab" aria-selected="false"><i class="fas fa-edit"></i>Chỉnh sửa thông
+                    tin</a>
+                  <a class="nav-item nav-link" data-bs-toggle="tab" href="#nav-change-password"
+                     role="tab" aria-selected="false" th:unless="${isOAuth2}"><i
+                          class="fas fa-key"></i>Đổi mật khẩu</a>
+                  <a class="nav-item nav-link" href="/logout"><i class="fal fa-sign-out"></i>Đăng
+                    xuất</a>
+                </div>
+              </nav>
+            </aside>
+          </div>
+          <div class="col-xl-9 col-md-8">
+            <div class="tab-content">
+              <!-- Account Info Tab (formerly Dashboard) -->
+              <div class="tab-pane fade show active" id="nav-account-info" role="tabpanel">
+                <div class="axil-dashboard-overview">
+                  <div class="welcome-text">Xin chào <span th:text="${user.fullName}"></span>!
+                    (không phải <span th:text="${user.fullName}"></span>? <a href="/logout">Đăng
+                      xuất</a>)</div>
+                  <p>Thông tin chi tiết về tài khoản của bạn. Để cập nhật thông tin, vui lòng sử
+                    dụng tab "Chỉnh sửa thông tin".</p>
+
+                  <!-- User Info Summary -->
+                  <div class="row mt-4">
+                    <div class="col-md-6">
+                      <div class="card mb-3">
+                        <div class="card-body">
+                          <h6 class="card-title"><i class="fas fa-info-circle"></i> Thông
+                            tin cơ bản</h6>
+                          <p class="card-text">
+                            <strong>Họ và tên:</strong> <span
+                                  th:text="${user.fullName}"></span><br>
+
+                            <!-- GitHub users: chỉ hiển thị username -->
+                            <span
+                                    th:if="${authProvider == 'github' and user.email.endsWith('@github.com')}">
+                                                                <strong>GitHub Username:</strong>
+                                                                <span th:text="${user.email.replace('@github.com', '')}"
+                                                                      style="font-family: monospace; color: #007bff; font-size: 1.1em;">
+                                                                </span><br>
+                                                            </span>
+
+                            <!-- Các OAuth2 khác hoặc form login: hiển thị email -->
+                            <span
+                                    th:unless="${authProvider == 'github' and user.email.endsWith('@github.com')}">
+                                                                <strong>Email:</strong> <span
+                                    th:text="${user.email}"></span><br>
+                                                            </span>
+
+                            <strong>Số điện thoại:</strong> <span
+                                  th:text="${hasPhoneNumber} ? ${user.phoneNumber} : 'Chưa cập nhật'"></span><br>
+                            <strong>Địa chỉ:</strong> <span
+                                  th:text="${hasAddress} ? ${user.address} : 'Chưa cập nhật'"></span>
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="col-md-6">
+                      <div class="card mb-3">
+                        <div class="card-body">
+                          <h6 class="card-title"><i class="fas fa-shield-alt"></i> Bảo mật
+                            & Trạng thái</h6>
+                          <p class="card-text">
+                            <strong>Vai trò:</strong> <span class="badge"
+                                                            th:classappend="${user.role.name() == 'ADMIN'} ? 'bg-danger' : 'bg-success'"
+                                                            th:text="${user.role.name()}"></span><br>
+                            <strong>Trạng thái:</strong> <span class="badge"
+                                                               th:classappend="${user.isActive} ? 'bg-success' : 'bg-warning'"
+                                                               th:text="${user.isActive} ? 'Đã kích hoạt' : 'Chưa kích hoạt'"></span><br>
+                            <strong>Phương thức đăng nhập:</strong>
+                            <span th:if="${isOAuth2}" class="badge bg-info">
+                                                                <i class="fab"
+                                                                   th:classappend="${'fa-' + authProvider}"></i>
+                                                                <span th:text="${authProvider}"></span>
+                                                            </span>
+                            <span th:unless="${isOAuth2}" class="badge bg-primary">Mật
+                                                                khẩu</span><br>
+                            <strong>Tài khoản bị khóa:</strong> <span
+                                  th:text="${user.isAccountLocked} ? 'Có' : 'Không'"></span><br>
+                            <strong>Thành viên từ:</strong> <span
+                                  th:text="${#temporals.format(user.createdAt, 'dd/MM/yyyy')}"></span>
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Orders Tab -->
+              <div class="tab-pane fade" id="nav-orders" role="tabpanel">
+                <div class="axil-dashboard-order">
+                  <div class="table-responsive">
+                    <table class="table">
+                      <thead>
+                      <tr>
+                        <th scope="col">Mã đơn</th>
+                        <th scope="col">Ngày</th>
+                        <th scope="col">Trạng thái</th>
+                        <th scope="col">Tổng tiền</th>
+                        <th scope="col">Thao tác</th>
+                      </tr>
+                      </thead>
+                      <tbody>
+                      <!-- Show when user has no orders -->
+                      <tr th:if="${!hasOrders}">
+                        <td colspan="5" class="text-center py-4">
+                          <i class="fas fa-shopping-cart fa-3x text-muted mb-3"></i>
+                          <h5>Bạn chưa có đơn hàng nào</h5>
+                          <p class="text-muted">Hãy bắt đầu mua sắm để xem lịch sử đơn
+                            hàng tại đây!</p>
+                          <a th:href="@{/user/shopping-page}" class="btn btn-primary">
+                            <i class="fas fa-shopping-cart me-2"></i>Bắt đầu mua sắm
+                          </a>
+                        </td>
+                      </tr>
+
+                      <!-- Show orders when user has orders -->
+                      <tr th:if="${hasOrders}" th:each="order : ${orders}">
+                        <td>
+                          <strong>#<span th:text="${order.id}"></span></strong>
+                        </td>
+                        <td>
+                                                            <span
+                                                                    th:text="${#temporals.format(order.orderDate, 'dd/MM/yyyy')}"></span><br>
+                          <small class="text-muted"
+                                 th:text="${#temporals.format(order.orderDate, 'HH:mm')}"></small>
+                        </td>
+                        <td>
+                                                            <span class="badge"
+                                                                  th:classappend="${order.status == 'PENDING' ? 'bg-warning' :
+                                                                          (order.status == 'CONFIRMED' ? 'bg-info' :
+                                                                          (order.status == 'SHIPPING' ? 'bg-primary' :
+                                                                          (order.status == 'DELIVERED' ? 'bg-success' :
+                                                                          (order.status == 'USER_CONFIRMED' ? 'bg-success' : 'bg-danger'))))}"
+                                                                  th:text="${order.status == 'PENDING' ? 'Đang xử lý' :
+                                                                   (order.status == 'CONFIRMED' ? 'Đã xác nhận' :
+                                                                   (order.status == 'SHIPPING' ? 'Đang giao hàng' :
+                                                                   (order.status == 'DELIVERED' ? 'Đã giao hàng' :
+                                                                   (order.status == 'USER_CONFIRMED' ? 'Đã nhận hàng' : 'Đã hủy'))))}">
+                                                            </span>
+                        </td>
+                        <td>
+                          <strong class="text-primary"
+                                  th:text="${#numbers.formatDecimal(order.totalAmount, 0, 'COMMA', 0, 'POINT')} + ' ₫'"></strong><br>
+                          <small class="text-muted"
+                                 th:if="${order.orderDetails != null}"
+                                 th:text="${order.orderDetails.size()} + ' sản phẩm'"></small>
+                        </td>
+                        <td>
+                          <a th:href="@{/cart/order/{orderId}(orderId=${order.id})}"
+                             class="btn btn-sm btn-outline-primary me-2">
+                            <i class="fas fa-eye"></i> Xem chi tiết
+                          </a>
+
+                          <!-- Nút xác nhận đã nhận hàng khi status = DELIVERED -->
+                          <button th:if="${order.status == 'DELIVERED'}"
+                                  class="btn btn-sm btn-outline-success me-2"
+                                  onclick="confirmDelivery(this)"
+                                  th:data-order-id="${order.id}">
+                            <i class="fas fa-check"></i> Xác nhận đã nhận hàng
+                          </button>
+
+                          <!-- Nút đánh giá khi status = USER_CONFIRMED -->
+                          <a th:if="${order.status == 'USER_CONFIRMED'}"
+                             class="btn btn-sm btn-outline-warning me-2"
+                             onclick="showReviewModal(this)"
+                             th:data-order-id="${order.id}">
+                            <i class="fas fa-star"></i> Đánh giá
+                          </a>
+                        </td>
+                      </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Avatar Upload Tab - ĐỚN GIẢN -->
+              <div class="tab-pane fade" id="nav-avatar" role="tabpanel">
+                <div class="axil-dashboard-account">
+                  <h4 class="title mb-4">Ảnh đại diện</h4>
+
+                  <!-- Ảnh hiện tại -->
+                  <div class="text-center mb-4">
+                    <img th:src="${user.image != null && !user.image.isEmpty()} ?
+                                                        @{'/uploads/avatars/' + ${user.image}} :
+                                                        @{/assets/images/product/author1.png}" alt="Avatar"
+                         class="rounded-circle"
+                         style="width: 150px; height: 150px; object-fit: cover; border: 2px solid #ddd;">
+                  </div>
+
+                  <!-- Upload form -->
+                  <div class="card">
+                    <div class="card-body">
+                      <h5>Tải ảnh mới</h5>
+                      <form th:action="@{/user/upload-avatar}" method="post"
+                            enctype="multipart/form-data">
+                        <div class="mb-3">
+                          <input type="file" class="form-control" name="avatarFile"
+                                 accept="image/*" required>
+                          <small class="text-muted">JPG, PNG, GIF - Tối đa 5MB</small>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Tải lên</button>
+                      </form>
+                    </div>
+                  </div>
+
+                  <!-- Xóa ảnh -->
+                  <div class="card mt-3" th:if="${user.image != null && !user.image.isEmpty()}">
+                    <div class="card-body">
+                      <h5>Xóa ảnh</h5>
+                      <button type="button" class="btn btn-danger" onclick="xoaAnh()">Xóa ảnh
+                        đại diện</button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Edit Info Tab -->
+              <div class="tab-pane fade" id="nav-edit-info" role="tabpanel">
+                <div class="col-lg-9">
+                  <div class="axil-dashboard-account">
+                    <h4 class="title mb-4"><i class="fas fa-edit"></i> Chỉnh sửa thông tin cá
+                      nhân</h4>
+                    <form class="account-details-form" th:action="@{/user/update-profile}"
+                          method="post" th:object="${userInfoUpdateRequest}">
+                      <input type="hidden" name="action" value="update-info">
+                      <div class="row">
+                        <div class="col-12">
+                          <div class="form-group">
+                            <label>Họ và tên <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" name="fullName"
+                                   th:value="${user.fullName}" required>
+                            <div class="invalid-feedback d-block"
+                                 th:if="${userInfoUpdateRequest != null and #fields.hasErrors('fullName')}"
+                                 th:errors="*{fullName}"></div>
+                          </div>
+                        </div>
+                        <div class="col-lg-6">
+                          <!-- GitHub users: hiển thị username thay vì email -->
+                          <div class="form-group"
+                               th:if="${authProvider == 'github' and user.email.endsWith('@github.com')}">
+                            <label>GitHub Username</label>
+                            <input type="text" class="form-control"
+                                   th:value="${user.email.replace('@github.com', '')}"
+                                   readonly
+                                   style="font-family: monospace; background-color: #f8f9fa; color: #007bff;">
+                            <small class="text-muted">GitHub username không thể thay
+                              đổi</small>
+                          </div>
+
+                          <!-- Các OAuth2 khác hoặc form login: hiển thị email -->
+                          <div class="form-group"
+                               th:unless="${authProvider == 'github' and user.email.endsWith('@github.com')}">
+                            <label>Email</label>
+                            <input type="email" class="form-control"
+                                   th:value="${user.email}" readonly>
+                            <small class="text-muted">Email không thể thay đổi</small>
+                          </div>
+                        </div>
+                        <div class="col-lg-6">
+                          <div class="form-group">
+                            <label>Số điện thoại</label>
+                            <input type="text" class="form-control" name="phoneNumber"
+                                   th:value="${user.phoneNumber}"
+                                   placeholder="Nhập số điện thoại">
+                            <div class="invalid-feedback d-block"
+                                 th:if="${userInfoUpdateRequest != null and #fields.hasErrors('phoneNumber')}"
+                                 th:errors="*{phoneNumber}"></div>
+                          </div>
+                        </div>
+                        <div class="col-12">
+                          <div class="form-group mb--40">
+                            <label>Địa chỉ</label>
+                            <textarea class="form-control" name="address" rows="3"
+                                      th:text="${user.address}"
+                                      placeholder="Nhập địa chỉ"></textarea>
+                            <div class="invalid-feedback d-block"
+                                 th:if="${userInfoUpdateRequest != null and #fields.hasErrors('address')}"
+                                 th:errors="*{address}"></div>
+                          </div>
+                        </div>
+
+                        <div class="form-group mb--0">
+                          <button type="submit" class="axil-btn btn-primary">
+                            <i class="fas fa-save me-2"></i>Lưu thay đổi
+                          </button>
+                          <button type="reset" class="btn btn-outline-secondary ms-3">
+                            <i class="fas fa-undo me-2"></i>Đặt lại
+                          </button>
+                        </div>
+                      </div>
+                    </form>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Change Password Tab - only for non-OAuth2 users -->
+              <div class="tab-pane fade" id="nav-change-password" role="tabpanel"
+                   th:unless="${isOAuth2}">
+                <div class="col-lg-8">
+                  <div class="axil-dashboard-account">
+                    <h4 class="title mb-4"><i class="fas fa-key"></i> Đổi mật khẩu</h4>
+                    <div class="alert alert-info">
+                      <i class="fas fa-info-circle me-2"></i>
+                      Để bảo mật tài khoản, vui lòng sử dụng mật khẩu mạnh có ít nhất 8 ký tự,
+                      bao gồm chữ hoa, chữ thường, số và ký tự đặc biệt.
+                    </div>
+                    <form class="account-details-form" th:action="@{/user/update-profile}"
+                          method="post" th:object="${passwordChangeRequest}">
+                      <input type="hidden" name="action" value="change-password">
+                      <div class="row">
+                        <div class="col-12">
+                          <div class="form-group">
+                            <label>Mật khẩu hiện tại <span
+                                    class="text-danger">*</span></label>
+                            <input type="password" class="form-control"
+                                   name="currentPassword"
+                                   placeholder="Nhập mật khẩu hiện tại" required>
+                            <div class="invalid-feedback d-block"
+                                 th:if="${passwordChangeRequest != null and #fields.hasErrors('currentPassword')}"
+                                 th:errors="*{currentPassword}"></div>
+                          </div>
+                        </div>
+                        <div class="col-12">
+                          <div class="form-group">
+                            <label>Mật khẩu mới <span
+                                    class="text-danger">*</span></label>
+                            <input type="password" class="form-control"
+                                   name="newPassword" placeholder="Nhập mật khẩu mới"
+                                   required>
+                            <div class="invalid-feedback d-block"
+                                 th:if="${passwordChangeRequest != null and #fields.hasErrors('newPassword')}"
+                                 th:errors="*{newPassword}"></div>
+                          </div>
+                        </div>
+                        <div class="col-12">
+                          <div class="form-group">
+                            <label>Xác nhận mật khẩu mới <span
+                                    class="text-danger">*</span></label>
+                            <input type="password" class="form-control"
+                                   name="confirmPassword"
+                                   placeholder="Nhập lại mật khẩu mới" required>
+                            <div class="invalid-feedback d-block"
+                                 th:if="${passwordChangeRequest != null and #fields.hasErrors('confirmPassword')}"
+                                 th:errors="*{confirmPassword}"></div>
+                          </div>
+                        </div>
+
+                        <div class="form-group mb--0">
+                          <button type="submit" class="axil-btn btn-warning">
+                            <i class="fas fa-key me-2"></i>Đổi mật khẩu
+                          </button>
+                          <button type="reset" class="btn btn-outline-secondary ms-3">
+                            <i class="fas fa-undo me-2"></i>Đặt lại
+                          </button>
+                        </div>
+                      </div>
+                    </form>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- End My Account Area  -->
+</main>
+
+<div th:replace="~{user/fragments/footer :: footer}"></div>
+
+<div th:replace="~{user/fragments/cartreview :: cartreview}"></div>
+
+<!-- Review Modal -->
+<div class="modal fade" id="reviewModal" tabindex="-1" aria-labelledby="reviewModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <!-- Loading -->
+        <div id="reviewModalLoading" class="text-center py-4">
+          <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Đang tải...</span>
+          </div>
+          <p class="mt-2 text-muted">Đang tải danh sách sản phẩm...</p>
+        </div>
+
+        <!-- Product List -->
+        <div id="reviewProductList" style="display: none;">
+          <div class="alert alert-info">
+            <i class="fas fa-info-circle me-2"></i>
+            Chọn sản phẩm để đánh giá.
+          </div>
+          <div id="productListContainer">
+            <!-- Products will be loaded here -->
+          </div>
+        </div>
+
+        <!-- Review Form -->
+        <div id="reviewForm" style="display: none;">
+          <form id="submitReviewForm">
+            <input type="hidden" id="reviewOrderId" name="orderId">
+            <input type="hidden" id="reviewProductId" name="productId">
+
+            <!-- Selected Product Info -->
+            <div class="card mb-3" id="selectedProductInfo">
+              <!-- Product info will be displayed here -->
+            </div>
+
+            <!-- Rating -->
+            <div class="mb-3">
+              <label class="form-label">Đánh giá của bạn <span class="text-danger">*</span></label>
+              <div class="star-rating-input" id="starRating">
+                <label for="star1" class="star" data-rating="1">
+                  <i class="fas fa-star"></i>
+                </label>
+                <label for="star2" class="star" data-rating="2">
+                  <i class="fas fa-star"></i>
+                </label>
+                <label for="star3" class="star" data-rating="3">
+                  <i class="fas fa-star"></i>
+                </label>
+                <label for="star4" class="star" data-rating="4">
+                  <i class="fas fa-star"></i>
+                </label>
+                <label for="star5" class="star" data-rating="5">
+                  <i class="fas fa-star"></i>
+                </label>
+                <input type="radio" id="star1" name="rating" value="1" style="display: none;">
+                <input type="radio" id="star2" name="rating" value="2" style="display: none;">
+                <input type="radio" id="star3" name="rating" value="3" style="display: none;">
+                <input type="radio" id="star4" name="rating" value="4" style="display: none;">
+                <input type="radio" id="star5" name="rating" value="5" style="display: none;">
+              </div>
+            </div>
+
+            <!-- Comment -->
+            <div class="mb-3">
+              <label for="reviewComment" class="form-label">Nhận xét của bạn</label>
+              <textarea class="form-control" id="reviewComment" name="comment" rows="4"
+                        placeholder="Chia sẻ trải nghiệm của bạn về sản phẩm này..."></textarea>
+              <small class="text-muted">Tối đa 1000 ký tự</small>
+            </div>
+          </form>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+        <button type="button" id="backToProductList" class="btn btn-outline-primary" style="display: none;">
+          <i class="fas fa-arrow-left me-2"></i>Quay lại danh sách
+        </button>
+        <button type="button" id="submitReview" class="btn btn-warning" style="display: none;">
+          <i class="fas fa-paper-plane me-2"></i>Gửi đánh giá
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- JavaScript cho Avatar Upload -->
+<script>
+  // Auto-activate tab based on URL fragment
+  document.addEventListener('DOMContentLoaded', function() {
+    if (window.location.hash) {
+      const tabId = window.location.hash;
+      const tabLink = document.querySelector(`a[href="${tabId}"]`);
+      if (tabLink) {
+        const tab = new bootstrap.Tab(tabLink);
+        tab.show();
+      }
+    }
+  });
+
+  function xoaAnh() {
+    if (confirm('Xóa ảnh đại diện?')) {
+      fetch('/user/remove-avatar', { method: 'POST' })
+              .then(response => response.json())
+              .then(data => {
+                if (data.success) {
+                  showNotification('✅ ' + data.message, 'success');
+                  setTimeout(() => {
+                    window.location.reload();
+                  }, 1500);
+                } else {
+                  showNotification('❌ ' + data.message, 'error');
+                }
+              })
+              .catch(error => {
+                console.error('Error:', error);
+                showNotification('❌ Có lỗi xảy ra khi xóa ảnh!', 'error');
+              });
+    }
+  }
+
+  function showNotification(message, type) {
+    const alertClass = type === 'success' ? 'alert-success' : 'alert-danger';
+    const notification = document.createElement('div');
+    notification.className = `alert ${alertClass} alert-dismissible fade show position-fixed`;
+    notification.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px; max-width: 400px;';
+    notification.innerHTML = `
+        ${message}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    `;
+
+    document.body.appendChild(notification);
+
+    setTimeout(() => {
+      if (notification.parentNode) {
+        notification.remove();
+      }
+    }, 5000);
+  }
+
+  // === REVIEW MODAL FUNCTIONALITY ===
+  let currentOrderId = null;
+  let currentProducts = [];
+
+  function showReviewModal(button) {
+    currentOrderId = button.getAttribute('data-order-id');
+
+    // Reset modal state
+    document.getElementById('reviewModalLoading').style.display = 'block';
+    document.getElementById('reviewProductList').style.display = 'none';
+    document.getElementById('reviewForm').style.display = 'none';
+    document.getElementById('backToProductList').style.display = 'none';
+    document.getElementById('submitReview').style.display = 'none';
+
+    // Show modal
+    const modal = new bootstrap.Modal(document.getElementById('reviewModal'));
+    modal.show();
+
+    // Load products in order
+    loadOrderProducts(currentOrderId);
+  }
+
+  function loadOrderProducts(orderId) {
+    fetch(`/user/order-products/${orderId}`)
+            .then(response => response.json())
+            .then(data => {
+              if (data.success) {
+                currentProducts = data.products;
+                displayProductList(data.products);
+              } else {
+                showNotification('❌ ' + data.message, 'error');
+                bootstrap.Modal.getInstance(document.getElementById('reviewModal')).hide();
+              }
+            })
+            .catch(error => {
+              console.error('Error loading products:', error);
+              showNotification('❌ Có lỗi xảy ra khi tải danh sách sản phẩm!', 'error');
+              bootstrap.Modal.getInstance(document.getElementById('reviewModal')).hide();
+            });
+  }
+
+  function displayProductList(products) {
+    document.getElementById('reviewModalLoading').style.display = 'none';
+    document.getElementById('reviewProductList').style.display = 'block';
+
+    const container = document.getElementById('productListContainer');
+    container.innerHTML = '';
+
+    products.forEach(product => {
+      const productCard = document.createElement('div');
+      productCard.className = 'card mb-3';
+      productCard.innerHTML = `
+                <div class="card-body">
+                    <div class="row align-items-center">
+                        <div class="col-md-2">
+                            <img src="/assets/images/product/laptop/${product.imageURL || 'default.jpg'}"
+                                 alt="${product.name}" class="img-fluid rounded">
+                        </div>
+                        <div class="col-md-7">
+                            <h6 class="card-title mb-1">${product.name}</h6>
+                            <p class="text-muted mb-1">Thương hiệu: ${product.brand || 'Không rõ'}</p>
+                            <p class="text-primary mb-0">
+                                <strong>${formatPrice(product.price)} ₫</strong>
+                            </p>
+la                            ${product.hasReviewed ?
+              `<div class="mt-2">
+                                    <small class="text-muted">Đánh giá của bạn:</small>
+                                    <div class="d-flex align-items-center">
+                                        <div class="star-display me-2">
+                                            ${generateStarDisplay(product.review.rating)}
+                                        </div>
+                                        <small class="text-muted">${formatDate(product.review.createdAt)}</small>
+                                    </div>
+                                    ${product.review.comment ?
+                      `<small class="text-muted d-block mt-1">"${product.review.comment.length > 50 ?
+                              product.review.comment.substring(0, 50) + '...' :
+                              product.review.comment}"</small>` : ''}
+                                </div>` : ''}
+                        </div>
+                        <div class="col-md-3 text-end">
+                            ${product.hasReviewed
+              ? `<button class="btn btn-warning btn-sm" onclick="selectProductToReview('${product.productID}')">
+                                     <i class="fas fa-edit me-1"></i>Chỉnh sửa
+                                   </button>
+                                   <div class="mt-1">
+                                       <span class="badge bg-success"><i class="fas fa-check me-1"></i>Đã đánh giá</span>
+                                   </div>`
+              : `<button class="btn btn-warning btn-sm" onclick="selectProductToReview('${product.productID}')">
+                                     <i class="fas fa-star me-1"></i>Đánh giá
+                                   </button>`
+      }
+                        </div>
+                    </div>
+                </div>
+            `;
+      container.appendChild(productCard);
+    });
+  }
+
+  function selectProductToReview(productId) {
+    const product = currentProducts.find(p => p.productID === productId);
+    if (!product) return;
+
+    // Hide product list, show review form
+    document.getElementById('reviewProductList').style.display = 'none';
+    document.getElementById('reviewForm').style.display = 'block';
+    document.getElementById('backToProductList').style.display = 'inline-block';
+    document.getElementById('submitReview').style.display = 'inline-block';
+
+    // Fill form
+    document.getElementById('reviewOrderId').value = currentOrderId;
+    document.getElementById('reviewProductId').value = productId;
+
+    // Display selected product info
+    document.getElementById('selectedProductInfo').innerHTML = `
+            <div class="card-body">
+                <div class="row align-items-center">
+                    <div class="col-md-3">
+                        <img src="/assets/images/product/laptop/${product.imageURL || 'default.jpg'}"
+                             alt="${product.name}" class="img-fluid rounded">
+                    </div>
+                    <div class="col-md-9">
+                        <h5 class="card-title">${product.name}</h5>
+                        <p class="text-muted mb-1">Thương hiệu: ${product.brand || 'Không rồ'}</p>
+                        <p class="text-primary mb-0">
+                            <strong>${formatPrice(product.price)} ₫</strong>
+                        </p>
+                        ${product.hasReviewed ?
+            '<div class="alert alert-info mt-2"><i class="fas fa-info-circle me-2"></i>Bạn đang chỉnh sửa đánh giá hiện có</div>' :
+            '<div class="alert alert-success mt-2"><i class="fas fa-star me-2"></i>Tạo đánh giá mới cho sản phẩm</div>'}
+                    </div>
+                </div>
+            </div>
+        `;
+
+    // Reset form and load existing review if available
+    resetReviewForm();
+    if (product.hasReviewed && product.review) {
+      loadExistingReview(product.review);
+    }
+
+    // Update submit button text
+    const submitButton = document.getElementById('submitReview');
+    if (product.hasReviewed) {
+      submitButton.innerHTML = '<i class="fas fa-save me-2"></i>Cập nhật đánh giá';
+    } else {
+      submitButton.innerHTML = '<i class="fas fa-paper-plane me-2"></i>Gửi đánh giá';
+    }
+  }
+
+  function resetReviewForm() {
+    // Reset star rating
+    document.querySelectorAll('.star-rating-input .star').forEach(star => {
+      star.classList.remove('selected');
+    });
+    document.querySelectorAll('input[name="rating"]').forEach(input => {
+      input.checked = false;
+    });
+
+    // Reset comment
+    document.getElementById('reviewComment').value = '';
+  }
+
+  function loadExistingReview(review) {
+    // Load rating
+    if (review.rating) {
+      document.getElementById('star' + review.rating).checked = true;
+
+      // Update visual stars
+      const stars = document.querySelectorAll('.star-rating-input .star');
+      stars.forEach(star => {
+        const starRating = parseInt(star.getAttribute('data-rating'));
+        if (starRating <= review.rating) {
+          star.classList.add('selected');
+        } else {
+          star.classList.remove('selected');
+        }
+      });
+    }
+
+    // Load comment
+    if (review.comment) {
+      document.getElementById('reviewComment').value = review.comment;
+    }
+  }
+
+  function generateStarDisplay(rating) {
+    let stars = '';
+    for (let i = 1; i <= 5; i++) {
+      if (i <= rating) {
+        stars += '<i class="fas fa-star text-warning"></i>';
+      } else {
+        stars += '<i class="far fa-star text-muted"></i>';
+      }
+    }
+    return stars;
+  }
+
+  function formatDate(dateString) {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('vi-VN', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric'
+    });
+  }
+
+  // Back to product list
+  document.getElementById('backToProductList').addEventListener('click', function() {
+    document.getElementById('reviewForm').style.display = 'none';
+    document.getElementById('reviewProductList').style.display = 'block';
+    document.getElementById('backToProductList').style.display = 'none';
+    document.getElementById('submitReview').style.display = 'none';
+  });
+
+  // Star rating functionality
+  document.addEventListener('DOMContentLoaded', function() {
+    const stars = document.querySelectorAll('.star-rating-input .star');
+
+    stars.forEach(star => {
+      star.addEventListener('click', function() {
+        const rating = parseInt(this.getAttribute('data-rating'));
+
+        // Update radio input
+        document.getElementById('star' + rating).checked = true;
+
+        // Update visual stars
+        stars.forEach(s => {
+          const starRating = parseInt(s.getAttribute('data-rating'));
+          if (starRating <= rating) {
+            s.classList.add('selected');
+          } else {
+            s.classList.remove('selected');
+          }
+        });
+      });
+
+      star.addEventListener('mouseenter', function() {
+        const rating = parseInt(this.getAttribute('data-rating'));
+        stars.forEach(s => {
+          const starRating = parseInt(s.getAttribute('data-rating'));
+          if (starRating <= rating) {
+            s.classList.add('hover');
+          } else {
+            s.classList.remove('hover');
+          }
+        });
+      });
+    });
+
+    document.querySelector('.star-rating-input').addEventListener('mouseleave', function() {
+      stars.forEach(s => s.classList.remove('hover'));
+    });
+  });
+
+  // Submit review
+  document.getElementById('submitReview').addEventListener('click', function() {
+    const rating = document.querySelector('input[name="rating"]:checked');
+    const comment = document.getElementById('reviewComment').value;
+    const productId = document.getElementById('reviewProductId').value;
+
+    if (!rating) {
+      showNotification('❌ Vui lòng chọn số sao đánh giá!', 'error');
+      return;
+    }
+
+    // Disable button
+    this.disabled = true;
+    const originalText = this.innerHTML;
+    this.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Đang gửi...';
+
+    const data = {
+      productId: productId,
+      rating: parseInt(rating.value),
+      comment: comment.trim()
+    };
+
+    fetch('/user/submit-review', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(data)
+    })
+            .then(response => response.json())
+            .then(data => {
+              if (data.success) {
+                showNotification('✅ ' + data.message, 'success');
+                // Close modal
+                bootstrap.Modal.getInstance(document.getElementById('reviewModal')).hide();
+                // Optionally reload page to update UI
+                setTimeout(() => {
+                  window.location.reload();
+                }, 1500);
+              } else {
+                showNotification('❌ ' + data.message, 'error');
+              }
+            })
+            .catch(error => {
+              console.error('Error submitting review:', error);
+              showNotification('❌ Có lỗi xảy ra khi gửi đánh giá!', 'error');
+            })
+            .finally(() => {
+              // Re-enable button
+              this.disabled = false;
+              this.innerHTML = originalText;
+            });
+  });
+
+  function confirmDelivery(button) {
+    const orderId = button.getAttribute('data-order-id');
+
+    if (confirm('Xác nhận bạn đã nhận được hàng? Sau khi xác nhận, bạn sẽ có thể đánh giá sản phẩm.')) {
+      // Disable button
+      button.disabled = true;
+      button.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Đang xác nhận...';
+
+      fetch('/user/confirm-delivery', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ orderId: orderId })
+      })
+              .then(response => response.json())
+              .then(data => {
+                if (data.success) {
+                  showNotification('✅ ' + data.message, 'success');
+                  // Reload page to update UI
+                  setTimeout(() => {
+                    window.location.reload();
+                  }, 1500);
+                } else {
+                  showNotification('❌ ' + data.message, 'error');
+                  // Re-enable button
+                  button.disabled = false;
+                  button.innerHTML = '<i class="fas fa-check me-2"></i>Xác nhận đã nhận hàng';
+                }
+              })
+              .catch(error => {
+                console.error('Error confirming delivery:', error);
+                showNotification('❌ Có lỗi xảy ra khi xác nhận nhận hàng!', 'error');
+                // Re-enable button
+                button.disabled = false;
+                button.innerHTML = '<i class="fas fa-check me-2"></i>Xác nhận đã nhận hàng';
+              });
+    }
+  }
+
+  function formatPrice(price) {
+    return new Intl.NumberFormat('vi-VN').format(price);
+  }
+</script>
+
+<!-- Review Modal Styles -->
+<style>
+  .star-rating-input {
+    display: inline-flex;
+    font-size: 2rem;
+  }
+
+  .star-rating-input .star {
+    color: #ddd;
+    cursor: pointer;
+    transition: color 0.2s ease;
+    padding: 0 2px;
+  }
+
+  .star-rating-input .star:hover,
+  .star-rating-input .star.hover {
+    color: #ffc107;
+  }
+
+  .star-rating-input .star.selected {
+    color: #ffc107;
+  }
+
+  .card-body .row.align-items-center img {
+    max-height: 80px;
+    object-fit: cover;
+  }
+
+  #selectedProductInfo .card-body img {
+    max-height: 120px;
+    object-fit: cover;
+  }
+
+  .star-display {
+    font-size: 0.9rem;
+  }
+
+  .star-display i {
+    margin-right: 1px;
+  }
+</style>
+</body>
+
+</html>
