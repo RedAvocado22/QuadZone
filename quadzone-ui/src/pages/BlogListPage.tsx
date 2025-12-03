@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import BlogCard from "@/components/blog/BlogCard";
-import BlogSidebar from "../components/blog/BlogSideBar";
+import BlogSidebar from "../components/blog/BlogSidebar";
 import { getBlogs, getRecentBlogs } from "../api/blog";
 import type { BlogOverviewResponse } from "@/api/types";
 
@@ -69,8 +69,8 @@ const BlogListPage: React.FC = () => {
         return (
             <div className="container py-5">
                 <div className="text-center">
-                    <div className="spinner-border text-primary" role="status">
-                        <span className="sr-only">Loading...</span>
+                    <div className="spinner-border text-primary">
+                        <output>Loading...</output>
                     </div>
                 </div>
             </div>

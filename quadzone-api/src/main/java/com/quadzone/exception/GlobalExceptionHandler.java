@@ -1,6 +1,9 @@
 package com.quadzone.exception;
 
 import com.quadzone.exception.product.ProductNotFoundException;
+import com.quadzone.exception.blog.BlogNotFoundException;
+import com.quadzone.exception.blog.BlogAlreadyExistsException;
+import com.quadzone.exception.blog.BlogStatusException;
 import com.quadzone.exception.user.*;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -35,6 +38,57 @@ public class GlobalExceptionHandler {
         body.put("message", ex.getMessage());
 
         return new ResponseEntity<>(body, HttpStatus.NOT_FOUND);
+    }
+
+    /**
+     * Handles the custom BlogNotFoundException (HTTP 404).
+     * This is triggered when a blog post is not found.
+     */
+    @ExceptionHandler(BlogNotFoundException.class)
+    public ResponseEntity<Map<String, Object>> handleBlogNotFound(
+            BlogNotFoundException ex) {
+
+        Map<String, Object> body = new HashMap<>();
+        body.put("timestamp", LocalDateTime.now());
+        body.put("status", HttpStatus.NOT_FOUND.value());
+        body.put("error", "Not Found");
+        body.put("message", ex.getMessage());
+
+        return new ResponseEntity<>(body, HttpStatus.NOT_FOUND);
+    }
+
+    /**
+     * Handles BlogAlreadyExistsException (HTTP 409).
+     * This is triggered when attempting to create/update a blog with duplicate title or slug.
+     */
+    @ExceptionHandler(BlogAlreadyExistsException.class)
+    public ResponseEntity<Map<String, Object>> handleBlogAlreadyExists(
+            BlogAlreadyExistsException ex) {
+
+        Map<String, Object> body = new HashMap<>();
+        body.put("timestamp", LocalDateTime.now());
+        body.put("status", HttpStatus.CONFLICT.value());
+        body.put("error", "Conflict");
+        body.put("message", ex.getMessage());
+
+        return new ResponseEntity<>(body, HttpStatus.CONFLICT);
+    }
+
+    /**
+     * Handles BlogStatusException (HTTP 400).
+     * This is triggered when blog status transition is invalid.
+     */
+    @ExceptionHandler(BlogStatusException.class)
+    public ResponseEntity<Map<String, Object>> handleBlogStatusException(
+            BlogStatusException ex) {
+
+        Map<String, Object> body = new HashMap<>();
+        body.put("timestamp", LocalDateTime.now());
+        body.put("status", HttpStatus.BAD_REQUEST.value());
+        body.put("error", "Bad Request");
+        body.put("message", ex.getMessage());
+
+        return new ResponseEntity<>(body, HttpStatus.BAD_REQUEST);
     }
 
     /**

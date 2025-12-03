@@ -1,8 +1,8 @@
 // src/pages/BlogDetailPage.tsx
 import React, { useState, useEffect } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
-import BlogSidebar from "../components/blog/BlogSideBar";
-import type { BlogDetailResponse, BlogOverviewResponse, CommentResponse } from "../api/types";
+import BlogSidebar from "../components/blog/BlogSidebar";
+import type { BlogDetailResponse, BlogOverviewResponse } from "../api/types";
 import { getBlogBySlug, getRecentBlogs, submitBlogComment } from "../api/blog";
 
 const BlogDetailPage: React.FC = () => {
@@ -87,8 +87,8 @@ const BlogDetailPage: React.FC = () => {
         return (
             <div className="container py-5">
                 <div className="text-center">
-                    <div className="spinner-border text-primary" role="status">
-                        <span className="sr-only">Loading...</span>
+                    <div className="spinner-border text-primary">
+                        <output>Loading...</output>
                     </div>
                 </div>
             </div>
@@ -178,7 +178,7 @@ const BlogDetailPage: React.FC = () => {
                             {/* Navigation Links */}
                             <ul className="nav justify-content-between mb-11">
                                 <li className="nav-item m-0">
-                                    <Link className="nav-link text-gray-27 px-0" to="/blog">
+                                    <Link className="nav-link text-gray-27 px-0" to="/blogs">
                                         <span className="mr-1">←</span> Back to Blog
                                     </Link>
                                 </li>

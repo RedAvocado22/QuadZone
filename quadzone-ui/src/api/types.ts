@@ -339,6 +339,7 @@ export interface BlogOverview {
     excerpt: string;
     authorName: string;
     createdAt: string; // ISO date string
+    status?: BlogStatus;
 }
 
 /**
@@ -347,8 +348,9 @@ export interface BlogOverview {
  */
 export interface BlogDetail extends BlogOverview {
     content: string;
-    tags: string[];
-    comments: CommentResponse[];
+    tags?: string[];
+    comments?: CommentResponse[];
+    author?: UserResponse; // Full author object from admin endpoint
 }
 
 export type BlogOverviewResponse = BlogOverview;
