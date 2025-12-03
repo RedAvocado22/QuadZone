@@ -5,9 +5,7 @@ import com.quadzone.exception.user.UserNotFoundException;
 import com.quadzone.global.dto.PagedResponse;
 import com.quadzone.user.dto.UserProfileDTO;
 import com.quadzone.user.dto.UserProfileRequest;
-import com.quadzone.user.dto.UserRegisterRequest;
-import com.quadzone.user.dto.UserResponse;
-import com.quadzone.user.dto.UserUpdateRequest;
+import com.quadzone.user.dto.*;
 import com.quadzone.utils.EntityMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -151,9 +149,9 @@ public class UserService {
     }
 
     @Transactional(readOnly = true)
-    public UserResponse findByIdForAdmin(Long id) {
+    public UserAdminResponse findByIdForAdmin(Long id) {
         return userRepository.findById(id)
-                .map(objectMapper::toUserResponse)
+                .map(objectMapper::toUserAdminResponse)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found: " + id));
     }
 
