@@ -45,6 +45,20 @@ const Topbar = () => {
                                             Hi, {user ? `${user.firstName} ${user.lastName}`.trim() : "My Account"}
                                         </Link>
                                     </li>
+                                    {
+                                        user?.role === "ADMIN" ? (
+                                            <>
+                                                <li className="list-inline-item mr-0 u-header-topbar__nav-item u-header-topbar__nav-item-border">
+                                                    <Link to={"/admin"} className="u-header-topbar__nav-link">
+                                                        <i className="ec ec-user mr-1"></i>
+                                                        Admin Dashboard
+                                                    </Link>
+                                                </li>
+                                            </>
+                                        ) : (
+                                            <></>
+                                        )
+                                    }
                                     <li className="list-inline-item mr-0 u-header-topbar__nav-item u-header-topbar__nav-item-border">
                                         <a href="#" className="u-header-topbar__nav-link" onClick={handleLogout}>
                                             {/* You might need to find the correct icon class for logout */}
@@ -68,6 +82,7 @@ const Topbar = () => {
                                     </li>
                                 </>
                             )}
+
                             {/* --- END CONDITIONAL LINKS --- */}
                         </ul>
                     </div>

@@ -117,6 +117,9 @@ public class Product {
         if (request.subCategory() != null) {
             this.setSubCategory(request.subCategory());
         }
+        if(request.isActive() != null){
+            this.setActive(request.isActive());
+        }
     }
 
     @PreUpdate
