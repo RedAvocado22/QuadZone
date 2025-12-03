@@ -6,6 +6,7 @@ export interface ShippingCalculationRequest {
   block?: string;       // Block
   district?: string;    // Town
   city?: string;        // City
+  country?: "Vietnam";
 }
 
 export interface ShippingCalculationResponse {

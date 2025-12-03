@@ -1,6 +1,8 @@
 package com.quadzone.user;
 
 import com.quadzone.auth.token.Token;
+import com.quadzone.wishlist.WishList;
+
 import jakarta.persistence.*;
 import lombok.*;
 import org.springframework.security.core.GrantedAuthority;
@@ -70,6 +72,9 @@ public class User implements UserDetails {
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Token> tokens = new ArrayList<>();
+
+    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
+    private WishList wishlist;
 
     public String getFullName() {
         return firstName + " " + lastName;

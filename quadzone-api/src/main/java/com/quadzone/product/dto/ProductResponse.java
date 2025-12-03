@@ -15,6 +15,14 @@ public record ProductResponse(
         SubCategoryResponse subCategory,
         CategoryNameResponse category) {
     public static ProductResponse from(Product product) {
+        SubCategoryResponse subCategoryResponse = SubCategoryResponse.from(product.getSubCategory());
+        CategoryNameResponse categoryResponse = null;
+        
+        // Safe null-check for category
+        if (product.getSubCategory() != null && product.getSubCategory().getCategory() != null) {
+            categoryResponse = CategoryNameResponse.from(product.getSubCategory().getCategory());
+        }
+        
         return new ProductResponse(
                 product.getId(),
                 product.getName(),
@@ -22,7 +30,7 @@ public record ProductResponse(
                 product.getPrice(),
                 product.getImageUrl(),
                 product.getStock(),
-                SubCategoryResponse.from(product.getSubCategory()),
-                CategoryNameResponse.from(product.getSubCategory().getCategory()));
+                subCategoryResponse,
+                categoryResponse);
     }
 }

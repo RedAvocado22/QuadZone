@@ -2,7 +2,10 @@ package com.quadzone.order;
 
 import com.quadzone.exception.order.OrderNotFoundException;
 import com.quadzone.global.dto.PagedResponse;
-import com.quadzone.order.dto.*;
+import com.quadzone.order.dto.OrderRegisterRequest;
+import com.quadzone.order.dto.OrderResponse;
+import com.quadzone.order.dto.OrderStatusResponse;
+import com.quadzone.order.dto.OrderUpdateRequest;
 import com.quadzone.payment.Payment;
 import com.quadzone.payment.PaymentMethod;
 import com.quadzone.payment.PaymentRepository;
@@ -18,8 +21,14 @@ import com.quadzone.user.User;
 import com.quadzone.user.UserRole;
 import com.quadzone.user.UserRepository;
 import com.quadzone.utils.email.EmailSenderService;
+import com.quadzone.order.dto.AssignOrderToShipperRequest;
+import com.quadzone.order.dto.CheckoutRequest;
 import com.quadzone.discount.CouponService;
 import lombok.RequiredArgsConstructor;
+
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -32,6 +41,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
+
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -43,9 +53,9 @@ public class OrderService {
 
     private final OrderRepository orderRepository;
     private final UserRepository userRepository;
-    private final PaymentRepository paymentRepository;
     private final ProductRepository productRepository;
     private final EmailSenderService emailSenderService;
+    private final PaymentRepository paymentRepository;
     private final NotificationService notificationService;
     private final DeliveryRepository deliveryRepository;
     private final CouponService couponService;
@@ -154,10 +164,8 @@ public class OrderService {
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Order not found: " + id));
     }
 
-
     /**
      * Checkout method that supports both guest and authenticated users
-     *
      * @param request Checkout request containing customer info and order items
      * @return OrderResponse with created order
      */
@@ -165,10 +173,10 @@ public class OrderService {
         // Check if user is authenticated
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         User user = null;
-
-        if (authentication != null &&
-                authentication.isAuthenticated() &&
-                !authentication.getName().equals("anonymousUser")) {
+        
+        if (authentication != null && 
+            authentication.isAuthenticated() && 
+            !authentication.getName().equals("anonymousUser")) {
             // User is authenticated, get user from database
             user = userRepository.findByEmail(authentication.getName())
                     .orElse(null);
@@ -204,7 +212,7 @@ public class OrderService {
         order.setTotalAmount(totalAmount);
         order.setOrderStatus(OrderStatus.PENDING);
         order.setNotes(request.notes());
-
+        
         // Build address string
         StringBuilder addressBuilder = new StringBuilder();
         addressBuilder.append(request.address());
@@ -240,15 +248,15 @@ public class OrderService {
         for (CheckoutRequest.CheckoutItemRequest itemRequest : request.items()) {
             Product product = productRepository.findById(itemRequest.productId())
                     .orElseThrow(() -> new ResponseStatusException(
-                            HttpStatus.BAD_REQUEST,
+                            HttpStatus.BAD_REQUEST, 
                             "Product not found: " + itemRequest.productId()));
 
             // Validate stock
             if (product.getStock() < itemRequest.quantity()) {
                 throw new ResponseStatusException(
                         HttpStatus.BAD_REQUEST,
-                        "Insufficient stock for product: " + product.getName() +
-                                ". Available: " + product.getStock() + ", Requested: " + itemRequest.quantity());
+                        "Insufficient stock for product: " + product.getName() + 
+                        ". Available: " + product.getStock() + ", Requested: " + itemRequest.quantity());
             }
 
             // Validate product is active
@@ -286,7 +294,7 @@ public class OrderService {
         Payment payment = new Payment();
         payment.setOrder(savedOrder);
         payment.setAmount(savedOrder.getTotalAmount());
-
+        
         // Map payment method from string to enum
         PaymentMethod paymentMethodEnum;
         try {
@@ -296,7 +304,7 @@ public class OrderService {
             // Default to BANK_TRANSFER if invalid
             paymentMethodEnum = PaymentMethod.BANK_TRANSFER;
         }
-
+        
         payment.setPaymentMethod(paymentMethodEnum);
         paymentRepository.save(payment);
 
@@ -316,7 +324,7 @@ public class OrderService {
             }
         } catch (Exception e) {
             // Log error but don't fail the checkout if email fails
-            LoggerFactory.getLogger(OrderService.class)
+            org.slf4j.LoggerFactory.getLogger(OrderService.class)
                     .error("Failed to send order confirmation email", e);
         }
 
@@ -328,7 +336,6 @@ public class OrderService {
 
     /**
      * Get order status by order number (public endpoint for tracking)
-     *
      * @param orderNumber Order number in format ORD-00001
      * @return OrderStatusResponse with order information
      */

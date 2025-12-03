@@ -14,7 +14,6 @@ import java.util.List;
 import com.quadzone.cart.dto.CartItemRequest;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import com.quadzone.user.User;
-import com.quadzone.cart.Cart;
 
 @RestController
 @RequestMapping("/api/v1/cart")

@@ -4,30 +4,27 @@ import { useCart } from "../../contexts/CartContext";
 import { useCurrency } from "../../contexts/CurrencyContext";
 import { fCurrency } from "../../utils/formatters";
 import { defaultImages } from "../../constants/images";
-import type { CartItem, Product } from "../../api/types";
+import type { CartItem } from "../../api/types";
 import { getProductDetails } from "../../api/products";
 
 interface CartItemProps {
     item: CartItem;
 }
 
-const CartRow = ({ item }: CartItemProps) => {
+const CartItemComponent = ({ item }: CartItemProps) => {
     const { removeFromCart, updateQuantity } = useCart();
-    const [product, setProduct] = useState<Product & { quantity: number }>({
-        ...item,
-        quantity: item.quantity
-    });
+    const [product, setProduct] = useState<CartItem>(item);
 
     // Fetch latest product data from database
     useEffect(() => {
         const fetchProductDetails = async () => {
             try {
                 const updatedProduct = await getProductDetails(item.id);
-                setProduct({ ...updatedProduct, quantity: item.quantity });
+                setProduct({ ...updatedProduct, quantity: item.quantity, addedAt: item.addedAt });
             } catch (err) {
                 console.error("Failed to fetch product details:", err);
                 // Fallback to item data if fetch fails
-                setProduct({ ...item, quantity: item.quantity });
+                setProduct(item);
             }
         };
 
@@ -51,6 +48,7 @@ const CartRow = ({ item }: CartItemProps) => {
                 <button
                     type="button"
                     aria-label="Remove from cart"
+                    className="text-gray-32 font-size-26"
                     onClick={async (e) => {
                         e.preventDefault();
                         if (product.id) {
@@ -69,8 +67,8 @@ const CartRow = ({ item }: CartItemProps) => {
                 <Link to={`/product/${product.id}`}>
                     <img
                         className="img-fluid max-width-100 p-1 border border-color-1"
-                        src={item.imageUrl || defaultImages.cart}
-                        alt={item.name}
+                        src={product.imageUrl || defaultImages.cart}
+                        alt={product.name}
                     />
                 </Link>
             </td>
@@ -80,7 +78,7 @@ const CartRow = ({ item }: CartItemProps) => {
                 </Link>
             </td>
             <td data-title="Price">
-                <span>{fCurrency(convertPrice(item.price), { currency })}</span>
+                <span>{fCurrency(convertPrice(product.price), { currency })}</span>
             </td>
             <td data-title="Quantity">
                 <span className="sr-only">Quantity</span>
@@ -118,10 +116,10 @@ const CartRow = ({ item }: CartItemProps) => {
                 </div>
             </td>
             <td data-title="Total">
-                <span>{fCurrency(convertPrice(item.price * item.quantity), { currency })}</span>
+                <span>{fCurrency(convertPrice(product.price * product.quantity), { currency })}</span>
             </td>
         </tr>
     );
 };
 
-export default CartRow;
+export default CartItemComponent;

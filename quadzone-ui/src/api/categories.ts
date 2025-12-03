@@ -26,8 +26,10 @@ export const categoriesApi = {
     return response.data;
   },
 
+
   getById: async (id: string | number): Promise<CategoryAdminResponse> => {
     const response = await API.get<CategoryAdminResponse>(`/admin/categories/${id}`);
+
     return response.data;
   },
 
