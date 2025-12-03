@@ -48,3 +48,9 @@ logging:
   level:
     root: warn
     com.quadzone.utils.email: info
+
+# OpenRouteService API Configuration (for shipping cost calculation)
+openrouteservice:
+  api:
+    key: ${OPENROUTESERVICE_API_KEY:eyJvcmciOiI1YjNjZTM1OTc4NTExMTAwMDFjZjYyNDgiLCJpZCI6IjU5NmI5NzNiZjc4ZTRmYWM5ZDRkZDA1MGI0OGVlNjliIiwiaCI6Im11cm11cjY0In0=}
+    url: ${OPENROUTESERVICE_API_URL:https://api.openrouteservice.org}

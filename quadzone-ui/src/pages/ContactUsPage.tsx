@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import * as React from 'react';
+import { useState } from 'react';
 import { Formik, Form, Field, ErrorMessage } from 'formik';
 import * as Yup from 'yup';
 import { toast } from 'react-toastify';
@@ -152,8 +153,7 @@ const ContactUsPage: React.FC = () => {
                             </div>
                             <h5>Address</h5>
                             <p className="text-muted small">
-                                123 Main Street<br />
-                                City, State 12345
+                                Hanoi, Vietnam
                             </p>
                         </div>
                     </div>

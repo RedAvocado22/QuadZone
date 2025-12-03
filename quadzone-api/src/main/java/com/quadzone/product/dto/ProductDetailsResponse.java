@@ -39,6 +39,16 @@ public record ProductDetailsResponse(
             e.printStackTrace();
         }
 
+        SubCategoryResponse subCategoryResponse = null;
+        CategoryResponse categoryResponse = null;
+        
+        if (product.getSubCategory() != null) {
+            subCategoryResponse = SubCategoryResponse.from(product.getSubCategory());
+            if (product.getSubCategory().getCategory() != null) {
+                categoryResponse = CategoryResponse.from(product.getSubCategory().getCategory());
+            }
+        }
+
         return new ProductDetailsResponse(
                 product.getId(),
                 product.getName(),
@@ -49,9 +59,9 @@ public record ProductDetailsResponse(
                 product.getPrice(),
                 product.getImageUrl(),
                 product.getStock(),
-                SubCategoryResponse.from(product.getSubCategory()),
-                CategoryResponse.from(product.getSubCategory().getCategory()),
+                subCategoryResponse,
+                categoryResponse,
                 // convert list review to list review response
-                product.getReviews().stream().map(ReviewResponse::from).toList());
+                product.getReviews() != null ? product.getReviews().stream().map(ReviewResponse::from).toList() : new ArrayList<>());
     }
 }

@@ -10,12 +10,16 @@ public record CategoryResponse(
         String name,
         List<SubCategoryResponse> subCategories) {
     public static CategoryResponse from(Category category) {
+        if (category == null) {
+            return null;
+        }
         return new CategoryResponse(
                 category.getId(),
                 category.getName(),
-                category.getSubcategories().stream()
+                category.getSubcategories() != null ? category.getSubcategories().stream()
                         .map(SubCategoryResponse::from)
-                        .toList());
+                        .toList() : List.of());
     }
+
 }
 

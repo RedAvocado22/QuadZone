@@ -3,7 +3,9 @@ import { useCart } from "../../contexts/CartContext";
 import { useCurrency } from "../../contexts/CurrencyContext";
 import { fCurrency } from "../../utils/formatters";
 import { defaultImages } from "../../constants/images";
+import CompareButton from "../compare/CompareButton";
 import type { Product } from "../../api/types";
+import WishlistButton from "./WishListButton";
 
 interface ProductCardProps {
     product: Product;
@@ -59,6 +61,12 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
                                     aria-label="Add to cart">
                                     <i className="ec ec-add-to-cart"></i>
                                 </button>
+                            </div>
+                        </div>
+                        <div className="product-item__footer">
+                            <div className="border-top pt-2 flex-center-between flex-wrap">
+                                <CompareButton productId={product.id} className="btn-sm" />
+                                <WishlistButton productId={product.id} className="btn-sm" />
                             </div>
                         </div>
                     </div>

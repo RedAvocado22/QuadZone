@@ -7,6 +7,9 @@ public record SubCategoryResponse(
         String name
 ) {
     public static SubCategoryResponse from(final SubCategory subCategory) {
+        if (subCategory == null) {
+            return null;
+        }
         return new SubCategoryResponse(
                 subCategory.getId(),
                 subCategory.getName()

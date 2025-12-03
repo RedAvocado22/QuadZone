@@ -149,27 +149,27 @@ export interface CurrentUser {
 }
 
 export interface UserProfile {
-  id: number;
-  email: string;
-  firstName: string;
-  lastName: string;
-  phoneNumber?: string;
-  address?: string;
-  city?: string;
-  dateOfBirth?: string;
-  avatarUrl?: string;
-  role: UserRole;
-  createdAt: string;
-  updatedAt?: string;
+    id: number;
+    email: string;
+    firstName: string;
+    lastName: string;
+    phoneNumber?: string;
+    address?: string;
+    city?: string;
+    dateOfBirth?: string;
+    avatarUrl?: string;
+    role: UserRole;
+    createdAt: string;
+    updatedAt?: string;
 }
 
 export interface UpdateProfileRequest {
-  firstName: string;
-  lastName: string;
-  phoneNumber?: string;
-  address?: string;
-  city?: string;
-  dateOfBirth?: string;
+    firstName: string;
+    lastName: string;
+    phoneNumber?: string;
+    address?: string;
+    city?: string;
+    dateOfBirth?: string;
 }
 
 // Legacy type aliases for backward compatibility

@@ -12,7 +12,7 @@ public record VnPaymentRequest(
 
         @NotNull(message = "Amount is required")
         @Positive(message = "Amount must be positive")
-        Long amount,
+        Double amount,
 
         @NotBlank(message = "Order info is required")
         String orderInfo,

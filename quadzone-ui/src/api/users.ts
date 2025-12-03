@@ -82,5 +82,11 @@ export const usersApi = {
     // Delete user
     delete: async (id: string | number): Promise<void> => {
         await API.delete(`/users/${id}`);
+    },
+
+    // Get shippers
+    getShippers: async (): Promise<UserResponse[]> => {
+        const response = await API.get<UserResponse[]>("/users/role/SHIPPER");
+        return response.data;
     }
 };

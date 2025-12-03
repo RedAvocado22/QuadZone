@@ -28,48 +28,6 @@ const CartTotals = () => {
                             <th>Shipping</th>
                             <td data-title="Shipping">
                                 Flat Rate: <span className="amount">{fCurrency(convertPrice(shippingCost), { currency })}</span>
-                                <div className="mt-1">
-                                    <a
-                                        className="font-size-12 text-gray-90 text-decoration-on underline-on-hover font-weight-bold mb-3 d-inline-block"
-                                        href="#"
-                                        onClick={(e) => {
-                                            e.preventDefault();
-                                            setShowShipping(!showShipping);
-                                        }}>
-                                        Calculate Shipping
-                                    </a>
-                                    {showShipping && (
-                                        <div className="mb-3">
-                                            <div className="form-group mb-4">
-                                                <select className="js-select selectpicker dropdown-select right-dropdown-0-all w-100">
-                                                    <option value="">Select a country…</option>
-                                                    <option value="US">United States</option>
-                                                    <option value="UK">United Kingdom</option>
-                                                    <option value="DE">Germany</option>
-                                                    <option value="FR">France</option>
-                                                </select>
-                                            </div>
-                                            <div className="form-group mb-4">
-                                                <select className="js-select selectpicker dropdown-select right-dropdown-0-all w-100">
-                                                    <option value="">Select a state…</option>
-                                                    <option value="CA">California</option>
-                                                    <option value="TX">Texas</option>
-                                                    <option value="NY">New York</option>
-                                                </select>
-                                            </div>
-                                            <input
-                                                className="form-control mb-4"
-                                                type="text"
-                                                placeholder="Postcode / ZIP"
-                                            />
-                                            <button
-                                                type="button"
-                                                className="btn btn-soft-secondary mb-3 mb-md-0 font-weight-normal px-5 px-md-4 px-lg-5 w-100 w-md-auto">
-                                                Update Totals
-                                            </button>
-                                        </div>
-                                    )}
-                                </div>
                             </td>
                         </tr>
                         <tr className="order-total">

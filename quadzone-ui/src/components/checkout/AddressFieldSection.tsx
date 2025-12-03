@@ -44,10 +44,10 @@ const AddressFieldsSection = ({ title, address, onChange, prefix }: AddressField
                     />
                 </div>
             </div>
-            <div className="col-md-8">
+            <div className="col-md-12">
                 <div className="form-group">
                     <label className="form-label" htmlFor={`${prefix}-address`}>
-                        Street address <span className="text-danger">*</span>
+                        Street Address <span className="text-danger">*</span>
                     </label>
                     <input
                         id={`${prefix}-address`}
@@ -55,12 +55,12 @@ const AddressFieldsSection = ({ title, address, onChange, prefix }: AddressField
                         className="form-control"
                         value={address.address}
                         onChange={(event) => onChange("address", event.target.value)}
-                        placeholder="House number and street name"
+                        placeholder="Enter street address"
                         required
                     />
                 </div>
             </div>
-            <div className="col-md-4">
+            <div className="col-md-12">
                 <div className="form-group">
                     <label className="form-label" htmlFor={`${prefix}-apartment`}>
                         Village <span className="text-danger">*</span>
@@ -76,10 +76,42 @@ const AddressFieldsSection = ({ title, address, onChange, prefix }: AddressField
                     />
                 </div>
             </div>
-            <div className="col-md-6">
+            <div className="col-md-12">
+                <div className="form-group">
+                    <label className="form-label" htmlFor={`${prefix}-block`}>
+                        Block <span className="text-danger">*</span>
+                    </label>
+                    <input
+                        id={`${prefix}-block`}
+                        type="text"
+                        className="form-control"
+                        value={address.block}
+                        onChange={(event) => onChange("block", event.target.value)}
+                        placeholder="Enter block"
+                        required
+                    />
+                </div>
+            </div>
+            <div className="col-md-12">
+                <div className="form-group">
+                    <label className="form-label" htmlFor={`${prefix}-district`}>
+                        Town <span className="text-danger">*</span>
+                    </label>
+                    <input
+                        id={`${prefix}-district`}
+                        type="text"
+                        className="form-control"
+                        value={address.district}
+                        onChange={(event) => onChange("district", event.target.value)}
+                        placeholder="Enter town"
+                        required
+                    />
+                </div>
+            </div>
+            <div className="col-md-12">
                 <div className="form-group">
                     <label className="form-label" htmlFor={`${prefix}-city`}>
-                        District <span className="text-danger">*</span>
+                        City <span className="text-danger">*</span>
                     </label>
                     <input
                         id={`${prefix}-city`}
@@ -87,21 +119,7 @@ const AddressFieldsSection = ({ title, address, onChange, prefix }: AddressField
                         className="form-control"
                         value={address.city}
                         onChange={(event) => onChange("city", event.target.value)}
-                        required
-                    />
-                </div>
-            </div>
-            <div className="col-md-12">
-                <div className="form-group">
-                    <label className="form-label" htmlFor={`${prefix}-state`}>
-                        City <span className="text-danger">*</span>
-                    </label>
-                    <input
-                        id={`${prefix}-state`}
-                        type="text"
-                        className="form-control"
-                        value={address.state}
-                        onChange={(event) => onChange("state", event.target.value)}
+                        placeholder="Enter city"
                         required
                     />
                 </div>
