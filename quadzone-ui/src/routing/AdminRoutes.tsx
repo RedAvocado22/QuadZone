@@ -29,6 +29,7 @@ const OrderPage = lazy(() => import('src/pages/admin/order'));
 const OrderCreatePage = lazy(() => import('src/pages/admin/order-create'));
 const OrderDetailsPage = lazy(() => import('src/pages/admin/order-details'));
 const OrderEditPage = lazy(() => import('src/pages/admin/order-edit'));
+const ChatPage = lazy(() => import('src/pages/admin/chat'));
 
 const renderFallback = () => (
     <Box
@@ -94,6 +95,8 @@ export default function AdminRoutes() {
                 <Route path="order/create" element={<OrderCreatePage />} />
                 <Route path="order/:id" element={<OrderDetailsPage />} />
                 <Route path="order/:id/edit" element={<OrderEditPage />} />
+                {/* Chat management routes */}
+                <Route path="chat" element={<ChatPage />} />
             </Route>
         </Routes>
     );
