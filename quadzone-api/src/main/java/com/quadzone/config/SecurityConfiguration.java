@@ -37,7 +37,7 @@ public class SecurityConfiguration {
             "/api/v1/orders/public/**", // Allow public order tracking
             "/api/v1/coupons/**",        // Allow public coupon validation & creation if needed
             "/api/v1/shipping/**",        // Allow shipping cost calculation
-            "/api/v1/payments/**"
+            "/api/v1/payments/**",
             "/api/v1/orders/public/**",  // Allow public order tracking
             "/ws/**"
     };
