@@ -64,7 +64,7 @@ public class Product {
     private LocalDateTime updatedAt;
 
     @Column(name = "is_active")
-    private boolean isActive;
+    private boolean isActive = true;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "subcategory_id", nullable = false)
@@ -83,44 +83,34 @@ public class Product {
     private List<WishList> wishlists;
 
     public void updateFrom(ProductUpdateRequest request) {
-        if (request.name() != null) {
-            this.setName(request.name());
-        }
-        if (request.brand() != null) {
-            this.setBrand(request.brand());
-        }
-        if (request.modelNumber() != null) {
-            this.setModelNumber(request.modelNumber());
-        }
-        if (request.description() != null) {
-            this.setDescription(request.description());
-        }
-        if (request.quantity() != null) {
-            this.setStock(request.quantity());
-        }
-        if (request.price() != null) {
-            this.setPrice(request.price());
-        }
-        if (request.costPrice() != null) {
-            this.setCostPrice(request.costPrice());
-        }
-        if (request.weight() != null) {
-            this.setWeight(request.weight());
-        }
-        if (request.color() != null) {
-            this.setColor(request.color());
-        }
+        if (request.name() != null) this.setName(request.name());
+        if (request.brand() != null) this.setBrand(request.brand());
+        if (request.modelNumber() != null) this.setModelNumber(request.modelNumber());
+        if (request.description() != null) this.setDescription(request.description());
+        if (request.quantity() != null) this.setStock(request.quantity());
+        if (request.price() != null) this.setPrice(request.price());
+        if (request.costPrice() != null) this.setCostPrice(request.costPrice());
+        if (request.weight() != null) this.setWeight(request.weight());
+        if (request.color() != null) this.setColor(request.color());
         if (request.imageUrl() != null) {
             String imageUrl = request.imageUrl().trim().isEmpty() ? null : request.imageUrl().trim();
             this.setImageUrl(imageUrl);
         }
-        if (request.subCategory() != null) {
-            this.setSubCategory(request.subCategory());
-        }
+        if (request.subCategory() != null) this.setSubCategory(request.subCategory());
+        if (request.isActive() != null) this.setActive(request.isActive());
     }
 
     @PreUpdate
     public void onUpdate() {
         updatedAt = LocalDateTime.now();
+    }
+    public void lock() {
+        this.setActive(false);
+        this.updatedAt = LocalDateTime.now();
+    }
+
+    public void unlock() {
+        this.setActive(true);
+        this.updatedAt = LocalDateTime.now();
     }
 }

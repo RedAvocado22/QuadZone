@@ -59,7 +59,8 @@ public record ProductRegisterRequest(
                 .weight(request.weight())
                 .color(request.color())
                 .imageUrl(imageUrl)
-                .subCategory(request.subCategory())  // Can be null, should be set via update
+                .isActive(true)
+                .subCategory(request.subCategory())
                 .build();
     }
 }

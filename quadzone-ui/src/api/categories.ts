@@ -1,10 +1,11 @@
 import API from "./base";
-import type { CategoryAdminResponse, CategoryResponse, PagedResponse } from "./types";
+import type { CategoryAdminResponse, CategoryResponse, PagedResponse, SubCategoryResponse } from "./types";
 
 // Re-export for convenience
 export type { CategoryAdminResponse as Category } from "./types";
 export type { CategoryResponse } from "./types";
 export type { PagedResponse as CategoriesResponse } from "./types";
+export type { SubCategoryResponse as SubCategory } from "./types";
 
 export const categoriesApi = {
   getAll: async (params: {
@@ -27,9 +28,18 @@ export const categoriesApi = {
   },
 
 
-  getById: async (id: string | number): Promise<CategoryAdminResponse> => {
-    const response = await API.get<CategoryAdminResponse>(`/admin/categories/${id}`);
+  getAllCategories: async (): Promise<CategoryAdminResponse[]> => {
+    const response = await API.get<CategoryAdminResponse[]>('categories/admin/all');
+    return response.data;
+  },
 
+  getById: async (id: string | number): Promise<CategoryAdminResponse> => {
+    const response = await API.get<CategoryAdminResponse>(`categories/admin/${id}`);
+    return response.data;
+  },
+
+  getSubCategoriesByCategoryId: async (categoryId: number): Promise<SubCategoryResponse[]> => {
+    const response = await API.get<SubCategoryResponse[]>(`categories/${categoryId}/subcategories`);
     return response.data;
   },
 

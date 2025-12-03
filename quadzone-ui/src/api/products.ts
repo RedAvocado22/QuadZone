@@ -23,7 +23,7 @@ export const getProducts = async (params: ProductFilterParams = {}): Promise<Pag
             size: params.size ?? 10,
         };
 
-        // Add optional filters only if they exist
+      
         if (params.search) requestParams.search = params.search;
         if (params.categoryId !== undefined) requestParams.categoryId = params.categoryId;
         if (params.subcategoryId !== undefined) requestParams.subcategoryId = params.subcategoryId;

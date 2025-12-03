@@ -71,21 +71,34 @@ export const productsApi = {
     return response.data;
   },
 
-  // Update product
-  update: async (id: string | number, product: Partial<Omit<ProductAdminResponse, 'id' | 'subCategory' | 'category' | 'createdAt' | 'updatedAt'>> & { subCategoryId?: number; status?: string }): Promise<ProductAdminResponse> => {
-    const requestBody: any = {};
-    if (product.name !== undefined) requestBody.name = product.name;
-    if (product.brand !== undefined) requestBody.brand = product.brand;
-    if (product.price !== undefined) requestBody.price = product.price;
-    if (product.quantity !== undefined) requestBody.quantity = product.quantity;
-    if (product.description !== undefined) requestBody.description = product.description;
-    if (product.imageUrl !== undefined) requestBody.imageUrl = product.imageUrl;
-    if (product.subCategoryId !== undefined) requestBody.subCategory = { id: product.subCategoryId };
-    if (product.status !== undefined) requestBody.isActive = product.status !== 'locked';
+update: async (
+  id: string | number,
+  product: Partial<Omit<ProductAdminResponse, 'id' | 'subCategory' | 'category' | 'createdAt' | 'updatedAt'>> & {
+    subCategoryId?: number;
+    status?: 'active' | 'locked';
+  }
+): Promise<ProductAdminResponse> => {
 
-    const response = await API.put<ProductAdminResponse>(`/admin/products/${id}`, requestBody);
-    return response.data;
-  },
+  const requestBody: any = {};
+
+  if (product.name !== undefined) requestBody.name = product.name;
+  if (product.brand !== undefined) requestBody.brand = product.brand;
+  if (product.price !== undefined) requestBody.price = product.price;
+  if (product.quantity !== undefined) requestBody.quantity = product.quantity;
+  if (product.description !== undefined) requestBody.description = product.description;
+  if (product.imageUrl !== undefined) requestBody.imageUrl = product.imageUrl;
+  if (product.subCategoryId !== undefined) {
+    requestBody.subCategory = { id: product.subCategoryId };
+  }
+
+  
+  if (product.status !== undefined) {
+    requestBody.isActive = product.status === 'active';
+  }
+
+  const response = await API.put<ProductAdminResponse>(`/admin/products/${id}`, requestBody);
+  return response.data;
+},
 
   // Delete product
   delete: async (id: string | number): Promise<void> => {

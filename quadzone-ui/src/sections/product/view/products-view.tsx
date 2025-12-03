@@ -141,17 +141,17 @@ export function ProductsView() {
     }
   }, [refetch]);
 
-  const handleUnlock = useCallback(async (id: number) => {
-    if (window.confirm('Are you sure you want to unlock this product?')) {
-      try {
-        await productsApi.update(id, { status: '' as any });
-        refetch();
-      } catch (error) {
-        console.error('Failed to unlock product:', error);
-        alert('Failed to unlock product');
-      }
+ const handleUnlock = useCallback(async (id: number) => {
+  if (window.confirm('Are you sure you want to unlock this product?')) {
+    try {
+      await productsApi.update(id, { status: 'active' as any }); 
+      refetch();
+    } catch (error) {
+      console.error('Failed to unlock product:', error);
+      alert('Failed to unlock product');
     }
-  }, [refetch]);
+  }
+}, [refetch])
 
   return (
     <DashboardContent>
@@ -244,21 +244,21 @@ export function ProductsView() {
               <Grid container spacing={3}>
                 {products.map((product) => (
                   <Grid key={product.id} size={{ xs: 12, sm: 6, md: 3 }}>
-                    <ProductItem
-                      product={{
-                        id: product.id,
-                        name: product.name,
-                        price: product.price,
-                        status: product.isActive ? '' : 'locked',
-                        coverUrl: product.imageUrl || '',
-                        colors: product.color ? [product.color] : [],
-                        priceSale: null,
-                      }}
-                      onViewDetails={handleViewDetails}
-                      onEdit={handleEdit}
-                      onLock={handleLock}
-                      onUnlock={handleUnlock}
-                    />
+                  <ProductItem
+                            product={{
+                              id: product.id,
+                              name: product.name,
+                              price: product.price,
+                              status: product.isActive ? '' : 'locked',
+                              coverUrl: product.imageUrl ||'/assets/images/product/product-1.webp',
+                              colors: product.color ? [product.color] : [],
+                              priceSale: null,
+                            }}
+                            onViewDetails={handleViewDetails}
+                            onEdit={handleEdit}
+                            onLock={handleLock}
+                            onUnlock={handleUnlock}
+                          />
                   </Grid>
                 ))}
               </Grid>

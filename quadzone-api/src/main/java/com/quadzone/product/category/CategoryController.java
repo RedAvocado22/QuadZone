@@ -157,6 +157,7 @@ public class CategoryController {
     public List<CategoryResponse> getAllCategories() {
         return categoryService.getAllCategories();
     }
+
     @GetMapping("/{categoryId}/subcategories")
     public ResponseEntity<List<SubCategoryResponse>> getSubCategoriesByCategoryId(
             @PathVariable Long categoryId
