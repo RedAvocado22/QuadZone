@@ -1,6 +1,12 @@
 import API from './base'
 import type { UserProfile, UpdateProfileRequest } from './types';
 
+export interface ChangePasswordRequest {
+    currentPassword: string;
+    newPassword: string;
+    confirmPassword: string;
+}
+
 export const profileApi = {
     // Lấy thông tin profile
     getProfile: async (): Promise<UserProfile> => {
@@ -25,5 +31,10 @@ export const profileApi = {
             },
         });
         return response.data;
+    },
+
+    // Change password
+    changePassword: async (data: ChangePasswordRequest): Promise<void> => {
+        await API.post('/profile/change-password', data);
     },
 };
