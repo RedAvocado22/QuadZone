@@ -22,7 +22,7 @@ spring:
     security:
       jwt:
         secret: ${JWT_SECRET:K/gL4Rj8LqP6sUaF/R+dE/pA7vLzN/tS+bJ5wD/aE/gH+kF3jL8aU/wJ/yE7gE/dK/xH/vJ/qM/aA==}
-        expiration: 300000
+        expiration: 3600000
         refresh-token:
           secret: ${JWT_REFRESH_SECRET:mD/uJ/wP/sH/aE/gH+kF3jL8aU/wJ/yE7gE/dK/xH/vJ/qM/aK/gL4Rj8LqP6sUaF/R+dE/pA7vLzN/tS+bJ5wD==}
           expiration: 86400000 # 1 day

@@ -27,7 +27,8 @@
         "erasableSyntaxOnly": true,
         "noFallthroughCasesInSwitch": true,
         "noUncheckedSideEffectImports": true,
-        "jsx": "react-jsx"
+        "jsx": "react-jsx",
+      "allowSyntheticDefaultImports": true
     },
     "include": ["src"]
 }
