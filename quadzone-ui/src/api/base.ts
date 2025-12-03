@@ -54,7 +54,11 @@ API.interceptors.response.use(
     async (error: AxiosError) => {
         const originalRequest = error.config as InternalAxiosRequestConfig;
 
-        if (error.response?.status === 401 && originalRequest && originalRequest.url !== "/auth/refresh" && originalRequest.url !== "/auth/authenticate") {
+        // Handle both 401 (Unauthorized) and 403 (Forbidden) as token expiration scenarios
+        if ((error.response?.status === 401 || error.response?.status === 403) 
+            && originalRequest 
+            && originalRequest.url !== "/auth/refresh" 
+            && originalRequest.url !== "/auth/authenticate") {
             if (isRefreshing) {
                 return new Promise<AxiosResponse>((resolve, reject) => {
                     failedQueue.push({

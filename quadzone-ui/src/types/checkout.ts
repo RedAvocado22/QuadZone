@@ -1,10 +1,11 @@
 export interface AddressFields {
     firstName: string;
     lastName: string;
-    address: string;
-    apartment: string;
-    city: string;
-    state: string;
+    address: string;      // Street Address
+    apartment: string;    // Village
+    block: string;        // Block
+    district: string;      // Town
+    city: string;          // City
     email: string;
     phone: string;
 }
@@ -14,4 +15,4 @@ export type AlertState =
     | { type: "error"; message: string }
     | { type: "success"; message: string };
 
-export type PaymentMethod = "bank-transfer" | "cheque" | "cod" | "paypal";
+export type PaymentMethod = "cod" | "paypal" | "vnpay";

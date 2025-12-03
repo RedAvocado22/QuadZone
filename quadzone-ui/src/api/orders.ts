@@ -81,4 +81,16 @@ export const ordersApi = {
     const response = await API.post<OrderResponse>('/orders/checkout', checkoutData);
     return response.data;
   },
+
+  // Assign order to shipper
+  assignToShipper: async (orderId: string | number, data: {
+    shipperId: number;
+    trackingNumber?: string;
+    carrier?: string;
+    estimatedDeliveryDate?: string;
+    deliveryNotes?: string;
+  }): Promise<OrderResponse> => {
+    const response = await API.post<OrderResponse>(`/orders/admin/${orderId}/assign-shipper`, data);
+    return response.data;
+  },
 };

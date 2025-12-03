@@ -18,6 +18,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequestMapping(path = "/api/v1/users")
 @RequiredArgsConstructor
@@ -173,4 +175,29 @@ public class UserController {
         }
         return ResponseEntity.ok(objectMapper.toCurrentUserResponse(user));
     }
+
+    @GetMapping("/role/{role}")
+    @Operation(
+            summary = "Get users by role",
+            description = "Retrieve a list of all users with a specific role. " +
+                    "Useful for getting lists of shippers, staff, etc. for assignment operations. " +
+                    "Returns a simple list without pagination."
+    )
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Successfully retrieved users list"),
+            @ApiResponse(responseCode = "400", description = "Invalid role"),
+            @ApiResponse(responseCode = "500", description = "Internal server error")
+    })
+    public ResponseEntity<List<UserResponse>> getUsersByRole(
+            @Parameter(description = "User role to filter by", example = "SHIPPER", required = true)
+            @PathVariable String role) {
+        try {
+            UserRole userRole = UserRole.valueOf(role.toUpperCase());
+            List<UserResponse> users = userService.getUsersByRole(userRole);
+            return ResponseEntity.ok(users);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().build();
+        }
+    }
+
 }

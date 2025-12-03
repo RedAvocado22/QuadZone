@@ -10,8 +10,7 @@ import {
 } from "../api/cart";
 import { useUser } from "../hooks/useUser";
 import { toast } from "react-toastify";
-import type { CartItem, Product } from "../api/types";
-
+import type { Product, CartItem } from "../api/types";
 
 interface CartContextType {
     items: CartItem[];
@@ -62,7 +61,7 @@ export const CartProvider = ({ children }: { children: React.ReactNode }) => {
     const [items, setItems] = useState<CartItem[]>(() => readGuestCart());
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
-    
+
     const { user } = useUser();
 
     // Fetch cart from backend
@@ -224,15 +223,13 @@ export const CartProvider = ({ children }: { children: React.ReactNode }) => {
                 return;
             }
             setItems((prevItems) => {
-                const updatedItems = prevItems.map((item) =>
-                    item.id === productId ? { ...item, quantity } : item
-                );
+                const updatedItems = prevItems.map((item) => (item.id === productId ? { ...item, quantity } : item));
                 writeGuestCart(updatedItems);
                 return updatedItems;
             });
             return;
         }
-        
+
         if (quantity <= 0) {
             await removeFromCart(productId);
             return;
@@ -291,7 +288,18 @@ export const CartProvider = ({ children }: { children: React.ReactNode }) => {
             error,
             refreshCart
         }),
-        [items, addToCart, removeFromCart, updateQuantity, clearCart, totalPrice, totalItems, loading, error, refreshCart]
+        [
+            items,
+            addToCart,
+            removeFromCart,
+            updateQuantity,
+            clearCart,
+            totalPrice,
+            totalItems,
+            loading,
+            error,
+            refreshCart
+        ]
     );
 
     return <CartContext.Provider value={contextValue}>{children}</CartContext.Provider>;

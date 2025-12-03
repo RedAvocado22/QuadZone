@@ -2,37 +2,37 @@
 // =====================================================
 
 // ============== ENUMS ==============
-export type UserRole = 'ADMIN' | 'STAFF' | 'CUSTOMER' | 'SHIPPER';
-export type OrderStatus = 'PENDING' | 'CONFIRMED' | 'PROCESSING' | 'COMPLETED' | 'CANCELLED';
+export type UserRole = "ADMIN" | "STAFF" | "CUSTOMER" | "SHIPPER";
+export type OrderStatus = "PENDING" | "CONFIRMED" | "PROCESSING" | "COMPLETED" | "CANCELLED";
 
 // ============== PAGED RESPONSE ==============
 export interface PagedResponse<T> {
-  content: T[];
-  page: {
-    size: number;
-    number: number;
-    totalElements: number;
-    totalPages: number;
-  };
+    content: T[];
+    page: {
+        size: number;
+        number: number;
+        totalElements: number;
+        totalPages: number;
+    };
 }
 
 // ============== CATEGORY & SUBCATEGORY ==============
 /** Minimal category info (used in ProductResponse) */
 export interface CategoryName {
-  id: number;
-  name: string;
+    id: number;
+    name: string;
 }
 
 /** Full category with subcategories (used in ProductDetailsResponse, /categories/names endpoint) */
 export interface Category {
-  id: number;
-  name: string;
-  subCategories: SubCategory[];
+    id: number;
+    name: string;
+    subCategories: SubCategory[];
 }
 
 export interface SubCategory {
-  id: number;
-  name: string;
+    id: number;
+    name: string;
 }
 
 // Legacy type aliases for backward compatibility
@@ -44,13 +44,13 @@ export type PublicCategoryDTO = Category;
 
 // ============== REVIEW ==============
 export interface Review {
-  id: number;
-  rating: number;
-  title: string | null;
-  text: string;
-  createdAt: string; // ISO date string (LocalDateTime from backend)
-  userName: string;
-  userId: number;
+    id: number;
+    rating: number;
+    title: string | null;
+    text: string;
+    createdAt: string; // ISO date string (LocalDateTime from backend)
+    userName: string;
+    userId: number;
 }
 
 export type ReviewResponse = Review;
@@ -61,15 +61,15 @@ export type ReviewResponse = Review;
  * Maps to ProductResponse in backend
  */
 export interface Product {
-  id: number;
-  name: string;
-  brand: string | null;
-  price: number;
-  imageUrl: string | null;
-  quantity: number;
-  subCategory: SubCategory;
-  category: CategoryName;
-  createdAt: string; // ISO date string
+    id: number;
+    name: string;
+    brand: string | null;
+    price: number;
+    imageUrl: string | null;
+    quantity: number;
+    subCategory: SubCategory;
+    category: CategoryName;
+    createdAt: string; // ISO date string
 }
 
 /**
@@ -77,11 +77,32 @@ export interface Product {
  * Maps to ProductDetailsResponse in backend
  */
 export interface ProductDetails extends Product {
-  modelNumber: string | null;
-  description: string[]; // Array of strings (parsed from JSON in backend)
-  weight: number;
-  reviews: Review[];
-  category: Category; // Full category with subcategories
+    modelNumber: string | null;
+    description: string[]; // Array of strings (parsed from JSON in backend)
+    weight: number;
+    reviews: Review[];
+    category: Category; // Full category with subcategories
+}
+
+export interface WishList{
+    id: number;
+    user:CurrentUser[];
+    products:ProductDetails[];
+}
+
+// Request type for adding product to wishlist
+export interface AddToWishlistRequest {
+  productId: number;
+}
+
+// Request type for removing product from wishlist
+export interface RemoveFromWishlistRequest {
+  productId: number;
+}
+
+// Wishlist Item for local state management
+export interface WishlistItem extends ProductResponse {
+  addedDate?: Date;
 }
 
 /**
@@ -89,22 +110,22 @@ export interface ProductDetails extends Product {
  * Maps to ProductAdminResponse in backend
  */
 export interface ProductAdmin {
-  id: number;
-  name: string;
-  brand: string | null;
-  modelNumber: string | null;
-  color: string | null;
-  description: string | null;
-  price: number;
-  costPrice: number | null;
-  weight: number | null;
-  quantity: number;
-  imageUrl: string | null;
-  isActive: boolean;
-  createdAt: string; // ISO date string
-  updatedAt: string | null;
-  subCategory: SubCategory;
-  category: Category;
+    id: number;
+    name: string;
+    brand: string | null;
+    modelNumber: string | null;
+    color: string | null;
+    description: string | null;
+    price: number;
+    costPrice: number | null;
+    weight: number | null;
+    quantity: number;
+    imageUrl: string | null;
+    isActive: boolean;
+    createdAt: string; // ISO date string
+    updatedAt: string | null;
+    subCategory: SubCategory;
+    category: Category;
 }
 
 export type ProductResponse = Product;
@@ -113,7 +134,7 @@ export type ProductAdminResponse = ProductAdmin;
 
 // Brand info
 export interface Brand {
-  brand: string;
+    brand: string;
 }
 
 export type PublicBrandDTO = Brand;
@@ -124,11 +145,11 @@ export type PublicBrandDTO = Brand;
  * Maps to UserResponse in backend
  */
 export interface User {
-  id: number;
-  name: string;
-  email: string;
-  role: UserRole;
-  createdAt: string; // ISO date string
+    id: number;
+    name: string;
+    email: string;
+    role: UserRole;
+    createdAt: string; // ISO date string
 }
 
 /**
@@ -137,12 +158,12 @@ export interface User {
  * Contains firstName/lastName instead of fullName
  */
 export interface CurrentUser {
-  id: number;
-  firstName: string;
-  lastName: string;
-  email: string;
-  role: UserRole;
-  createdAt: string; // ISO date string
+    id: number;
+    firstName: string;
+    lastName: string;
+    email: string;
+    role: UserRole;
+    createdAt: string; // ISO date string
 }
 
 export interface UserProfile {
@@ -175,64 +196,64 @@ export type CurrentUserResponse = CurrentUser;
 
 // ============== ORDER TYPES ==============
 export interface Order {
-  id: number;
-  orderNumber: string;
-  customerName: string;
-  totalAmount: number;
-  status: OrderStatus;
-  orderDate: string; // ISO date string
-  itemsCount: number;
+    id: number;
+    orderNumber: string;
+    customerName: string;
+    totalAmount: number;
+    status: OrderStatus;
+    orderDate: string; // ISO date string
+    itemsCount: number;
 }
 
 export type OrderResponse = Order;
 
 // ============== NOTIFICATION TYPES ==============
 export interface Notification {
-  id: number;
-  type: string;
-  title: string;
-  description: string;
-  avatarUrl: string;
-  postedAt: string; // ISO date string
-  isUnRead: boolean;
+    id: number;
+    type: string;
+    title: string;
+    description: string;
+    avatarUrl: string;
+    postedAt: string; // ISO date string
+    isUnRead: boolean;
 }
 
 export type NotificationResponse = Notification;
 
 export interface NotificationRequest {
-  type: string;
-  title: string;
-  description: string;
-  avatarUrl: string;
+    type: string;
+    title: string;
+    description: string;
+    avatarUrl: string;
 }
 
 // ============== CART TYPES ==============
 // Backend CartItemResponse structure
 export interface CartItemResponse {
-  id: number;
-  quantity: number;
-  addedAt: string; // ISO date string
-  productResponse: Product;
+    id: number;
+    quantity: number;
+    addedAt: string; // ISO date string
+    productResponse: Product;
 }
 
 // Flattened CartItem for frontend use (extends Product with quantity and addedAt)
 export interface CartItem extends Product {
-  quantity: number;
-  addedAt: string; // ISO date string
+    quantity: number;
+    addedAt: string; // ISO date string
 }
 
 export interface Cart {
-  id: number;
-  customerId: number;
-  updateAt: string; // ISO date string
-  cart_item_list: CartItemResponse[];
+    id: number;
+    customerId: number;
+    updateAt: string; // ISO date string
+    cart_item_list: CartItemResponse[];
 }
 
 export type CartResponse = Cart;
 
 export interface AddToCartRequest {
-  productId: number;
-  quantity: number;
+    productId: number;
+    quantity: number;
 }
 
 // ============== ADMIN CATEGORY ==============
@@ -241,41 +262,41 @@ export interface AddToCartRequest {
  * Maps to CategoryAdminResponse in backend
  */
 export interface CategoryAdmin {
-  id: number;
-  name: string;
-  active: boolean;
-  imageUrl: string;
-  productCount: number;
-  subcategoryCount: number;
-  subcategories: SubCategory[];
+    id: number;
+    name: string;
+    active: boolean;
+    imageUrl: string;
+    productCount: number;
+    subcategoryCount: number;
+    subcategories: SubCategory[];
 }
 
 export type CategoryAdminResponse = CategoryAdmin;
 
 // ============== HOME PAGE ==============
 export interface HomeResponse {
-  categories: Category[];
-  featured: PagedResponse<Product>;
-  bestSellers: PagedResponse<Product>;
-  newArrivals: PagedResponse<Product>;
+    categories: Category[];
+    featured: PagedResponse<Product>;
+    bestSellers: PagedResponse<Product>;
+    newArrivals: PagedResponse<Product>;
 }
 
 // ============== EXCHANGE RATE ==============
 export interface ExchangeRateResponse {
-  result: string;
-  base_code: string;
-  conversion_rates: Record<string, number>;
+    result: string;
+    base_code: string;
+    conversion_rates: Record<string, number>;
 }
 
 // ============== AUTH TYPES ==============
 export interface AuthenticationRequest {
-  email: string;
-  password: string;
+    email: string;
+    password: string;
 }
 
 export interface AuthenticationResponse {
-  access_token: string;
-  refresh_token: string;
+    access_token: string;
+    refresh_token: string;
 }
 
 // ============== LEGACY PUBLIC DTOS (for backward compatibility) ==============
@@ -284,18 +305,17 @@ export interface AuthenticationResponse {
  * Kept for backward compatibility
  */
 export interface PublicProductDTO {
-  id: number;
-  name: string;
-  brand?: string;
-  modelNumber?: string;
-  description?: string;
-  price: number;
-  priceVND: number;
-  imageUrl?: string;
-  quantity: number;
-  isActive: boolean;
-  subCategoryId?: number;
-  subCategoryName?: string;
-  createdAt: string;
+    id: number;
+    name: string;
+    brand: string;
+    modelNumber?: string;
+    description?: string;
+    price: number;
+    priceVND: number;
+    imageUrl: string;
+    quantity: number;
+    isActive: boolean;
+    subCategory: SubCategory;
+    category: Category;
+    createdAt: string;
 }
-

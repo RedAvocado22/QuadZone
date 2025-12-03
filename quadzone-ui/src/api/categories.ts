@@ -1,8 +1,9 @@
 import API from "./base";
-import type { CategoryResponse, PagedResponse } from "./types";
+import type { CategoryAdminResponse, CategoryResponse, PagedResponse } from "./types";
 
 // Re-export for convenience
-export type { CategoryResponse as Category } from "./types";
+export type { CategoryAdminResponse as Category } from "./types";
+export type { CategoryResponse } from "./types";
 export type { PagedResponse as CategoriesResponse } from "./types";
 
 export const categoriesApi = {
@@ -12,7 +13,7 @@ export const categoriesApi = {
     search?: string;
     sortBy?: string;
     sortOrder?: 'asc' | 'desc';
-  } = {}): Promise<PagedResponse<CategoryResponse>> => {
+  } = {}): Promise<PagedResponse<CategoryAdminResponse>> => {
     const { page = 0, pageSize = 10, search = '' } = params;
 
     const queryParams = new URLSearchParams({
@@ -21,33 +22,35 @@ export const categoriesApi = {
       search,
     });
 
-    const response = await API.get<PagedResponse<CategoryResponse>>(`/admin/categories?${queryParams.toString()}`);
+    const response = await API.get<PagedResponse<CategoryAdminResponse>>(`/admin/categories?${queryParams.toString()}`);
     return response.data;
   },
 
-  getById: async (id: string | number): Promise<CategoryResponse> => {
-    const response = await API.get<CategoryResponse>(`/admin/categories/${id}`);
+
+  getById: async (id: string | number): Promise<CategoryAdminResponse> => {
+    const response = await API.get<CategoryAdminResponse>(`/admin/categories/${id}`);
+
     return response.data;
   },
 
-  create: async (category: Omit<CategoryResponse, 'id' | 'productCount'>): Promise<CategoryResponse> => {
+  create: async (category: Omit<CategoryAdminResponse, 'id' | 'productCount' | 'subcategoryCount' | 'subcategories'>): Promise<CategoryAdminResponse> => {
     const requestBody = {
       name: category.name,
       active: category.active ?? true,
       imageUrl: category.imageUrl || '',
     };
 
-    const response = await API.post<CategoryResponse>('/admin/categories', requestBody);
+    const response = await API.post<CategoryAdminResponse>('/admin/categories', requestBody);
     return response.data;
   },
 
-  update: async (id: string | number, category: Partial<Omit<CategoryResponse, 'id' | 'productCount'>>): Promise<CategoryResponse> => {
+  update: async (id: string | number, category: Partial<Omit<CategoryAdminResponse, 'id' | 'productCount' | 'subcategoryCount' | 'subcategories'>>): Promise<CategoryAdminResponse> => {
     const requestBody: any = {};
     if (category.name !== undefined) requestBody.name = category.name;
     if (category.active !== undefined) requestBody.active = category.active;
     if (category.imageUrl !== undefined) requestBody.imageUrl = category.imageUrl;
 
-    const response = await API.put<CategoryResponse>(`/admin/categories/${id}`, requestBody);
+    const response = await API.put<CategoryAdminResponse>(`/admin/categories/${id}`, requestBody);
     return response.data;
   },
 

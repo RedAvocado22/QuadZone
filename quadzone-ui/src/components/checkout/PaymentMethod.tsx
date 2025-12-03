@@ -7,17 +7,6 @@ interface PaymentMethodsProps {
 
 const paymentOptions: { label: string; value: PaymentMethod; description: string }[] = [
     {
-        label: "Direct bank transfer",
-        value: "bank-transfer",
-        description:
-            "Make your payment directly into our bank account. Please use your Order ID as the payment reference.",
-    },
-    {
-        label: "Check payments",
-        value: "cheque",
-        description: "Please mail a check to QuadZone HQ, 17 Princess Road, London, NW1 8JR, UK.",
-    },
-    {
         label: "Cash on delivery",
         value: "cod",
         description: "Pay with cash when your order is delivered to your door.",
@@ -26,6 +15,11 @@ const paymentOptions: { label: string; value: PaymentMethod; description: string
         label: "PayPal",
         value: "paypal",
         description: "Pay securely via PayPal; you can use your credit card if you don’t have a PayPal account.",
+    },
+    {
+        label: "VNPay",
+        value: "vnpay",
+        description: "Thanh toán nhanh qua VNPay. Bạn sẽ được chuyển tới cổng VNPay để hoàn tất giao dịch.",
     },
 ];
 

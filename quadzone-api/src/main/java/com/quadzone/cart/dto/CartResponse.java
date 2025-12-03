@@ -15,9 +15,11 @@ public record CartResponse(
                 ? List.of()
                 : cart.getItems().stream().map(CartItemResponse::from).toList();
 
+        Long customerId = cart.getUser() != null ? cart.getUser().getId() : null;
+
         return new CartResponse(
                 cart.getId(),
-                cart.getUser().getId(),
+                customerId,
                 cart.getUpdatedAt(),
                 items);
     }

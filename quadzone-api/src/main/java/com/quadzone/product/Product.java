@@ -5,6 +5,8 @@ import com.quadzone.order.OrderItem;
 import com.quadzone.product.category.sub_category.SubCategory;
 import com.quadzone.product.dto.ProductUpdateRequest;
 import com.quadzone.review.Review;
+import com.quadzone.wishlist.WishList;
+
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -76,6 +78,9 @@ public class Product {
 
     @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<CartItem> cartItems = new ArrayList<>();
+
+    @ManyToMany(mappedBy = "products")
+    private List<WishList> wishlists;
 
     public void updateFrom(ProductUpdateRequest request) {
         if (request.name() != null) {

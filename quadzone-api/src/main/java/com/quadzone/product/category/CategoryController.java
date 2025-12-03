@@ -4,6 +4,7 @@ import com.quadzone.global.dto.PagedResponse;
 import com.quadzone.product.category.dto.CategoryRegisterRequest;
 import com.quadzone.product.category.dto.CategoryResponse;
 import com.quadzone.product.category.dto.CategoryUpdateRequest;
+import com.quadzone.product.category.sub_category.dto.SubCategoryResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -14,6 +15,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1/categories")
@@ -149,5 +152,16 @@ public class CategoryController {
         } catch (RuntimeException e) {
             return ResponseEntity.notFound().build();
         }
+    }
+    @GetMapping("/admin/all")
+    public List<CategoryResponse> getAllCategories() {
+        return categoryService.getAllCategories();
+    }
+    @GetMapping("/{categoryId}/subcategories")
+    public ResponseEntity<List<SubCategoryResponse>> getSubCategoriesByCategoryId(
+            @PathVariable Long categoryId
+    ) {
+        List<SubCategoryResponse> subCategories = categoryService.getSubCategoriesByCategoryId(categoryId);
+        return ResponseEntity.ok(subCategories);
     }
 }
