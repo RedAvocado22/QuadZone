@@ -10,8 +10,15 @@ import com.quadzone.product.dto.ProductRegisterRequest;
 import com.quadzone.product.dto.ProductResponse;
 import com.quadzone.product.dto.ProductUpdateRequest;
 import com.quadzone.utils.EntityMapper;
+
+import jakarta.persistence.criteria.Join;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import jakarta.persistence.criteria.JoinType;
+import jakarta.persistence.criteria.Predicate;
 import lombok.RequiredArgsConstructor;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.data.domain.Page;
@@ -28,6 +35,8 @@ import org.springframework.web.server.ResponseStatusException;
 @RequiredArgsConstructor
 @Transactional
 public class ProductService {
+    private static final Logger log = LoggerFactory.getLogger(ProductService.class);
+
     private final ProductRepository productRepository;
     private final SubCategoryRepository subCategoryRepository;
     private final EntityMapper objectMapper;
@@ -85,44 +94,107 @@ public class ProductService {
     }
 
     public List<BrandResponse> listBrands() {
-        return productRepository.findAllBrands()
+        return productRepository.findAllDistinctBrands()
                 .stream()
                 .map(BrandResponse::new)
                 .toList();
     }
 
-    public Page<ProductResponse> searchProducts(String brand,
+    /**
+     * Search products with filters
+     * Product → SubCategory → Category relationship
+     */
+    public Page<ProductResponse> searchProducts(
+            String brand,
             Long categoryId,
             Long subcategoryId,
             Double minPrice,
             Double maxPrice,
             Pageable pageable) {
-
-        Specification<Product> spec = Specification.where(null);
-
-        if (brand != null && !brand.isEmpty()) {
-            spec = spec.and((root, query, cb) -> cb.equal(root.get("brand"), brand));
+        
+        try {
+            log.debug("Searching products - brand: {}, categoryId: {}, subcategoryId: {}, minPrice: {}, maxPrice: {}", 
+                brand, categoryId, subcategoryId, minPrice, maxPrice);
+            
+            Specification<Product> spec = buildProductSpecification(
+                brand, categoryId, subcategoryId, minPrice, maxPrice
+            );
+            
+            Page<Product> products = productRepository.findAll(spec, pageable);
+            
+            return products.map(ProductResponse::from);
+            
+        } catch (Exception e) {
+            log.error("Error searching products", e);
+            throw new RuntimeException("Failed to search products: " + e.getMessage(), e);
         }
-
-        if (categoryId != null) {
-            spec = spec.and((root, query, cb) -> cb.equal(root.get("category").get("id"), categoryId));
-        }
-
-        if (subcategoryId != null) {
-            spec = spec.and((root, query, cb) -> cb.equal(root.get("subcategory").get("id"), subcategoryId));
-        }
-
-        if (minPrice != null) {
-            spec = spec.and((root, query, cb) -> cb.greaterThanOrEqualTo(root.get("price"), minPrice));
-        }
-
-        if (maxPrice != null) {
-            spec = spec.and((root, query, cb) -> cb.lessThanOrEqualTo(root.get("price"), maxPrice));
-        }
-        Page<Product> products = productRepository.findAll(spec, pageable);
-        return products.map(objectMapper::toProductResponse);
     }
-
+    
+    /**
+     * Build JPA Specification for filtering
+     * Your Product entity structure: Product → SubCategory → Category
+     */
+    private Specification<Product> buildProductSpecification(
+            String brand,
+            Long categoryId,
+            Long subcategoryId,
+            Double minPrice,
+            Double maxPrice) {
+        
+        return (root, query, criteriaBuilder) -> {
+            List<Predicate> predicates = new ArrayList<>();
+            
+            // Filter by brand (case-insensitive)
+            if (brand != null && !brand.trim().isEmpty()) {
+                predicates.add(criteriaBuilder.equal(
+                    criteriaBuilder.lower(root.get("brand")), 
+                    brand.toLowerCase().trim()
+                ));
+            }
+            
+            // IMPORTANT: Product only has SubCategory, not Category directly
+            // So we need to join through SubCategory to get to Category
+            
+            if (subcategoryId != null) {
+                // Filter by subcategory - direct relationship
+                predicates.add(criteriaBuilder.equal(
+                    root.get("subCategory").get("id"), 
+                    subcategoryId
+                ));
+            } else if (categoryId != null) {
+                // Filter by category - need to join through subCategory
+                // Product → SubCategory → Category
+                Join<Object, Object> subCategoryJoin = root.join("subCategory", JoinType.INNER);
+                Join<Object, Object> categoryJoin = subCategoryJoin.join("category", JoinType.INNER);
+                
+                predicates.add(criteriaBuilder.equal(
+                    categoryJoin.get("id"), 
+                    categoryId
+                ));
+            }
+            
+            // Filter by minimum price
+            if (minPrice != null) {
+                predicates.add(criteriaBuilder.greaterThanOrEqualTo(
+                    root.get("price"), 
+                    minPrice
+                ));
+            }
+            
+            // Filter by maximum price
+            if (maxPrice != null) {
+                predicates.add(criteriaBuilder.lessThanOrEqualTo(
+                    root.get("price"), 
+                    maxPrice
+                ));
+            }
+            
+            // Only show active products
+            predicates.add(criteriaBuilder.equal(root.get("isActive"), true));
+            
+            return criteriaBuilder.and(predicates.toArray(new Predicate[0]));
+        };
+    }
     @Transactional(readOnly = true)
     public PagedResponse<ProductResponse> findProducts(int page, int size, String search) {
         Pageable pageable = PageRequest.of(Math.max(page, 0), Math.max(size, 1), Sort.by(Sort.Direction.DESC, "createdAt"));

@@ -78,6 +78,7 @@ public class ProductController {
             @ApiResponse(responseCode = "409", description = "Product with similar name already exists in the system"),
             @ApiResponse(responseCode = "500", description = "Internal server error occurred during product creation")
     })
+
     public ResponseEntity<ProductResponse> createProduct(
             @Parameter(description = "Product registration request containing all product details (name, brand, price, stock, imageUrl, subCategory)", required = true)
             @Valid @RequestBody ProductRegisterRequest productDTO) {

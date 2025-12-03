@@ -1,12 +1,17 @@
 package com.quadzone.product.category;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.quadzone.exception.category.CategoryNotFoundException;
 import com.quadzone.global.dto.PagedResponse;
 import com.quadzone.admin.dto.CategoryAdminResponse;
 import com.quadzone.product.category.dto.CategoryRegisterRequest;
 import com.quadzone.product.category.dto.CategoryResponse;
 import com.quadzone.product.category.dto.CategoryUpdateRequest;
+import com.quadzone.product.category.sub_category.SubCategory;
+import com.quadzone.product.category.sub_category.SubCategoryRepository;
+import com.quadzone.product.category.sub_category.dto.SubCategoryResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -14,9 +19,11 @@ import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.ErrorResponseException;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -24,6 +31,7 @@ import java.util.List;
 public class CategoryService {
 
     private final CategoryRepository categoryRepository;
+    private final ObjectMapper objectMapper;
 
     public CategoryResponse getCategory(Long id) {
         Category category = categoryRepository.findById(id)
@@ -133,5 +141,30 @@ public class CategoryService {
         category.updateFrom(request);
 
         return CategoryAdminResponse.from(categoryRepository.save(category));
+    }
+    public List<CategoryResponse> getAllCategories() {
+        return categoryRepository.findAll()
+                .stream()
+                .map(CategoryResponse::from)
+                .toList();
+    }
+
+
+    @Autowired
+    private SubCategoryRepository subCategoryRepository;
+
+    // ✅ This should NOT be static
+    public List<SubCategoryResponse> getSubCategoriesByCategoryId(Long categoryId) {
+        // Verify category exists
+        Category category = categoryRepository.findById(categoryId)
+                .orElseThrow(() -> new RuntimeException("Category not found with id: " + categoryId));
+
+        // Fetch subcategories - call as instance method
+        List<SubCategory> subCategories = subCategoryRepository.findByCategory_Id(categoryId);
+
+        // Map to response DTOs using the static from() method
+        return subCategories.stream()
+                .map(SubCategoryResponse::from)
+                .collect(Collectors.toList());
     }
 }

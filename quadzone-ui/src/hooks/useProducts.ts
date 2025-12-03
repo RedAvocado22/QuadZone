@@ -16,9 +16,9 @@ export const useProducts = (page = 0, size = 20, query?: string) => {
 
             const response = await getProducts({ page, size, query });
 
-            setProducts(response.data ?? []);
-            setTotalPages(Math.ceil(response.total / size));
-            setTotalElements(response.total);
+            setProducts(response.content ?? []);
+            setTotalPages(response.page.totalPages);
+            setTotalElements(response.page.totalElements);
         } catch (err) {
             console.error("❌ Error loading products:", err);
             setError(err instanceof Error ? err.message : "Failed to fetch products");

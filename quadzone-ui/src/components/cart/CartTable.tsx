@@ -1,4 +1,4 @@
-import CartItem from "./CartItem";
+import CartRow from "./CartItem";
 import { useCart } from "../../contexts/CartContext";
 
 const CartTable = () => {
@@ -19,35 +19,14 @@ const CartTable = () => {
                 </thead>
                 <tbody>
                     {items.map((item) => (
-                        <CartItem key={item.id} item={item} />
+                        <CartRow key={item.id} item={item} />
                     ))}
                     <tr>
                         <td colSpan={6} className="border-top space-top-2 justify-content-center">
                             <div className="pt-md-3">
                                 <div className="d-block d-md-flex flex-center-between">
-                                    <div className="mb-3 mb-md-0 w-xl-40">
-                                        <form className="js-focus-state">
-                                            <label className="sr-only" htmlFor="subscribeSrEmailExample1">
-                                                Coupon code
-                                            </label>
-                                            <div className="input-group">
-                                                <input
-                                                    type="text"
-                                                    className="form-control"
-                                                    name="text"
-                                                    id="subscribeSrEmailExample1"
-                                                    placeholder="Coupon code"
-                                                    aria-label="Coupon code"
-                                                />
-                                                <div className="input-group-append">
-                                                    <button className="btn btn-block btn-dark px-4" type="button">
-                                                        <i className="fas fa-tags d-md-none"></i>
-                                                        <span className="d-none d-md-inline">Apply coupon</span>
-                                                    </button>
-                                                </div>
-                                            </div>
-                                        </form>
-                                    </div>
+                                    {/* Left column kept for layout spacing; coupon is now handled on Checkout page */}
+                                    <div className="mb-3 mb-md-0 w-xl-40" />
                                     <div className="d-md-flex">
                                         <button
                                             type="button"

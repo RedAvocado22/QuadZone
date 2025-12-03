@@ -1,20 +1,22 @@
-import { useMemo, useState, useEffect, type FormEvent } from "react";
+import { useState, useEffect, type FormEvent, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { useCart } from "../contexts/CartContext";
 import { useCurrency } from "../contexts/CurrencyContext";
 import { fCurrency } from "../utils/formatters";
 import { useUser } from "../hooks/useUser";
 import { ordersApi } from "../api/orders";
+import { paymentsApi } from "../api/payments";
+import { couponsApi } from "../api/coupons";
+import { shippingApi } from "../api/shipping";
+import { toast } from "react-toastify";
 import CheckoutBreadcrumb from "../components/checkout/CheckoutBreadcrumb";
-import ReturningCustomerSection from "../components/checkout/ReturningCustomerSection";
 import CouponSection from "../components/checkout/CouponSection";
 import AddressFieldsSection from "../components/checkout/AddressFieldSection";
-import ShippingDetailsSection from "../components/checkout/ShippingDetailsSection";
 import OrderNotes from "../components/checkout/OrderNote";
 import OrderSummary from "../components/checkout/OrderSummary";
 import PaymentMethods from "../components/checkout/PaymentMethod";
 import TermsCheckbox from "../components/checkout/TermsCheckbox";
-import type { AddressFields, AlertState, PaymentMethod } from "../types/checkout";
+import type { AddressFields, PaymentMethod } from "../types/checkout";
 import "../assets/css/checkout.css";
 
 const emptyAddress: AddressFields = {
@@ -22,13 +24,14 @@ const emptyAddress: AddressFields = {
     lastName: "",
     address: "",
     apartment: "",
+    block: "",
+    district: "",
     city: "",
-    state: "",
     email: "",
     phone: ""
 };
 
-const SHIPPING_FLAT_RATE = 300;
+const SHIPPING_FLAT_RATE = 10;
 
 const CheckoutPage = () => {
     const navigate = useNavigate();
@@ -36,18 +39,19 @@ const CheckoutPage = () => {
     const { currency, convertPrice } = useCurrency();
     const { user } = useUser();
 
-    const [isReturningCustomerOpen, setReturningCustomerOpen] = useState(false);
     const [isCouponOpen, setCouponOpen] = useState(false);
-    const [createAccount, setCreateAccount] = useState(false);
-    const [shipToDifferentAddress, setShipToDifferentAddress] = useState(false);
     const [billing, setBilling] = useState<AddressFields>(emptyAddress);
-    const [shipping, setShipping] = useState<AddressFields>(emptyAddress);
     const [couponCode, setCouponCode] = useState("");
+    const [appliedCouponCode, setAppliedCouponCode] = useState<string | null>(null);
+    const [discountAmount, setDiscountAmount] = useState(0);
     const [orderNotes, setOrderNotes] = useState("");
-    const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("bank-transfer");
+    const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("vnpay");
     const [termsAccepted, setTermsAccepted] = useState(false);
-    const [alert, setAlert] = useState<AlertState>({ type: "idle" });
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [shippingCost, setShippingCost] = useState(SHIPPING_FLAT_RATE);
+    const [shippingMessage, setShippingMessage] = useState<string | null>(null);
+    const [isShippingDirty, setIsShippingDirty] = useState(false);
+    const [isCalculatingShipping, setIsCalculatingShipping] = useState(false);
 
     // Auto-fill billing information for logged-in users
     useEffect(() => {
@@ -63,31 +67,90 @@ const CheckoutPage = () => {
 
     const formatPrice = (value: number) => fCurrency(convertPrice(value), { currency });
 
-    const { shippingCost, grandTotal } = useMemo(() => {
-        const shippingAmount = items.length ? SHIPPING_FLAT_RATE : 0;
-        return {
-            shippingCost: shippingAmount,
-            grandTotal: totalPrice + shippingAmount
-        };
-    }, [items.length, totalPrice]);
+    // Check if address is complete enough to calculate shipping
+    const isAddressComplete = useCallback((address: AddressFields): boolean => {
+        return !!(
+            address.address &&
+            address.district &&
+            address.city &&
+            address.address.trim() !== "" &&
+            address.district.trim() !== "" &&
+            address.city.trim() !== ""
+        );
+    }, []);
+
+    // Calculate shipping cost when address is complete
+    const calculateShippingCost = useCallback(async (address: AddressFields) => {
+        if (!isAddressComplete(address) || !items.length) {
+            return;
+        }
+
+        setIsCalculatingShipping(true);
+        try {
+            const response = await shippingApi.calculate({
+                address: address.address,
+                apartment: address.apartment || undefined,
+                block: address.block || undefined,
+                district: address.district,
+                city: address.city,
+            });
+            setShippingCost(response.shippingCost);
+            setShippingMessage(response.message);
+            setIsShippingDirty(false);
+        } catch (error: any) {
+            console.error("Error calculating shipping cost:", error);
+            setShippingCost(SHIPPING_FLAT_RATE);
+            setShippingMessage("Unable to calculate shipping. Using default rate.");
+        } finally {
+            setIsCalculatingShipping(false);
+        }
+    }, [isAddressComplete, items.length]);
 
     const handleBillingChange = (field: keyof AddressFields, value: string) => {
-        setBilling((prev) => ({ ...prev, [field]: value }));
+        const updatedBilling = { ...billing, [field]: value };
+        setBilling(updatedBilling);
+        
+        if (field === "address" || field === "apartment" || field === "block" || field === "district" || field === "city") {
+            setIsShippingDirty(true);
+            setShippingMessage(null);
+        }
     };
 
-    const handleShippingChange = (field: keyof AddressFields, value: string) => {
-        setShipping((prev) => ({ ...prev, [field]: value }));
-    };
-
-    const handleApplyCoupon = (event: FormEvent) => {
+    const handleApplyCoupon = async (event: FormEvent) => {
         event.preventDefault();
         if (!couponCode.trim()) {
             return;
         }
-        // TODO: Integrate with coupon API
-        setAlert({ type: "success", message: `Coupon "${couponCode}" applied successfully!` });
-        setCouponCode("");
-        setCouponOpen(false);
+        try {
+            if (!items.length) {
+                toast.error("Your cart is empty. Add items before applying a coupon.");
+                return;
+            }
+
+            const trimmed = couponCode.trim();
+            const response = await couponsApi.validate({
+                code: trimmed,
+                subtotal: totalPrice,
+            });
+
+            if (!response.valid) {
+                setDiscountAmount(0);
+                toast.error(response.message || "Coupon is not valid.");
+                return;
+            }
+
+            setDiscountAmount(response.discountAmount);
+            setAppliedCouponCode(trimmed);
+            toast.success(response.message || `Coupon "${trimmed}" applied successfully!`);
+            setCouponCode("");
+            setCouponOpen(false);
+        } catch (error: any) {
+            console.error("Apply coupon error:", error);
+            const errorMessage = error.response?.data?.message ||
+                error.message ||
+                "Failed to apply coupon. Please try again.";
+            toast.error(errorMessage);
+        }
     };
 
     // Email validation helper
@@ -104,10 +167,9 @@ const CheckoutPage = () => {
 
     const handlePlaceOrder = async (event: FormEvent) => {
         event.preventDefault();
-        setAlert({ type: "idle" });
 
         if (!items.length) {
-            setAlert({ type: "error", message: "Your cart is empty. Please add items before checking out." });
+            toast.error("Your cart is empty. Please add items before checking out.");
             return;
         }
 
@@ -118,39 +180,29 @@ const CheckoutPage = () => {
             !billing.email ||
             !billing.phone ||
             !billing.address ||
-            !billing.city ||
-            !billing.state
+            !billing.apartment ||
+            !billing.block ||
+            !billing.district ||
+            !billing.city
         ) {
-            setAlert({
-                type: "error",
-                message: "Please fill out all required billing details before placing your order."
-            });
+            toast.error("Please fill out all required billing details before placing your order.");
             return;
         }
 
         // Validate email format
         if (!isValidEmail(billing.email)) {
-            setAlert({
-                type: "error",
-                message: "Please enter a valid email address."
-            });
+            toast.error("Please enter a valid email address.");
             return;
         }
 
         // Validate phone format
         if (!isValidPhone(billing.phone)) {
-            setAlert({
-                type: "error",
-                message: "Please enter a valid phone number."
-            });
+            toast.error("Please enter a valid phone number.");
             return;
         }
 
         if (!termsAccepted) {
-            setAlert({
-                type: "error",
-                message: "Please accept the terms and conditions to proceed."
-            });
+            toast.error("Please accept the terms and conditions to proceed.");
             return;
         }
 
@@ -159,10 +211,9 @@ const CheckoutPage = () => {
         try {
             // Map payment method from frontend to backend format
             const paymentMethodMap: Record<PaymentMethod, string> = {
-                "bank-transfer": "BANK_TRANSFER",
-                "cheque": "BANK_TRANSFER",
                 "cod": "CASH_ON_DELIVERY",
-                "paypal": "CREDIT_CARD"
+                "paypal": "CREDIT_CARD",
+                "vnpay": "VNPAY",
             };
 
             const checkoutData = {
@@ -171,9 +222,10 @@ const CheckoutPage = () => {
                 email: billing.email,
                 phone: billing.phone,
                 address: billing.address,
-                city: billing.city || "",
-                state: billing.state || "",
                 apartment: billing.apartment || "",
+                block: billing.block || "",
+                district: billing.district || "",
+                city: billing.city || "",
                 items: items.map((item) => ({
                     productId: item.id!,
                     quantity: item.quantity
@@ -181,35 +233,64 @@ const CheckoutPage = () => {
                 subtotal: totalPrice,
                 taxAmount: 0, // Can be calculated if needed
                 shippingCost: shippingCost,
-                discountAmount: 0, // Can be calculated from coupon if needed
-                totalAmount: grandTotal,
-                paymentMethod: paymentMethodMap[paymentMethod] || "BANK_TRANSFER",
+                discountAmount: discountAmount,
+                totalAmount: totalPrice + shippingCost - discountAmount,
+                couponCode: appliedCouponCode || undefined,
+                paymentMethod: paymentMethodMap[paymentMethod] || "VNPAY",
                 notes: orderNotes || undefined
             };
 
             const orderResponse = await ordersApi.checkout(checkoutData);
 
-            setAlert({
-                type: "success",
-                message: `Order placed successfully! Your order number is ${orderResponse.orderNumber}. A confirmation email has been sent to ${billing.email}.`
-            });
+            if (paymentMethod === "vnpay") {
+                try {
+                    const returnUrl = `${window.location.origin}/vnpay-result`;
+                    const paymentUrl = await paymentsApi.createVnPayPayment({
+                        orderId: orderResponse.orderNumber,
+                        amount: orderResponse.totalAmount ?? checkoutData.totalAmount,
+                        orderInfo: `Thanh toán đơn hàng ${orderResponse.orderNumber}`,
+                        returnUrl,
+                    });
+                    toast.info("Redirecting to VNPay to complete your payment...");
+                    window.location.href = paymentUrl;
+                    return;
+                } catch (error: any) {
+                    console.error("VNPay redirect error:", error);
+                    const errorMessage = error.response?.data?.message ||
+                        error.message ||
+                        "Không thể tạo liên kết VNPay. Vui lòng thử lại.";
+                    toast.error(errorMessage);
+                    return;
+                }
+            }
+
+            toast.success(`Order placed successfully! Your order number is ${orderResponse.orderNumber}. A confirmation email has been sent to ${billing.email}.`);
 
             setTimeout(() => {
                 clearCart();
-                navigate(`/track-order?orderNumber=${orderResponse.orderNumber}`);
+                navigate(`/order-success?orderNumber=${orderResponse.orderNumber}`);
             }, 3000);
         } catch (error: any) {
             console.error("Checkout error:", error);
             const errorMessage = error.response?.data?.message ||
                                error.message ||
                                "Failed to place order. Please try again.";
-            setAlert({
-                type: "error",
-                message: errorMessage
-            });
+            toast.error(errorMessage);
         } finally {
             setIsSubmitting(false);
         }
+    };
+
+    const handleManualShippingCalculation = () => {
+        if (!items.length) {
+            toast.error("Add items to your cart before calculating shipping.");
+            return;
+        }
+        if (!isAddressComplete(billing)) {
+            toast.error("Please complete the address fields before calculating shipping.");
+            return;
+        }
+        calculateShippingCost(billing);
     };
 
     const summaryItems = items.map((item, index) => ({
@@ -219,10 +300,36 @@ const CheckoutPage = () => {
         total: formatPrice(item.price * item.quantity)
     }));
 
-    const shippingDisplay = items.length ? (
-        `Flat rate ${formatPrice(shippingCost)}`
-    ) : (
-        <span className="text-muted small">Add items to calculate shipping</span>
+    const canCalculateShipping = items.length > 0 && isAddressComplete(billing);
+
+    const shippingDisplay = (
+        <div className="d-flex flex-column align-items-end">
+            <div>
+                {items.length ? (
+                    isCalculatingShipping ? (
+                        <span className="text-muted small">Calculating shipping...</span>
+                    ) : (
+                        formatPrice(shippingCost)
+                    )
+                ) : (
+                    <span className="text-muted small">Add items to calculate shipping</span>
+                )}
+            </div>
+            <button
+                type="button"
+                className="btn btn-sm btn-outline-primary mt-2"
+                disabled={isCalculatingShipping || !canCalculateShipping}
+                onClick={handleManualShippingCalculation}
+            >
+                {isCalculatingShipping ? "Calculating..." : "Calculate shipping"}
+            </button>
+            {shippingMessage && (
+                <small className="text-muted mt-1 text-right w-100">{shippingMessage}</small>
+            )}
+            {isShippingDirty && (
+                <small className="text-warning mt-1 text-right w-100">Address changed — recalculate for accurate fee.</small>
+            )}
+        </div>
     );
 
     return (
@@ -236,10 +343,6 @@ const CheckoutPage = () => {
                     </p>
                 </div>
 
-                <ReturningCustomerSection
-                    isOpen={isReturningCustomerOpen}
-                    onToggle={() => setReturningCustomerOpen((prev) => !prev)}
-                />
                 <CouponSection
                     isOpen={isCouponOpen}
                     couponCode={couponCode}
@@ -259,33 +362,6 @@ const CheckoutPage = () => {
                                     prefix="billing"
                                 />
 
-                                <div className="custom-control custom-checkbox d-flex align-items-center mb-3">
-                                    <input
-                                        type="checkbox"
-                                        className="custom-control-input"
-                                        id="createAccount"
-                                        checked={createAccount}
-                                        onChange={(event) => setCreateAccount(event.target.checked)}
-                                    />
-                                    <label className="custom-control-label form-label" htmlFor="createAccount">
-                                        Create an account?
-                                    </label>
-                                </div>
-                                {createAccount && (
-                                    <div className="form-group">
-                                        <label className="form-label" htmlFor="accountPassword">
-                                            Account password <span className="text-danger">*</span>
-                                        </label>
-                                        <input type="password" className="form-control" id="accountPassword" required />
-                                    </div>
-                                )}
-
-                                <ShippingDetailsSection
-                                    shippingAddress={shipping}
-                                    shipToDifferentAddress={shipToDifferentAddress}
-                                    onToggle={setShipToDifferentAddress}
-                                    onChange={handleShippingChange}
-                                />
                                 <OrderNotes value={orderNotes} onChange={setOrderNotes} />
                             </div>
                         </div>
@@ -296,18 +372,11 @@ const CheckoutPage = () => {
                                     items={summaryItems}
                                     subtotal={formatPrice(totalPrice)}
                                     shipping={shippingDisplay}
-                                    total={formatPrice(grandTotal)}
+                                    discount={discountAmount > 0 ? `- ${formatPrice(discountAmount)}` : undefined}
+                                    total={formatPrice(totalPrice + shippingCost - discountAmount)}
                                 />
                                 <PaymentMethods selected={paymentMethod} onChange={setPaymentMethod} />
                                 <TermsCheckbox checked={termsAccepted} onChange={setTermsAccepted} />
-
-                                {alert.type !== "idle" && (
-                                    <div
-                                        className={`alert ${alert.type === "error" ? "alert-danger" : "alert-success"}`}
-                                        role="alert">
-                                        {alert.message}
-                                    </div>
-                                )}
 
                                 <button
                                     type="submit"

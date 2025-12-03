@@ -9,6 +9,11 @@ imgbb:
   api:
     key: ${IMGBB_API_KEY:0702ecdfadb86868e2e3d5f393c01740}
 
+vnpayment:
+  tmn-code: ${VNPAYMENT_TMN_CODE:V75DEA4S}
+  hash-secret: ${VNPAYMENT_HASH_SECRET:Z7OCQBFF1GT5BLU67K6TTZPXGPX6SVFY}
+  url: ${VNPAYMENT_URL:https://sandbox.vnpayment.vn/paymentv2/vpcpay.html}
+
 spring:
   profiles:
     active: dev
@@ -43,3 +48,9 @@ logging:
   level:
     root: warn
     com.quadzone.utils.email: info
+
+# OpenRouteService API Configuration (for shipping cost calculation)
+openrouteservice:
+  api:
+    key: ${OPENROUTESERVICE_API_KEY:eyJvcmciOiI1YjNjZTM1OTc4NTExMTAwMDFjZjYyNDgiLCJpZCI6IjU5NmI5NzNiZjc4ZTRmYWM5ZDRkZDA1MGI0OGVlNjliIiwiaCI6Im11cm11cjY0In0=}
+    url: ${OPENROUTESERVICE_API_URL:https://api.openrouteservice.org}

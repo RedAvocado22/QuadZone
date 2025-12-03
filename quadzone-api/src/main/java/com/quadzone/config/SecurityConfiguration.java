@@ -34,6 +34,10 @@ public class SecurityConfiguration {
             "/swagger-resources/**",
             "/api/v1/public/**",
             "/api/v1/orders/checkout",  // Allow guest checkout
+            "/api/v1/orders/public/**", // Allow public order tracking
+            "/api/v1/coupons/**",        // Allow public coupon validation & creation if needed
+            "/api/v1/shipping/**",        // Allow shipping cost calculation
+            "/api/v1/payments/**"
             "/api/v1/orders/public/**",  // Allow public order tracking
             "/ws/**"
     };
@@ -54,6 +58,7 @@ public class SecurityConfiguration {
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll() // Allow all OPTIONS requests for CORS preflight
                         .requestMatchers(WHITE_LIST).permitAll()
                         .requestMatchers("/api/v*/cart/**").authenticated()
+                        .requestMatchers("/api/v*/wishlist/**").authenticated()
                         .requestMatchers("/api/v*/chat/rooms").hasAnyAuthority(UserRole.ADMIN.name(), UserRole.STAFF.name())
                         .requestMatchers("/api/v*/chat/room/*/assign").hasAuthority(UserRole.ADMIN.name())
                         .requestMatchers("/api/v*/chat/**").authenticated()

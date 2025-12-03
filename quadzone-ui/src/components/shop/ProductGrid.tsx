@@ -1,7 +1,7 @@
 import type { Product } from "../../api/types";
 import type { ViewMode } from "../../types/shop";
 import { useCart } from "../../contexts/CartContext";
-import ProductCard from "../../components/shared/ProductCard";
+import ProductCard from "../shared/ProductCard";
 import ListProductCard from "../shared/ListProductCard";
 import ListSmallProductCard from "../shared/SmallListProductCard";
 
@@ -12,23 +12,19 @@ interface ProductGridProps {
 
 const ProductGrid = ({ products, viewMode }: ProductGridProps) => {
     const { addToCart } = useCart();
+    
     if (viewMode === "grid") {
-        return <GridView products={products}  />;
+        return <GridView products={products} />;
     } else if (viewMode === "list") {
         return <ListView products={products} addToCart={addToCart} />;
     } else if (viewMode === "list-small") {
         return <ListSmallView products={products} addToCart={addToCart} />;
     }
 
-    return <GridView products={products}  />;
+    return <GridView products={products} />;
 };
 
 // Grid View (Default)
-interface GridViewProps {
-    products: Product[];
-    addToCart: (product: any, quantity?: number) => void;
-}
-
 const GridView = ({ products }: { products: Product[] }) => {
     return (
         <div className="tab-content pt-2">
@@ -44,7 +40,12 @@ const GridView = ({ products }: { products: Product[] }) => {
 };
 
 // List View
-const ListView = ({ products, addToCart }: GridViewProps) => {
+interface ListViewProps {
+    products: Product[];
+    addToCart: (product: Product, quantity?: number) => void;
+}
+
+const ListView = ({ products, addToCart }: ListViewProps) => {
     return (
         <div className="tab-content pt-2">
             <ul className="d-block list-unstyled products-group prodcut-list-view">
@@ -61,7 +62,7 @@ const ListView = ({ products, addToCart }: GridViewProps) => {
 };
 
 // List Small View
-const ListSmallView = ({ products, addToCart }: GridViewProps) => {
+const ListSmallView = ({ products, addToCart }: ListViewProps) => {
     return (
         <div className="tab-content pt-2">
             <ul className="d-block list-unstyled products-group prodcut-list-view-small">

@@ -1,5 +1,6 @@
 import { Suspense, lazy, useEffect } from "react";
 import { Routes, Route, Outlet, useLocation } from "react-router-dom";
+
 import CartPage from "./pages/CartPage";
 import UserProvider from "./hooks/useUser";
 import { CartProvider } from "./contexts/CartContext";
@@ -17,11 +18,17 @@ import ProductDetailPage from "./pages/ProductDetailPage";
 import UserProfilePage from "./pages/UserProfilePage";
 import AboutUsPage from "./pages/AboutUsPage";
 import ContactUsPage from "./pages/ContactUsPage";
-import CheckoutPage from "@/pages/CheckoutPage.tsx";
+import CheckoutPage from "@/pages/CheckoutPage";
 import "src/assets/css/global.css";
 import TrackOrderPage from "./pages/TrackOrderPage";
+import OrderSuccessPage from "./pages/OrderSuccessPage";
+import VnPayResultPage from "./pages/VnPayResultPage";
+import ShopPage from "./pages/ShopPage";
 
-import Shop from "./pages/Shop";
+import { CompareProvider } from "./contexts/CompareContext";
+import ComparePage from "./pages/ComparePage";
+import WishlistPage from "./pages/WishListPage";
+import { WishlistProvider } from "./contexts/WishListContext";
 
 const AdminRoutes = lazy(() => import("./routing/AdminRoutes"));
 
@@ -31,10 +38,8 @@ const SiteLayout = () => (
     </Layout>
 );
 
-// Scroll to top on route change
 function useScrollToTop() {
     const location = useLocation();
-
     useEffect(() => {
         window.scrollTo(0, 0);
     }, [location.pathname]);
@@ -58,6 +63,20 @@ function App() {
                                         </Suspense>
                                     }
                                 />
+                    <WishlistProvider>
+                        <CompareProvider>
+                            <CartProvider>
+                                <Routes>
+
+                                    {/* Lazy Admin */}
+                                    <Route
+                                        path="/admin/*"
+                                        element={
+                                            <Suspense fallback={<div>Loading admin...</div>}>
+                                                <AdminRoutes />
+                                            </Suspense>
+                                        }
+                                    />
 
                                 <Route element={<SiteLayout />}>
                                     {/* Public Routes */}
@@ -76,7 +95,48 @@ function App() {
                                     <Route path="cart" element={<CartPage />} />
                                     <Route path="checkout" element={<CheckoutPage />} />
                                     <Route path="track-order" element={<TrackOrderPage />} />
+                                    {/* All customer routes */}
+                                    <Route element={<SiteLayout />}>
+                                        <Route index element={<HomePage />} />
+                                        <Route path="demo" element={<DemoPage />} />
 
+                                        {/* Authentication */}
+                                        <Route path="login" element={<LoginPage />} />
+                                        <Route path="register" element={<RegisterPage />} />
+                                        <Route path="activate/:token" element={<HomePage />} />
+                                        <Route path="reset-password/:token" element={<ResetPasswordPage />} />
+
+                                        {/* Products */}
+                                        <Route path="product/:id" element={<ProductDetailPage />} />
+                                        <Route path="shop" element={<ShopPage />} />
+
+                                        {/* User */}
+                                        <Route path="profile" element={<UserProfilePage />} />
+
+                                        {/* Pages */}
+                                        <Route path="about-us" element={<AboutUsPage />} />
+                                        <Route path="contact" element={<ContactUsPage />} />
+
+                                        {/* Compare + Wishlist */}
+                                        <Route path="compare" element={<ComparePage />} />
+                                        <Route path="wishlist" element={<WishlistPage />} />
+
+                                        {/* Cart + Checkout */}
+                                        <Route path="cart" element={<CartPage />} />
+                                        <Route path="checkout" element={<CheckoutPage />} />
+                                        <Route path="track-order" element={<TrackOrderPage />} />
+                                        <Route path="order-success" element={<OrderSuccessPage />} />
+                                        <Route path="vnpay-result" element={<VnPayResultPage />} />
+
+                                        {/* 404 */}
+                                        {/* <Route path="*" element={<NotFound />} /> */}
+                                    </Route>
+                                </Routes>
+
+                                <ToastContainer position="top-right" style={{ zIndex: 999999 }} />
+                            </CartProvider>
+                        </CompareProvider>
+                    </WishlistProvider>
                                     {/* Error Boundary */}
                                     {/* <Route path="unauthorized" element={<Unauthorized />} />
                                     {/* Error Boundary */}
