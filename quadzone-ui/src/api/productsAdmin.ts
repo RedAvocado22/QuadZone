@@ -51,7 +51,7 @@ export const productsApi = {
   },
 
   // Create product
-  create: async (product: Omit<ProductAdminResponse, 'id' | 'subCategory' | 'category' | 'createdAt' | 'updatedAt'> & { subCategoryId?: number }): Promise<ProductAdminResponse> => {
+  create: async (product: Omit<ProductAdminResponse, 'id' | 'subCategory' | 'category' | 'createdAt' | 'updatedAt'> & { subCategoryId ?: number } &{categoryId ?: number}): Promise<ProductAdminResponse> => {
     const requestBody: any = {
       name: product.name,
       brand: product.brand || '',
@@ -64,9 +64,10 @@ export const productsApi = {
       color: product.color || '',
       imageUrl: product.imageUrl || '',
       subCategory: product.subCategoryId ? { id: product.subCategoryId } : null,
-    };
+      category: product.categoryId ? { id:product.categoryId } : null
+    }; 
 
-    const response = await API.post<ProductAdminResponse>('/admin/products', requestBody);
+    const response = await API.post<ProductAdminResponse>('/products', requestBody);
     return response.data;
   },
 

@@ -4,7 +4,7 @@
 // ============== ENUMS ==============
 export type UserRole = "ADMIN" | "STAFF" | "CUSTOMER" | "SHIPPER";
 export type OrderStatus = "PENDING" | "CONFIRMED" | "PROCESSING" | "COMPLETED" | "CANCELLED";
-
+export type userStatus = "UNACTIVE" | "ACTIVE" | "SUSPENDED";
 // ============== PAGED RESPONSE ==============
 export interface PagedResponse<T> {
     content: T[];
@@ -146,9 +146,12 @@ export type PublicBrandDTO = Brand;
  */
 export interface User {
     id: number;
-    name: string;
+    firstName: string;
+    lastName: string;
+    password: string;
     email: string;
     role: UserRole;
+    status: userStatus;
     createdAt: string; // ISO date string
 }
 
@@ -363,15 +366,15 @@ export type BlogDetailResponse = BlogDetail;
 export interface PublicProductDTO {
     id: number;
     name: string;
-    brand: string;
+    brand?: string;
     modelNumber?: string;
     description?: string;
     price: number;
     priceVND: number;
-    imageUrl: string;
+    imageUrl?: string;
     quantity: number;
     isActive: boolean;
-    subCategory: SubCategory;
-    category: Category;
+    subCategoryId?: number;
+    subCategoryName?: string;
     createdAt: string;
 }

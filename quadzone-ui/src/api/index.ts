@@ -6,3 +6,4 @@ export * from './base';
 export * from './categories';
 export * from './orders';
 export * from './blog';
+export * from './payments';

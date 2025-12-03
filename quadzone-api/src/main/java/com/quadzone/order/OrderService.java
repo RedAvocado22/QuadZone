@@ -9,6 +9,7 @@ import com.quadzone.order.dto.OrderUpdateRequest;
 import com.quadzone.payment.Payment;
 import com.quadzone.payment.PaymentMethod;
 import com.quadzone.payment.PaymentRepository;
+import com.quadzone.payment.PaymentStatus;
 import com.quadzone.product.Product;
 import com.quadzone.product.ProductRepository;
 import com.quadzone.notification.NotificationService;
@@ -344,6 +345,93 @@ public class OrderService {
                 .map(OrderResponse::from)
                 .map(OrderStatusResponse::from)
                 .orElse(OrderStatusResponse.notFound(orderNumber));
+    }
+
+    /**
+     * Xử lý khi payment thành công (được gọi từ payment gateway callback)
+     * Cập nhật order status và payment status
+     *
+     * @param orderNumber Order number (format: ORD-00001)
+     * @param transactionId Transaction ID từ payment gateway
+     * @param paymentDate Payment date từ payment gateway (format: yyyyMMddHHmmss)
+     * @return OrderResponse với order đã được cập nhật
+     */
+    public OrderResponse confirmPayment(String orderNumber, String transactionId, String paymentDate) {
+        Order order = orderRepository.findByOrderNumber(orderNumber)
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND,
+                        "Order not found: " + orderNumber));
+
+        // Tìm payment của order
+        Payment payment = paymentRepository.findByOrder(order)
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND,
+                        "Payment not found for order: " + orderNumber));
+
+        // Cập nhật payment status
+        payment.setPaymentStatus(PaymentStatus.COMPLETED);
+        payment.setTransactionId(transactionId);
+
+        // Parse payment date
+        if (paymentDate != null && !paymentDate.isEmpty()) {
+            try {
+                java.time.format.DateTimeFormatter formatter = java.time.format.DateTimeFormatter.ofPattern("yyyyMMddHHmmss");
+                LocalDateTime payDate = LocalDateTime.parse(paymentDate, formatter);
+                payment.setPaymentDate(payDate);
+            } catch (Exception e) {
+                LoggerFactory.getLogger(OrderService.class)
+                        .warn("Failed to parse payment date: {}", paymentDate, e);
+                payment.setPaymentDate(LocalDateTime.now());
+            }
+        } else {
+            payment.setPaymentDate(LocalDateTime.now());
+        }
+
+        paymentRepository.save(payment);
+
+        // Cập nhật order status từ PENDING sang CONFIRMED
+        OrderStatus oldStatus = order.getOrderStatus();
+        if (order.getOrderStatus() == OrderStatus.PENDING) {
+            order.setOrderStatus(OrderStatus.CONFIRMED);
+            orderRepository.save(order);
+
+            // Notify user về status change
+            notifyOrderStatusChangeToUser(order, oldStatus, OrderStatus.CONFIRMED);
+
+            // Notify shippers về order ready for delivery
+            notifyOrderToShippers(order);
+
+            LoggerFactory.getLogger(OrderService.class)
+                    .info("Order {} status updated to CONFIRMED after successful payment", orderNumber);
+        }
+
+        return OrderResponse.from(order);
+    }
+
+    /**
+     * Xử lý khi payment thất bại (được gọi từ payment gateway callback)
+     * Cập nhật payment status thành FAILED
+     *
+     * @param orderNumber Order number (format: ORD-00001)
+     */
+    public void markPaymentAsFailed(String orderNumber) {
+        Order order = orderRepository.findByOrderNumber(orderNumber)
+                .orElse(null);
+
+        if (order == null) {
+            LoggerFactory.getLogger(OrderService.class)
+                    .warn("Order not found for failed payment: {}", orderNumber);
+            return;
+        }
+
+        Payment payment = paymentRepository.findByOrder(order).orElse(null);
+
+        if (payment != null) {
+            payment.setPaymentStatus(PaymentStatus.FAILED);
+            paymentRepository.save(payment);
+            LoggerFactory.getLogger(OrderService.class)
+                    .info("Payment for order {} marked as FAILED", orderNumber);
+        }
     }
 
     /**

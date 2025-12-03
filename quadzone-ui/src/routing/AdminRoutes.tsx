@@ -29,6 +29,7 @@ const OrderPage = lazy(() => import('src/pages/admin/order'));
 const OrderCreatePage = lazy(() => import('src/pages/admin/order-create'));
 const OrderDetailsPage = lazy(() => import('src/pages/admin/order-details'));
 const OrderEditPage = lazy(() => import('src/pages/admin/order-edit'));
+const ChatPage = lazy(() => import('src/pages/admin/chat'));
 const OrderAssignShipperPage = lazy(() => import('src/pages/admin/order-assign-shipper'));
 const OrderAssignDeliveryPage = lazy(() => import('src/pages/admin/order-assign-delivery'));
 
@@ -97,6 +98,8 @@ export default function AdminRoutes() {
                 <Route path="order/assign-delivery" element={<OrderAssignDeliveryPage />} />
                 <Route path="order/:id" element={<OrderDetailsPage />} />
                 <Route path="order/:id/edit" element={<OrderEditPage />} />
+                {/* Chat management routes */}
+                <Route path="chat" element={<ChatPage />} />
                 <Route path="order/:id/assign-shipper" element={<OrderAssignShipperPage />} />
             </Route>
         </Routes>
