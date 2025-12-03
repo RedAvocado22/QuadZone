@@ -386,7 +386,7 @@ public class EmailSenderService {
                             <table role="presentation" style="max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
                                 <!-- Header -->
                                 <tr>
-                                    <td style="padding: 40px 40px 30px; text-align: center; background: linear-gradient(135deg, #4CAF50 0%%, #45a049 100%%); border-radius: 8px 8px 0 0;">
+                                    <td style="padding: 40px 40px 30px; text-align: center; background: linear-gradient(135deg, #667eea 0%%, #764ba2 100%%); border-radius: 8px 8px 0 0;">
                                         <h1 style="margin: 0; color: #ffffff; font-size: 28px; font-weight: 600;">Order Confirmation</h1>
                                     </td>
                                 </tr>
@@ -409,7 +409,7 @@ public class EmailSenderService {
                                                         <tr>
                                                             <td style="padding-bottom: 15px;">
                                                                 <p style="margin: 0; color: #666666; font-size: 14px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">Order Number</p>
-                                                                <p style="margin: 5px 0 0; color: #4CAF50; font-size: 24px; font-weight: 700;">%s</p>
+                                                                <p style="margin: 5px 0 0; color: #667eea; font-size: 24px; font-weight: 700;">%s</p>
                                                             </td>
                                                         </tr>
                                                         <tr>
@@ -445,30 +445,25 @@ public class EmailSenderService {
                                         <table role="presentation" style="width: 100%%; margin: 30px 0;">
                                             <tr>
                                                 <td style="text-align: center;">
-                                                    <a href="%s" style="display: inline-block; padding: 14px 32px; background: linear-gradient(135deg, #4CAF50 0%%, #45a049 100%%); color: #ffffff; text-decoration: none; border-radius: 6px; font-weight: 600; font-size: 16px; box-shadow: 0 4px 6px rgba(76, 175, 80, 0.3);">Track Your Order</a>
+                                                    <a href="%s" style="display: inline-block; padding: 14px 32px; background: linear-gradient(135deg, #667eea 0%%, #764ba2 100%%); color: #ffffff; text-decoration: none; border-radius: 6px; font-weight: 600; font-size: 16px; box-shadow: 0 4px 6px rgba(102, 126, 234, 0.3);">Track Your Order</a>
                                                 </td>
                                             </tr>
                                         </table>
 
                                         <!-- Alternative Link -->
                                         <p style="margin: 30px 0 0; color: #666666; font-size: 14px; line-height: 1.6;">
-                                            You can also track your order by visiting:
+                                            If the button doesn't work, you can copy and paste this link into your browser:
                                         </p>
                                         <p style="margin: 10px 0 20px; word-break: break-all;">
-                                            <a href="%s" style="color: #4CAF50; text-decoration: none; font-size: 14px;">%s</a>
+                                            <a href="%s" style="color: #667eea; text-decoration: none; font-size: 14px;">%s</a>
                                         </p>
 
                                         <!-- Support Note -->
-                                        <div style="margin-top: 30px; padding: 15px; background-color: #e8f5e9; border-left: 4px solid #4CAF50; border-radius: 4px;">
-                                            <p style="margin: 0; color: #2e7d32; font-size: 13px; line-height: 1.6;">
-                                                <strong style="color: #1b5e20;">Need Help?</strong> If you have any questions about your order, please contact our support team. We're here to help!
+                                        <div style="margin-top: 30px; padding: 15px; background-color: #f8f9fa; border-left: 4px solid #667eea; border-radius: 4px;">
+                                            <p style="margin: 0; color: #666666; font-size: 13px; line-height: 1.6;">
+                                                <strong style="color: #333333;">Need Help?</strong> If you have any questions about your order, please contact our support team. We're here to help!
                                             </p>
                                         </div>
-
-                                        <p style="margin: 30px 0 0; color: #333333; font-size: 16px; line-height: 1.6;">
-                                            Best regards,<br>
-                                            <strong style="color: #4CAF50;">QuadZone Team</strong>
-                                        </p>
                                     </td>
                                 </tr>
 
