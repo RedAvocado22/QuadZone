@@ -19,6 +19,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -193,6 +194,7 @@ public class AuthenticationService {
         emailSenderService.sendAccountResetPasswordEmail(user.getEmail(), resetToken);
     }
 
+    @Transactional
     public void resetPassword(ResetPasswordRequest request) {
         if (!request.password().equals(request.confirmPassword())) {
             throw new IllegalArgumentException("Passwords do not match");
@@ -207,10 +209,18 @@ public class AuthenticationService {
                 throw new SuspendedAccountException("User account is suspended.");
             }
 
-            user.setPassword(passwordEncoder.encode(request.password()));
-            userRepository.save(user);
+            // Encode and set the new password
+            String encodedPassword = passwordEncoder.encode(request.password());
+            user.setPassword(encodedPassword);
 
-            revokeAllUserTokens(user);
+            // Save the user with the new password
+            User savedUser = userRepository.save(user);
+
+            // Flush to ensure the change is persisted immediately
+            userRepository.flush();
+
+            // Revoke all existing tokens for security
+            revokeAllUserTokens(savedUser);
 
         } catch (ExpiredJwtException e) {
             throw new InvalidTokenException("Password reset link has expired. Please request a new one.");
