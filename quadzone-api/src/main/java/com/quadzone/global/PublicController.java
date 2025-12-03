@@ -1,6 +1,10 @@
 package com.quadzone.global;
 
+import com.quadzone.blog.BlogService;
+import com.quadzone.blog.dto.BlogDetailResponse;
+import com.quadzone.blog.dto.BlogOverviewResponse;
 import com.quadzone.global.dto.HomeResponse;
+import com.quadzone.global.dto.PagedResponse;
 import com.quadzone.product.ProductService;
 import com.quadzone.product.category.CategoryRepository;
 import com.quadzone.product.category.CategoryService;
@@ -8,6 +12,8 @@ import com.quadzone.product.category.dto.CategoryResponse;
 import com.quadzone.product.dto.BrandResponse;
 import com.quadzone.product.dto.ProductDetailsResponse;
 import com.quadzone.product.dto.ProductResponse;
+
+import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -27,6 +33,7 @@ public class PublicController {
     private final ProductService productService;
     private final CategoryRepository categoryRepository;
     private final CategoryService categoryService;
+    private final BlogService blogService;
 
     @GetMapping()
     public ResponseEntity<HomeResponse> getHome() {
@@ -43,6 +50,7 @@ public class PublicController {
 public ResponseEntity<Page<ProductResponse>> listProducts(
         @RequestParam(defaultValue = "0") int page,
         @RequestParam(defaultValue = "10") int size,
+        @RequestParam(required = false) String search,
         @RequestParam(required = false) String brand,
         @RequestParam(required = false) Long categoryId,
         @RequestParam(required = false) Long subcategoryId,
@@ -50,22 +58,16 @@ public ResponseEntity<Page<ProductResponse>> listProducts(
         @RequestParam(required = false) Double maxPrice,
         @RequestParam(required = false) String sortBy) {
     
-    Sort sort = Sort.unsorted();
-    if (sortBy != null && !sortBy.isEmpty()) {
-        String[] sortFields = sortBy.split(",");
-        List<Sort.Order> orders = new ArrayList<>();
-        for (String field : sortFields) {
-            String[] parts = field.trim().split(":");
-            String property = parts[0];
-            Sort.Direction direction = parts.length > 1 && "desc".equalsIgnoreCase(parts[1]) 
-                ? Sort.Direction.DESC 
-                : Sort.Direction.ASC;
-            orders.add(new Sort.Order(direction, property));
-        }
-        sort = Sort.by(orders);
+    Sort sort = buildSort(sortBy);
+    Pageable pageable = PageRequest.of(page, size, sort);
+    
+    // If search query is provided, use the search method
+    if (search != null && !search.trim().isEmpty()) {
+        Page<ProductResponse> response = productService.getProducts(pageable, search.trim());
+        return ResponseEntity.ok(response);
     }
     
-    Pageable pageable = PageRequest.of(page, size, sort);
+    // Otherwise use the filter-based search
     Page<ProductResponse> response = productService.searchProducts(
         brand, 
         categoryId, 
@@ -76,6 +78,24 @@ public ResponseEntity<Page<ProductResponse>> listProducts(
     );
 
     return ResponseEntity.ok(response);
+}
+
+private Sort buildSort(String sortBy) {
+    if (sortBy == null || sortBy.isEmpty()) {
+        return Sort.unsorted();
+    }
+    
+    String[] sortFields = sortBy.split(",");
+    List<Sort.Order> orders = new ArrayList<>();
+    for (String field : sortFields) {
+        String[] parts = field.trim().split(":");
+        String property = parts[0];
+        Sort.Direction direction = parts.length > 1 && "desc".equalsIgnoreCase(parts[1]) 
+            ? Sort.Direction.DESC 
+            : Sort.Direction.ASC;
+        orders.add(new Sort.Order(direction, property));
+    }
+    return Sort.by(orders);
 }
 
     @GetMapping("/products/{id}")
@@ -101,6 +121,61 @@ public ResponseEntity<Page<ProductResponse>> listProducts(
         } catch (RuntimeException e) {
             return ResponseEntity.notFound().build();
         }
+    }
+
+    @GetMapping("/blogs")
+    @Operation(summary = "Get all blog posts")
+    public ResponseEntity<PagedResponse<BlogOverviewResponse>> getBlogs(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
+        Pageable pageable = PageRequest.of(page, size);
+        Page<BlogOverviewResponse> blogs = blogService.getBlogs(pageable);
+        return ResponseEntity.ok(new PagedResponse<>(
+                blogs.getContent(),
+                blogs.getTotalElements(),
+                blogs.getNumber(),
+                blogs.getSize()
+        ));
+    }
+
+    /**
+     * Get blog by slug
+     */
+    @GetMapping("/blogs/{slug}")
+    @Operation(summary = "Get blog post by slug")
+    public ResponseEntity<BlogDetailResponse> getBlogBySlug(@PathVariable String slug) {
+        BlogDetailResponse blog = blogService.getBlogBySlug(slug);
+        return ResponseEntity.ok(blog);
+    }
+
+    /**
+     * Get recent blog posts (alias for /api/v1/public/blogs with default params)
+     */
+    @GetMapping("/blog")
+    @Operation(summary = "Get recent blog posts")
+    public ResponseEntity<PagedResponse<BlogOverviewResponse>> getRecentBlogs(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "5") int size) {
+        Pageable pageable = PageRequest.of(page, size);
+        Page<BlogOverviewResponse> blogs = blogService.getBlogs(pageable);
+        return ResponseEntity.ok(new PagedResponse<>(
+                blogs.getContent(),
+                blogs.getTotalElements(),
+                blogs.getNumber(),
+                blogs.getSize()
+        ));
+    }
+
+    /**
+     * Add a comment to a blog post
+     */
+    @PostMapping("/blogs/{blogId}/comments")
+    @Operation(summary = "Add a comment to a blog post")
+    public ResponseEntity<Void> addCommentToBlog(
+            @PathVariable Long blogId,
+            @RequestBody com.quadzone.blog.comment.dto.AddCommentRequest request) {
+        blogService.addCommentToBlog(blogId, request);
+        return ResponseEntity.ok().build();
     }
 
 }

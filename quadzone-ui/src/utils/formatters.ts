@@ -165,3 +165,52 @@ export function fToNow(date: DatePickerFormat): string {
 
     return dayjs(date).toNow(true);
 }
+// ----------------------------------------------------------------------
+// HTML to Text Conversion
+// ----------------------------------------------------------------------
+
+/**
+ * Converts HTML string to plain text, preserving readability.
+ * Strips HTML tags and converts common elements to readable text.
+ */
+export function htmlToText(html: string): string {
+    if (!html) return "";
+
+    // Replace <br> and <br/> with newlines
+    let text = html.replace(/<br\s*\/?>/gi, "\n");
+
+    // Replace <p> tags with newlines
+    text = text.replace(/<\/p>/gi, "\n");
+    text = text.replace(/<p[^>]*>/gi, "");
+
+    // Replace <li> tags with bullet points
+    text = text.replace(/<\/li>/gi, "\n");
+    text = text.replace(/<li[^>]*>/gi, "• ");
+
+    // Replace <h1> to <h6> with newlines and uppercase for emphasis
+    for (let i = 1; i <= 6; i++) {
+        text = text.replace(new RegExp(`<h${i}[^>]*>`, "gi"), "");
+        text = text.replace(new RegExp(`</h${i}>`, "gi"), "\n\n");
+    }
+
+    // Replace <blockquote> with indentation
+    text = text.replace(/<blockquote[^>]*>/gi, "\n    ");
+    text = text.replace(/<\/blockquote>/gi, "\n");
+
+    // Remove all remaining HTML tags
+    text = text.replace(/<[^>]+>/g, "");
+
+    // Decode HTML entities
+    text = text.replace(/&nbsp;/g, " ");
+    text = text.replace(/&amp;/g, "&");
+    text = text.replace(/</g, "<");
+    text = text.replace(/>/g, ">");
+    text = text.replace(/"/g, '"');
+    text = text.replace(/&#39;/g, "'");
+
+    // Clean up extra whitespace
+    text = text.replace(/\n\s*\n/g, "\n\n"); // Multiple newlines to double
+   text = text.trim();
+
+    return text;
+}

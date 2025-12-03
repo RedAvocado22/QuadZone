@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 interface PriceRange {
     min: number;
@@ -9,11 +9,18 @@ interface PriceRangeSliderProps {
     min?: number;
     max?: number;
     onFilter?: (range: PriceRange) => void;
+    resetTrigger?: number;
 }
 
-const PriceRangeSlider: React.FC<PriceRangeSliderProps> = ({ min = 0, max = 3456, onFilter }) => {
+const PriceRangeSlider: React.FC<PriceRangeSliderProps> = ({ min = 0, max = 3456, onFilter, resetTrigger }) => {
     const [minValue, setMinValue] = useState<number>(min);
     const [maxValue, setMaxValue] = useState<number>(max);
+
+    // Reset values when resetTrigger changes
+    useEffect(() => {
+        setMinValue(min);
+        setMaxValue(max);
+    }, [resetTrigger, min, max]);
 
     const handleMinChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
         const value = Math.min(Number(e.target.value), maxValue - 1);
@@ -23,12 +30,6 @@ const PriceRangeSlider: React.FC<PriceRangeSliderProps> = ({ min = 0, max = 3456
     const handleMaxChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
         const value = Math.max(Number(e.target.value), minValue + 1);
         setMaxValue(value);
-    };
-
-    const handleFilter = (): void => {
-        if (onFilter) {
-            onFilter({ min: minValue, max: maxValue });
-        }
     };
 
     const minPercent: number = ((minValue - min) / (max - min)) * 100;
