@@ -4,15 +4,22 @@ import com.quadzone.product.category.sub_category.SubCategory;
 
 public record SubCategoryResponse(
         Long id,
-        String name
+        String name,
+        Boolean active,
+        long productCount,
+        Long categoryId,
+        String categoryName
 ) {
-    public static SubCategoryResponse from(final SubCategory subCategory) {
-        if (subCategory == null) {
-            return null;
-        }
+    public static SubCategoryResponse from(SubCategory sub) {
+        long productCount = sub.getProducts() != null ? sub.getProducts().size() : 0;
+
         return new SubCategoryResponse(
-                subCategory.getId(),
-                subCategory.getName()
+                sub.getId(),
+                sub.getName(),
+                sub.getIsActive(),
+                productCount,
+                sub.getCategory() != null ? sub.getCategory().getId() : null,
+                sub.getCategory() != null ? sub.getCategory().getName() : null
         );
     }
 }

@@ -31,11 +31,12 @@ const OrderDetailsPage = lazy(() => import('src/pages/admin/order-details'));
 const OrderEditPage = lazy(() => import('src/pages/admin/order-edit'));
 const OrderAssignShipperPage = lazy(() => import('src/pages/admin/order-assign-shipper'));
 const OrderAssignDeliveryPage = lazy(() => import('src/pages/admin/order-assign-delivery'));
+const SubCategoryCreatePage = lazy(() => import('src/pages/admin/subcategory-create'));
 
 const renderFallback = () => (
     <Box
         sx={{
-            display: 'flex',
+            display: 'flex', 
             flex: '1 1 auto',
             alignItems: 'center',
             justifyContent: 'center',

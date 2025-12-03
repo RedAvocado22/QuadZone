@@ -67,4 +67,32 @@ export const categoriesApi = {
   delete: async (id: string | number): Promise<void> => {
     await API.delete(`/admin/categories/${id}`);
   },
+  
+    // ------------------ SUBCATEGORY ------------------
+
+  getSubCategoriesByCategoryId: async (categoryId: number): Promise<SubCategoryResponse[]> => {
+    const response = await API.get<SubCategoryResponse[]>(`/categories/${categoryId}/subcategories`);
+    return response.data;
+  },
+
+  createSubCategory: async (categoryId: number, subCategory: { name: string; active?: boolean }): Promise<SubCategoryResponse> => {
+    const requestBody = {
+      name: subCategory.name,
+      active: subCategory.active ?? true,
+    };
+    const response = await API.post<SubCategoryResponse>(`/categories/${categoryId}/subcategories`, requestBody);
+    return response.data;
+  },
+
+  updateSubCategory: async (categoryId: number, subId: number, subCategory: { name?: string; active?: boolean }): Promise<SubCategoryResponse> => {
+    const requestBody: any = {};
+    if (subCategory.name !== undefined) requestBody.name = subCategory.name;
+    if (subCategory.active !== undefined) requestBody.active = subCategory.active;
+    const response = await API.put<SubCategoryResponse>(`/categories/${categoryId}/subcategories/${subId}`, requestBody);
+    return response.data;
+  },
+
+  deleteSubCategory: async (categoryId: number, subId: number): Promise<void> => {
+    await API.delete(`/categories/${categoryId}/subcategories/${subId}`);
+  },
 };

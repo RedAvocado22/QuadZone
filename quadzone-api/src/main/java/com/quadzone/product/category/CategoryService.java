@@ -9,7 +9,9 @@ import com.quadzone.product.category.dto.CategoryResponse;
 import com.quadzone.product.category.dto.CategoryUpdateRequest;
 import com.quadzone.product.category.sub_category.SubCategory;
 import com.quadzone.product.category.sub_category.SubCategoryRepository;
+import com.quadzone.product.category.sub_category.dto.SubCategoryRegisterRequest;
 import com.quadzone.product.category.sub_category.dto.SubCategoryResponse;
+import com.quadzone.product.category.sub_category.dto.SubCategoryUpdateRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -153,18 +155,58 @@ public class CategoryService {
     @Autowired
     private SubCategoryRepository subCategoryRepository;
 
-    // ✅ This should NOT be static
+
     public List<SubCategoryResponse> getSubCategoriesByCategoryId(Long categoryId) {
-        // Verify category exists
         Category category = categoryRepository.findById(categoryId)
                 .orElseThrow(() -> new RuntimeException("Category not found with id: " + categoryId));
 
-        // Fetch subcategories - call as instance method
+
         List<SubCategory> subCategories = subCategoryRepository.findByCategory_Id(categoryId);
 
-        // Map to response DTOs using the static from() method
+
         return subCategories.stream()
                 .map(SubCategoryResponse::from)
                 .collect(Collectors.toList());
+    }
+
+    public SubCategoryResponse createSubCategory(Long categoryId, SubCategoryRegisterRequest req) {
+        Category category = categoryRepository.findById(categoryId)
+                .orElseThrow(() -> new RuntimeException("Category not found"));
+
+        SubCategory sub = new SubCategory();
+        sub.setName(req.name());
+        sub.setIsActive(req.active());
+        sub.setCategory(category);
+
+        subCategoryRepository.save(sub);
+        return SubCategoryResponse.from(sub);
+    }
+
+    public SubCategoryResponse updateSubCategory(Long categoryId, Long subId, SubCategoryUpdateRequest req) {
+        Category category = categoryRepository.findById(categoryId)
+                .orElseThrow(() -> new RuntimeException("Category not found"));
+
+        SubCategory sub = subCategoryRepository.findById(subId)
+                .orElseThrow(() -> new RuntimeException("SubCategory not found"));
+
+        sub.setName(req.name());
+        sub.setIsActive(req.active());
+        sub.setCategory(category);
+
+        subCategoryRepository.save(sub);
+        return SubCategoryResponse.from(sub);
+    }
+
+    public void deleteSubCategory(Long categoryId, Long subId) {
+        Category category = categoryRepository.findById(categoryId)
+                .orElseThrow(() -> new RuntimeException("Category not found"));
+
+        SubCategory sub = subCategoryRepository.findById(subId)
+                .orElseThrow(() -> new RuntimeException("SubCategory not found"));
+
+        if (!sub.getCategory().getId().equals(categoryId))
+            throw new RuntimeException("SubCategory does not belong to this Category");
+
+        subCategoryRepository.delete(sub);
     }
 }

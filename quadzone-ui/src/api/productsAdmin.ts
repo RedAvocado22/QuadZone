@@ -83,15 +83,17 @@ update: async (
 
   if (product.name !== undefined) requestBody.name = product.name;
   if (product.brand !== undefined) requestBody.brand = product.brand;
+  if (product.modelNumber !== undefined) requestBody.modelNumber = product.modelNumber;
   if (product.price !== undefined) requestBody.price = product.price;
+  if (product.costPrice !== undefined) requestBody.costPrice = product.costPrice;
   if (product.quantity !== undefined) requestBody.quantity = product.quantity;
+  if (product.weight !== undefined) requestBody.weight = product.weight;
+  if (product.color !== undefined) requestBody.color = product.color;
   if (product.description !== undefined) requestBody.description = product.description;
   if (product.imageUrl !== undefined) requestBody.imageUrl = product.imageUrl;
   if (product.subCategoryId !== undefined) {
     requestBody.subCategory = { id: product.subCategoryId };
   }
-
-  
   if (product.status !== undefined) {
     requestBody.isActive = product.status === 'active';
   }

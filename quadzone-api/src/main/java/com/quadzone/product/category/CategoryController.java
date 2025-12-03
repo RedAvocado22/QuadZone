@@ -4,7 +4,9 @@ import com.quadzone.global.dto.PagedResponse;
 import com.quadzone.product.category.dto.CategoryRegisterRequest;
 import com.quadzone.product.category.dto.CategoryResponse;
 import com.quadzone.product.category.dto.CategoryUpdateRequest;
+import com.quadzone.product.category.sub_category.dto.SubCategoryRegisterRequest;
 import com.quadzone.product.category.sub_category.dto.SubCategoryResponse;
+import com.quadzone.product.category.sub_category.dto.SubCategoryUpdateRequest;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -164,5 +166,33 @@ public class CategoryController {
     ) {
         List<SubCategoryResponse> subCategories = categoryService.getSubCategoriesByCategoryId(categoryId);
         return ResponseEntity.ok(subCategories);
+    }
+
+    @PostMapping("/{categoryId}/subcategories")
+    public ResponseEntity<SubCategoryResponse> createSubCategory(
+            @PathVariable Long categoryId,
+            @Valid @RequestBody SubCategoryRegisterRequest request
+    ) {
+        SubCategoryResponse created = categoryService.createSubCategory(categoryId, request);
+        return ResponseEntity.status(HttpStatus.CREATED).body(created);
+    }
+
+    @PutMapping("/{categoryId}/subcategories/{subId}")
+    public ResponseEntity<SubCategoryResponse> updateSubCategory(
+            @PathVariable Long categoryId,
+            @PathVariable Long subId,
+            @Valid @RequestBody SubCategoryUpdateRequest request
+    ) {
+        SubCategoryResponse updated = categoryService.updateSubCategory(categoryId, subId, request);
+        return ResponseEntity.ok(updated);
+    }
+
+    @DeleteMapping("/{categoryId}/subcategories/{subId}")
+    public ResponseEntity<Void> deleteSubCategory(
+            @PathVariable Long categoryId,
+            @PathVariable Long subId
+    ) {
+        categoryService.deleteSubCategory(categoryId, subId);
+        return ResponseEntity.noContent().build();
     }
 }
