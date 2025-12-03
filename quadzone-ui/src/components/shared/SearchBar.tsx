@@ -1,11 +1,19 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 const SearchBar = ({ className = "" }) => {
     const [searchQuery, setSearchQuery] = useState("");
+    const navigate = useNavigate();
 
     const handleSearch = (e: React.FormEvent) => {
         e.preventDefault();
-        // Implement search functionality
+        
+        // Only navigate if search query is not empty
+        if (searchQuery.trim()) {
+            // Navigate to shop page with search query parameter
+            navigate(`/shop?search=${encodeURIComponent(searchQuery.trim())}`);
+            setSearchQuery(""); // Clear input after search
+        }
     };
 
     return (
@@ -22,7 +30,7 @@ const SearchBar = ({ className = "" }) => {
                     placeholder="Search for Products"
                     aria-label="Search for Products"
                     value={searchQuery}
-                    
+                    onChange={(e) => setSearchQuery(e.target.value)}
                 />
                 <div className="input-group-append">
                     

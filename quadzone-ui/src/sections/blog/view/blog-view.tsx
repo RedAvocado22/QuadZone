@@ -7,6 +7,10 @@ import Button from "@mui/material/Button";
 import Typography from "@mui/material/Typography";
 import Pagination from "@mui/material/Pagination";
 import CircularProgress from "@mui/material/CircularProgress";
+import FormControl from "@mui/material/FormControl";
+import InputLabel from "@mui/material/InputLabel";
+import Select from "@mui/material/Select";
+import MenuItem from "@mui/material/MenuItem";
 
 import { useAdminBlogs } from "src/hooks/useAdminBlogs";
 import { DashboardContent } from "src/layouts/dashboard";
@@ -27,11 +31,11 @@ export function BlogView() {
     const [search, setSearch] = useState("");
     const [page, setPage] = useState(0);
 
-    // Fetch admin blogs from API
-    const { blogs, loading, error, total, refetch } = useAdminBlogs({
+    // Fetch admin blogs from API with status filtering
+    const { blogs, loading, error, total, currentStatus, setCurrentStatus, refetch } = useAdminBlogs({
         page,
         size: 12,
-        search
+        search,
     });
 
 
@@ -74,16 +78,14 @@ export function BlogView() {
         setPage(0); // Reset to first page when search changes
     }, []);
 
+    const handleStatusChange = useCallback((newStatus: 'All' | 'DRAFT' | 'PUBLISHED' | 'ARCHIVED') => {
+        setCurrentStatus(newStatus);
+        setPage(0); // Reset to first page when status changes
+    }, [setCurrentStatus]);
+
     const handlePageChange = useCallback((_event: React.ChangeEvent<unknown>, newPage: number) => {
         setPage(newPage - 1); // Pagination is 1-based, API is 0-based
     }, []);
-
-    const handleChangeStatus = useCallback(
-        (id: string) => {
-            router.push(`/admin/blog/${id}/status`);
-        },
-        [router]
-    );
 
     const totalPages = Math.ceil(total / 12);
 
@@ -114,9 +116,23 @@ export function BlogView() {
                         p: 3,
                         display: "flex",
                         alignItems: "center",
-                        justifyContent: "space-between"
+                        justifyContent: "space-between",
+                        gap: 2
                     }}>
                     <PostSearch onSearch={handleSearch} />
+                    <FormControl sx={{ minWidth: 200 }}>
+                        <InputLabel>Status</InputLabel>
+                        <Select
+                            value={currentStatus}
+                            label="Status"
+                            onChange={(e) => handleStatusChange(e.target.value as 'All' | 'DRAFT' | 'PUBLISHED' | 'ARCHIVED')}
+                        >
+                            <MenuItem value="All">All Blogs</MenuItem>
+                            <MenuItem value="DRAFT">Draft</MenuItem>
+                            <MenuItem value="PUBLISHED">Published</MenuItem>
+                            <MenuItem value="ARCHIVED">Archived</MenuItem>
+                        </Select>
+                    </FormControl>
                 </Box>
                 {loading ? (
                     <Box sx={{ display: "flex", justifyContent: "center", p: 3 }}>

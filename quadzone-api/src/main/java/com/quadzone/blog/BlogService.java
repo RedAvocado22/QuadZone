@@ -48,30 +48,55 @@ public class BlogService {
 
     /**
      * Get paginated list of all blogs for admin dashboard
-     * Useful for admin dashboard with search support
+     * Supports search and status filtering
      * 
-     * @param page page number (0-indexed)
-     * @param size page size
+     * @param page   page number (0-indexed)
+     * @param size   page size
      * @param search search query (searches in title and content)
+     * @param status filter by blog status (DRAFT, PUBLISHED, ARCHIVED) - null means all statuses
      * @return paginated response with blog details
      */
-    public PagedResponse<BlogDetailResponse> findBlogsForAdmin(int page, int size, String search) {
+    public PagedResponse<BlogDetailResponse> findBlogsForAdmin(int page, int size, String search, String status) {
         Pageable pageable = PageRequest.of(page, size);
-        
+
         try {
             Page<Blog> blogs;
-            if (search != null && !search.trim().isEmpty()) {
-                blogs = blogRepository.searchByTitleOrContent(search.trim(), pageable);
-            } else {
-                blogs = blogRepository.findAll(pageable);
+            BlogStatus blogStatus = null;
+            
+            // Parse status parameter if provided
+            if (status != null && !status.trim().isEmpty()) {
+                try {
+                    blogStatus = BlogStatus.valueOf(status.trim().toUpperCase());
+                } catch (IllegalArgumentException e) {
+                    log.warn("Invalid blog status provided: {}", status);
+                    blogStatus = null;
+                }
             }
             
+            // Apply filters based on search and status
+            if (search != null && !search.trim().isEmpty()) {
+                if (blogStatus != null) {
+                    // Search with status filter
+                    blogs = blogRepository.searchByTitleOrContentAndStatus(search.trim(), blogStatus, pageable);
+                } else {
+                    // Search without status filter
+                    blogs = blogRepository.searchByTitleOrContent(search.trim(), pageable);
+                }
+            } else {
+                if (blogStatus != null) {
+                    // Status filter only, no search
+                    blogs = blogRepository.findByStatus(blogStatus, pageable);
+                } else {
+                    // No filters, get all blogs
+                    blogs = blogRepository.findAll(pageable);
+                }
+            }
+
             return new PagedResponse<>(
                     blogs.getContent().stream().map(BlogDetailResponse::from).toList(),
                     blogs.getTotalElements(),
                     blogs.getNumber(),
-                    blogs.getSize()
-            );
+                    blogs.getSize());
         } catch (Exception e) {
             log.error("Error fetching blogs for admin", e);
             return new PagedResponse<>(List.of(), 0, page, size);
@@ -89,8 +114,9 @@ public class BlogService {
         if (pageable == null) {
             throw new IllegalArgumentException("Pagination parameters required");
         }
+
         try {
-            Page<Blog> page = blogRepository.findAll(pageable);
+            Page<Blog> page = blogRepository.findByStatus(BlogStatus.PUBLISHED, pageable);
             return page.map(objectMapper::toBlogResponse);
         } catch (Exception e) {
             log.error("Error fetching blogs", e);
@@ -142,7 +168,7 @@ public class BlogService {
      */
     public BlogDetailResponse createBlog(AddBlogRequest request) {
         log.info("Creating new blog with title: {}", request.title());
-        
+
         // Validate title uniqueness
         if (blogRepository.existsByTitleIgnoreCase(request.title())) {
             throw new RuntimeException("Blog title already exists: " + request.title());
@@ -156,7 +182,7 @@ public class BlogService {
         String baseSlug = generateSlug(request.title());
         String slug = baseSlug;
         int counter = 1;
-        
+
         // If slug exists, append number until unique
         while (blogRepository.findBySlug(slug).isPresent()) {
             slug = baseSlug + "-" + counter;
@@ -180,14 +206,14 @@ public class BlogService {
      * - If title changed, must be unique
      * - Partial updates supported (only provided fields updated)
      * 
-     * @param id blog ID to update
+     * @param id      blog ID to update
      * @param request blog update request
      * @return updated blog detail
      * @throws RuntimeException if blog not found or validation fails
      */
     public BlogDetailResponse updateBlog(Long id, UpdateBlogRequest request) {
         log.info("Updating blog with id: {}", id);
-        
+
         Blog blog = blogRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Blog not found with id: " + id));
 
@@ -200,10 +226,10 @@ public class BlogService {
 
         // Apply updates (only non-null fields)
         request.applyTo(blog);
-        
+
         Blog updated = blogRepository.save(blog);
         log.info("Blog updated successfully with id: {}", id);
-        
+
         return BlogDetailResponse.from(updated);
     }
 
@@ -215,14 +241,14 @@ public class BlogService {
      * - Cannot publish with empty content
      * - Can transition from any state to any valid state
      * 
-     * @param id blog ID
+     * @param id        blog ID
      * @param newStatus new blog status
      * @return updated blog detail
      * @throws RuntimeException if blog not found or validation fails
      */
     public BlogDetailResponse updateBlogStatus(Long id, BlogStatus newStatus) {
         log.info("Updating blog status for id: {} to: {}", id, newStatus);
-        
+
         Blog blog = blogRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Blog not found with id: " + id));
 
@@ -238,7 +264,7 @@ public class BlogService {
 
         blog.setStatus(newStatus);
         Blog updated = blogRepository.save(blog);
-        
+
         log.info("Blog status updated successfully to: {}", newStatus);
         return BlogDetailResponse.from(updated);
     }
@@ -251,10 +277,10 @@ public class BlogService {
      */
     public void deleteBlog(Long id) {
         log.info("Deleting blog with id: {}", id);
-        
+
         Blog blog = blogRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Blog not found with id: " + id));
-        
+
         blogRepository.delete(blog);
         log.info("Blog deleted successfully with id: {}", id);
     }
@@ -262,7 +288,7 @@ public class BlogService {
     /**
      * Add comment to blog post
      * 
-     * @param blogId blog ID
+     * @param blogId  blog ID
      * @param request comment request
      */
     public void addCommentToBlog(Long blogId, AddCommentRequest request) {
@@ -273,7 +299,7 @@ public class BlogService {
      * Change blog status (deprecated - use updateBlogStatus instead)
      * Kept for backward compatibility
      * 
-     * @param blogId blog ID
+     * @param blogId    blog ID
      * @param newStatus new status
      */
     @Deprecated(forRemoval = true)
@@ -308,7 +334,8 @@ public class BlogService {
         // Convert to lowercase
         String lowercased = noAccents.toLowerCase();
 
-        // Replace spaces and special chars with hyphens, keep only alphanumeric and hyphens
+        // Replace spaces and special chars with hyphens, keep only alphanumeric and
+        // hyphens
         String slug = lowercased.replaceAll("[^a-z0-9]+", "-");
 
         // Remove multiple consecutive hyphens

@@ -7,6 +7,7 @@ export interface BlogFilterParams {
     search?: string;
     category?: string;
     sortBy?: 'latest' | 'popular' | 'oldest';
+    status?: 'DRAFT' | 'PUBLISHED' | 'ARCHIVED';
 }
 
 export interface CreateBlogRequest {

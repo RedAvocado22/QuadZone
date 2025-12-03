@@ -50,6 +50,7 @@ public class PublicController {
 public ResponseEntity<Page<ProductResponse>> listProducts(
         @RequestParam(defaultValue = "0") int page,
         @RequestParam(defaultValue = "10") int size,
+        @RequestParam(required = false) String search,
         @RequestParam(required = false) String brand,
         @RequestParam(required = false) Long categoryId,
         @RequestParam(required = false) Long subcategoryId,
@@ -57,22 +58,16 @@ public ResponseEntity<Page<ProductResponse>> listProducts(
         @RequestParam(required = false) Double maxPrice,
         @RequestParam(required = false) String sortBy) {
     
-    Sort sort = Sort.unsorted();
-    if (sortBy != null && !sortBy.isEmpty()) {
-        String[] sortFields = sortBy.split(",");
-        List<Sort.Order> orders = new ArrayList<>();
-        for (String field : sortFields) {
-            String[] parts = field.trim().split(":");
-            String property = parts[0];
-            Sort.Direction direction = parts.length > 1 && "desc".equalsIgnoreCase(parts[1]) 
-                ? Sort.Direction.DESC 
-                : Sort.Direction.ASC;
-            orders.add(new Sort.Order(direction, property));
-        }
-        sort = Sort.by(orders);
+    Sort sort = buildSort(sortBy);
+    Pageable pageable = PageRequest.of(page, size, sort);
+    
+    // If search query is provided, use the search method
+    if (search != null && !search.trim().isEmpty()) {
+        Page<ProductResponse> response = productService.getProducts(pageable, search.trim());
+        return ResponseEntity.ok(response);
     }
     
-    Pageable pageable = PageRequest.of(page, size, sort);
+    // Otherwise use the filter-based search
     Page<ProductResponse> response = productService.searchProducts(
         brand, 
         categoryId, 
@@ -83,6 +78,24 @@ public ResponseEntity<Page<ProductResponse>> listProducts(
     );
 
     return ResponseEntity.ok(response);
+}
+
+private Sort buildSort(String sortBy) {
+    if (sortBy == null || sortBy.isEmpty()) {
+        return Sort.unsorted();
+    }
+    
+    String[] sortFields = sortBy.split(",");
+    List<Sort.Order> orders = new ArrayList<>();
+    for (String field : sortFields) {
+        String[] parts = field.trim().split(":");
+        String property = parts[0];
+        Sort.Direction direction = parts.length > 1 && "desc".equalsIgnoreCase(parts[1]) 
+            ? Sort.Direction.DESC 
+            : Sort.Direction.ASC;
+        orders.add(new Sort.Order(direction, property));
+    }
+    return Sort.by(orders);
 }
 
     @GetMapping("/products/{id}")

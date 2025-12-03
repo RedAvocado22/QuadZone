@@ -367,8 +367,8 @@ public class AdminController {
     @GetMapping("/blogs")
     @Operation(
             summary = "Get all blogs (Admin)",
-            description = "Retrieve a paginated list of all blog posts with optional search functionality. " +
-                    "Only accessible to ADMIN users. Supports pagination with configurable page size and search. " +
+            description = "Retrieve a paginated list of all blog posts with optional search and status filtering. " +
+                    "Only accessible to ADMIN users. Supports pagination with configurable page size, search, and status filter. " +
                     "Returns a PagedResponse containing the blog list, total count, and pagination metadata."
     )
     @ApiResponses(value = {
@@ -384,8 +384,10 @@ public class AdminController {
             @Parameter(description = "Number of items per page", example = "10")
             @RequestParam(defaultValue = "10") int size,
             @Parameter(description = "Search query to filter blogs by title or content", example = "React")
-            @RequestParam(defaultValue = "") String search) {
-        return ResponseEntity.ok(blogService.findBlogsForAdmin(page, size, search));
+            @RequestParam(defaultValue = "") String search,
+            @Parameter(description = "Filter blogs by status (DRAFT, PUBLISHED, ARCHIVED)", example = "PUBLISHED")
+            @RequestParam(required = false) String status) {
+        return ResponseEntity.ok(blogService.findBlogsForAdmin(page, size, search, status));
     }
 
     @GetMapping("/blogs/{id}")

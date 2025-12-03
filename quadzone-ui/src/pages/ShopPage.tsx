@@ -1,5 +1,6 @@
 // src/pages/Shop.tsx
 import { useState, useEffect } from "react";
+import { useSearchParams, useNavigate } from "react-router-dom";
 import ShopBreadcrumb from "../components/shop/ShopBreadcrumb";
 import ShopSidebar from "../components/shop/ShopSidebar";
 import ShopControlBar from "../components/shop/ShopControlBar";
@@ -10,6 +11,12 @@ import type { Product } from "../api/types";
 import type { ViewMode, SortOption } from "../types/shop";
 
 const Shop: React.FC = () => {
+    const [searchParams] = useSearchParams();
+    const navigate = useNavigate();
+    
+    // Get search query from URL params
+    const searchQuery = searchParams.get("search") || "";
+
     // Loading & error
     const [loading, setLoading] = useState<boolean>(true);
     const [error, setError] = useState<string | null>(null);
@@ -48,6 +55,7 @@ const Shop: React.FC = () => {
                 const response = await getProducts({
                     page: 0,
                     size: 9999, // Get as many as reasonable (adjust if needed)
+                    search: searchQuery || undefined,
                     brand: selectedBrands.length > 0 ? selectedBrands.join(",") : undefined,
                     categoryId: selectedCategory,
                     subcategoryId: selectedSubcategory,
@@ -69,7 +77,7 @@ const Shop: React.FC = () => {
         };
 
         fetchProducts();
-    }, [selectedBrands, selectedCategory, selectedSubcategory, minPrice, maxPrice]);
+    }, [searchQuery, selectedBrands, selectedCategory, selectedSubcategory, minPrice, maxPrice]);
 
     // ──────────────────────────────
     // 2. Sort + paginate locally (instant!)
@@ -136,6 +144,8 @@ const Shop: React.FC = () => {
         setSelectedCategory(undefined);
         setSelectedSubcategory(undefined);
         setCurrentPage(1);
+        // Clear the search parameter from URL
+        navigate("/shop");
     };
 
     // ──────────────────────────────
@@ -171,6 +181,7 @@ const Shop: React.FC = () => {
                         isOpen={sidebarOpen}
                         onClose={() => setSidebarOpen(false)}
                         onApplyFilters={handleApplyFilters}
+                        onClearAll={handleClearAllFilters}
                     />
 
                     <div className="col-xl-9 col-wd-9gdot5">

@@ -80,4 +80,21 @@ public interface BlogRepository extends JpaRepository<Blog, Long> {
            "OR LOWER(b.content) LIKE LOWER(CONCAT('%', :search, '%')) " +
            "ORDER BY b.createdAt DESC")
     Page<Blog> searchByTitleOrContent(@Param("search") String search, Pageable pageable);
+
+    /**
+     * Search blogs by title or content filtered by status
+     * Case-insensitive search for admin dashboard
+     * 
+     * @param search the search query
+     * @param status the blog status to filter by
+     * @param pageable pagination info
+     * @return paginated search results
+     */
+    @Query("SELECT b FROM Blog b WHERE (LOWER(b.title) LIKE LOWER(CONCAT('%', :search, '%')) " +
+           "OR LOWER(b.content) LIKE LOWER(CONCAT('%', :search, '%'))) " +
+           "AND b.status = :status " +
+           "ORDER BY b.createdAt DESC")
+    Page<Blog> searchByTitleOrContentAndStatus(@Param("search") String search, @Param("status") BlogStatus status, Pageable pageable);
+
+    Page<Blog> findByStatus(BlogStatus status, Pageable pageable);
 }
