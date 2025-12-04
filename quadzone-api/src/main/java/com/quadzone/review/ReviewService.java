@@ -29,7 +29,7 @@ public class ReviewService {
         Review review = new Review();
         review.setRating(reviewResponse.rating());
         review.setTitle(reviewResponse.title());
-        review.setText(reviewResponse.text());
+        review.setContent(reviewResponse.content());
         review.setProduct(product);
         review.setUser(user);
         Review saved = reviewRepository.save(review);

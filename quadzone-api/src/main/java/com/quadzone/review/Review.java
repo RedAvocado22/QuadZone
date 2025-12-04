@@ -31,7 +31,7 @@ public class Review {
     private String title;
 
     @Column(columnDefinition = "TEXT")
-    private String text;
+    private String content;
 
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;

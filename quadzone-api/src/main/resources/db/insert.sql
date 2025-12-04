@@ -136,7 +136,7 @@ VALUES
     (7, '1Z999ABC1234567896', 'QuadZone Express', 'DELIVERED', DATE_SUB(NOW(), INTERVAL 0 DAY), DATE_SUB(NOW(), INTERVAL 0 DAY), 'Delivered.', true, 10, 3, DATE_SUB(NOW(), INTERVAL 1 DAY)),
     (8, '1Z999ABC1234567897', 'GHTK', 'DELIVERED', DATE_SUB(NOW(), INTERVAL 0 DAY), DATE_SUB(NOW(), INTERVAL 0 DAY), 'Delivered.', false, 12, 3, DATE_SUB(NOW(), INTERVAL 6 HOUR));
 
-INSERT INTO review (id, rating, review_title, text, created_at, product_id, customer_id, order_item_id)
+INSERT INTO review (id, rating, review_title, content, created_at, product_id, customer_id, order_item_id)
 VALUES
     (1, 5, 'Best Phone!', 'This phone is amazing! Works perfectly.', DATE_SUB(NOW(), INTERVAL 9 DAY), 4, 1, 1),
     (2, 4, 'Good Headphones', 'Nice sound, good quality. Will buy again.', DATE_SUB(NOW(), INTERVAL 7 DAY), 3, 5, 2),
