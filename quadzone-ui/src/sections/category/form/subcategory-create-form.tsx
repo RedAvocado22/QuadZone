@@ -22,32 +22,32 @@ export function SubCategoryCreateView(props: SubCategoryCreateFormProps) {
 
   const [name, setName] = useState('');
   const [active, setActive] = useState(true);
-  const [categoryId, setCategoryId] = useState<number | ''>('');
-  const [categories, setCategories] = useState<any[]>([]);
+  const [subCategoryId, setSubCategoryId] = useState<number | ''>('');
+  const [subCategories, setSubCategories] = useState<any[]>([]);
 
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
 
-  const loadCategories = useCallback(async () => {
+  const loadSubCategories = useCallback(async () => {
     setLoading(true);
     try {
       const data = await categoriesApi.getAllCategories();
-      setCategories(data);
+      setSubCategories(data);
     } finally {
       setLoading(false);
     }
   }, []);
 
   useEffect(() => {
-    loadCategories();
-  }, [loadCategories]);
+    loadSubCategories();
+  }, [loadSubCategories]);
 
   const handleCreate = useCallback(async () => {
-    if (!name.trim() || !categoryId) return alert('Please fill all fields');
+    if (!name.trim() || !subCategoryId) return alert('Please fill all fields');
 
     try {
       setSaving(true);
-      await categoriesApi.createSubCategory(categoryId as number, {
+      await categoriesApi.createSubCategory(subCategoryId as number, {
         name,
         active,
       });
@@ -58,7 +58,7 @@ export function SubCategoryCreateView(props: SubCategoryCreateFormProps) {
     } finally {
       setSaving(false);
     }
-  }, [name, active, categoryId, router]);
+  }, [name, active, subCategoryId, router]);
 
   return (
     <DashboardContent>
@@ -76,13 +76,13 @@ export function SubCategoryCreateView(props: SubCategoryCreateFormProps) {
             <TextField
               select
               label="Select Category"
-              value={categoryId}
-              onChange={(e) => setCategoryId(Number(e.target.value))}
+              value={subCategoryId}
+              onChange={(e) => setSubCategoryId(Number(e.target.value))}
               fullWidth
             >
-              {categories.map((cat) => (
-                <MenuItem key={cat.id} value={cat.id}>
-                  {cat.name}
+              {subCategories.map((sub) => (
+                <MenuItem key={sub.id} value={sub.id}>
+                  {sub.name}
                 </MenuItem>
               ))}
             </TextField>

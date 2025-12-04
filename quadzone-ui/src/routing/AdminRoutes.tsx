@@ -32,6 +32,7 @@ const OrderEditPage = lazy(() => import('src/pages/admin/order-edit'));
 const OrderAssignShipperPage = lazy(() => import('src/pages/admin/order-assign-shipper'));
 const OrderAssignDeliveryPage = lazy(() => import('src/pages/admin/order-assign-delivery'));
 const SubCategoryCreatePage = lazy(() => import('src/pages/admin/subcategory-create'));
+const SubCategoryEditPage = lazy(() => import('src/pages/admin/subcategory-edit'));
 
 const renderFallback = () => (
     <Box
@@ -92,6 +93,8 @@ export default function AdminRoutes() {
                 <Route path="category/create" element={<CategoryCreatePage />} />
                 <Route path="category/:id" element={<CategoryDetailsPage />} />
                 <Route path="category/:id/edit" element={<CategoryEditPage />} />
+                <Route path="subcategory/create" element={<SubCategoryCreatePage />} />
+                <Route path="subcategory/:id/edit" element={<SubCategoryEditPage />} />
                 {/* Order management routes */}
                 <Route path="order" element={<OrderPage />} />
                 <Route path="order/create" element={<OrderCreatePage />} />
