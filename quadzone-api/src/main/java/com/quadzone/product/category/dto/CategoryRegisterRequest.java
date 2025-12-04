@@ -11,13 +11,13 @@ public record CategoryRegisterRequest(
 
         Boolean active,
 
-        String imageUrl  // Allow null or empty, can be set later
+        String imageUrl  // Allow null or empty, defaults to empty string
 ) {
     public static Category toCategory(CategoryRegisterRequest request) {
         return Category.builder()
                 .name(request.name())
                 .isActive(request.active() != null ? request.active() : true)
-                .imageUrl(request.imageUrl() != null && !request.imageUrl().isEmpty() ? request.imageUrl() : null)
+                .imageUrl(request.imageUrl() != null && !request.imageUrl().isEmpty() ? request.imageUrl() : "")
                 .build();
     }
 }

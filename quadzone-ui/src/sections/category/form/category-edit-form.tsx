@@ -13,12 +13,12 @@ import FormControlLabel from '@mui/material/FormControlLabel';
 
 import { DashboardContent } from 'src/layouts/dashboard';
 import { categoriesApi } from 'src/api/categories';
-import type { CategoryResponse } from 'src/api/types';
+import type { CategoryAdminResponse } from 'src/api/types';
 
 // ----------------------------------------------------------------------
 
 interface CategoryEditFormProps {
-  categoryId: string;
+  categoryId: number;
   onSuccess?: () => void;
   onCancel?: () => void;
 }
@@ -78,10 +78,10 @@ export function CategoryEditForm({ categoryId, onSuccess, onCancel }: CategoryEd
       return;
     }
 
-    const payload: Partial<Omit<CategoryResponse, 'id' | 'productCount'>> = {
+    const payload: Partial<Omit<CategoryAdminResponse, 'id' | 'productCount'>> = {
       name: formData.name,
       active: formData.active,
-      imageUrl: null, // Add if needed from form
+      imageUrl: undefined, // Add if needed from form
     };
 
     setLoading(true);

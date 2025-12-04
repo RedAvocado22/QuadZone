@@ -13,16 +13,16 @@ import FormControlLabel from "@mui/material/FormControlLabel";
 
 import { DashboardContent } from "src/layouts/dashboard";
 import { categoriesApi } from "src/api/categories";
-import type { CategoryResponse } from "src/api/types";
+import type { CategoryAdminResponse } from "src/api/types";
 
 // ----------------------------------------------------------------------
 
 interface CategoryCreateFormProps {
-    onSuccess?: () => void;
-    onCancel?: () => void;
+    readonly onSuccess?: () => void;
+    readonly onCancel?: () => void;
 }
 
-export function CategoryCreateForm({ onSuccess, onCancel }: CategoryCreateFormProps) {
+export function CategoryCreateForm({ onSuccess, onCancel }: Readonly<CategoryCreateFormProps>) {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
@@ -30,8 +30,7 @@ export function CategoryCreateForm({ onSuccess, onCancel }: CategoryCreateFormPr
         name: "",
         description: "",
         active: true,
-        productCount: 0,
-        createdAt: new Date().toISOString().slice(0, 10)
+        imageUrl: ""
     });
 
     const handleChange =
@@ -39,7 +38,7 @@ export function CategoryCreateForm({ onSuccess, onCancel }: CategoryCreateFormPr
             const value = event.target.value;
             setFormData((prev) => ({
                 ...prev,
-                [field]: field === "productCount" ? Number(value) : value
+                [field]: value
             }));
             setError(null);
         };
@@ -53,10 +52,10 @@ export function CategoryCreateForm({ onSuccess, onCancel }: CategoryCreateFormPr
             return;
         }
 
-        const payload: Omit<CategoryResponse, "id" | "productCount"> = {
+        const payload: Omit<CategoryAdminResponse, "id" | "productCount" | "subcategoryCount" | "subcategories"> = {
             name: formData.name,
             active: formData.active,
-            imageUrl: null,
+            imageUrl: formData.imageUrl || ""
         };
 
         setLoading(true);
@@ -114,30 +113,15 @@ export function CategoryCreateForm({ onSuccess, onCancel }: CategoryCreateFormPr
                                 label={formData.active ? "Active" : "Inactive"}
                             />
 
-                            <Box
-                                sx={{
-                                    display: "grid",
-                                    gap: 2,
-                                    gridTemplateColumns: { xs: "1fr", sm: "repeat(2, 1fr)" }
-                                }}>
-                                <TextField
-                                    fullWidth
-                                    type="number"
-                                    label="Product Count"
-                                    value={formData.productCount}
-                                    onChange={handleChange("productCount")}
-                                    inputProps={{ min: 0 }}
-                                />
-
-                                <TextField
-                                    fullWidth
-                                    type="date"
-                                    label="Created At"
-                                    InputLabelProps={{ shrink: true }}
-                                    value={formData.createdAt}
-                                    onChange={handleChange("createdAt")}
-                                />
-                            </Box>
+                            <TextField
+                                fullWidth
+                                label="Image URL"
+                                type="url"
+                                placeholder="https://example.com/image.jpg"
+                                value={formData.imageUrl}
+                                onChange={handleChange("imageUrl")}
+                                helperText="Optional: Add image URL for category"
+                            />
 
                             <Box sx={{ display: "flex", gap: 2, justifyContent: "flex-end" }}>
                                 <Button variant="outlined" onClick={onCancel} disabled={loading}>
