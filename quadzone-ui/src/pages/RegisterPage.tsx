@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { register } from "../api/auth";
 import { toast } from "react-toastify";
@@ -21,6 +22,8 @@ const registerSchema = yup
 
 export default function RegisterPage() {
     const navigate = useNavigate();
+    const [showPassword, setShowPassword] = useState(false);
+    const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
     const registerFormik = useFormik({
         initialValues: {
@@ -171,13 +174,33 @@ export default function RegisterPage() {
                                         <label className="form-label" htmlFor="regPassword">
                                             Password <span className="text-danger">*</span>
                                         </label>
-                                        <input
-                                            type="password"
-                                            className={`form-control ${registerFormik.touched.password && registerFormik.errors.password ? "is-invalid" : ""}`}
-                                            id="regPassword"
-                                            placeholder="Password"
-                                            {...registerFormik.getFieldProps("password")}
-                                        />
+                                        <div className="position-relative">
+                                            <input
+                                                type={showPassword ? "text" : "password"}
+                                                className={`form-control ${registerFormik.touched.password && registerFormik.errors.password ? "is-invalid" : ""}`}
+                                                id="regPassword"
+                                                placeholder="Password"
+                                                {...registerFormik.getFieldProps("password")}
+                                            />
+                                            <button
+                                                type="button"
+                                                className="btn btn-link position-absolute"
+                                                style={{
+                                                    right: "10px",
+                                                    top: "50%",
+                                                    transform: "translateY(-50%)",
+                                                    padding: "0",
+                                                    border: "none",
+                                                    background: "none",
+                                                    color: "#6c757d",
+                                                    zIndex: 10
+                                                }}
+                                                onClick={() => setShowPassword(!showPassword)}
+                                                aria-label={showPassword ? "Hide password" : "Show password"}
+                                            >
+                                                <i className={`fas ${showPassword ? "fa-eye-slash" : "fa-eye"}`}></i>
+                                            </button>
+                                        </div>
                                         {registerFormik.touched.password && registerFormik.errors.password && (
                                             <div className="invalid-feedback">{registerFormik.errors.password}</div>
                                         )}
@@ -188,13 +211,33 @@ export default function RegisterPage() {
                                         <label className="form-label" htmlFor="regConfirmPassword">
                                             Confirm Password <span className="text-danger">*</span>
                                         </label>
-                                        <input
-                                            type="password"
-                                            className={`form-control ${registerFormik.touched.confirmPassword && registerFormik.errors.confirmPassword ? "is-invalid" : ""}`}
-                                            id="regConfirmPassword"
-                                            placeholder="Confirm Password"
-                                            {...registerFormik.getFieldProps("confirmPassword")}
-                                        />
+                                        <div className="position-relative">
+                                            <input
+                                                type={showConfirmPassword ? "text" : "password"}
+                                                className={`form-control ${registerFormik.touched.confirmPassword && registerFormik.errors.confirmPassword ? "is-invalid" : ""}`}
+                                                id="regConfirmPassword"
+                                                placeholder="Confirm Password"
+                                                {...registerFormik.getFieldProps("confirmPassword")}
+                                            />
+                                            <button
+                                                type="button"
+                                                className="btn btn-link position-absolute"
+                                                style={{
+                                                    right: "10px",
+                                                    top: "50%",
+                                                    transform: "translateY(-50%)",
+                                                    padding: "0",
+                                                    border: "none",
+                                                    background: "none",
+                                                    color: "#6c757d",
+                                                    zIndex: 10
+                                                }}
+                                                onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                                                aria-label={showConfirmPassword ? "Hide password" : "Show password"}
+                                            >
+                                                <i className={`fas ${showConfirmPassword ? "fa-eye-slash" : "fa-eye"}`}></i>
+                                            </button>
+                                        </div>
                                         {registerFormik.touched.confirmPassword &&
                                             registerFormik.errors.confirmPassword && (
                                                 <div className="invalid-feedback">

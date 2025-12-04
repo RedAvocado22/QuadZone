@@ -21,7 +21,7 @@ const VerticalMenu = () => {
                                             type="button"
                                             className="btn-link btn-remove-focus btn-block d-flex card-btn py-3 text-lh-1 px-4 shadow-none btn-primary rounded-top-lg border-0 font-weight-bold text-gray-90"
                                             onClick={() => setIsMenuOpen(!isMenuOpen)}>
-                                            <span className="pl-1 text-gray-90">Shop By Department</span>
+                                            
                                             <span className="text-gray-90 ml-3">
                                                 <span className="ec ec-arrow-down-search"></span>
                                             </span>

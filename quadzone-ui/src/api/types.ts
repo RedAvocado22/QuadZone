@@ -4,7 +4,7 @@
 // ============== ENUMS ==============
 export type UserRole = "ADMIN" | "STAFF" | "CUSTOMER" | "SHIPPER";
 export type OrderStatus = "PENDING" | "CONFIRMED" | "PROCESSING" | "COMPLETED" | "CANCELLED";
-
+export type userStatus = "UNACTIVE" | "ACTIVE" | "SUSPENDED";
 // ============== PAGED RESPONSE ==============
 export interface PagedResponse<T> {
     content: T[];
@@ -91,26 +91,26 @@ export interface ProductDetails extends Product {
     reviews: Review[];
     category: Category; // Full category with subcategories
 }
-
-export interface WishList{
+// ============== WISHLIST TYPES ==============
+export interface WishList {
     id: number;
-    user:CurrentUser[];
-    products:ProductDetails[];
+    user: CurrentUser[];
+    products: ProductDetails[];
 }
 
 // Request type for adding product to wishlist
 export interface AddToWishlistRequest {
-  productId: number;
+    productId: number;
 }
 
 // Request type for removing product from wishlist
 export interface RemoveFromWishlistRequest {
-  productId: number;
+    productId: number;
 }
 
 // Wishlist Item for local state management
 export interface WishlistItem extends ProductResponse {
-  addedDate?: Date;
+    addedDate?: Date;
 }
 
 /**
@@ -154,9 +154,12 @@ export type PublicBrandDTO = Brand;
  */
 export interface User {
     id: number;
-    name: string;
+    firstName: string;
+    lastName: string;
+    password: string;
     email: string;
     role: UserRole;
+    status: userStatus;
     createdAt: string; // ISO date string
 }
 
@@ -175,27 +178,27 @@ export interface CurrentUser {
 }
 
 export interface UserProfile {
-  id: number;
-  email: string;
-  firstName: string;
-  lastName: string;
-  phoneNumber?: string;
-  address?: string;
-  city?: string;
-  dateOfBirth?: string;
-  avatarUrl?: string;
-  role: UserRole;
-  createdAt: string;
-  updatedAt?: string;
+    id: number;
+    email: string;
+    firstName: string;
+    lastName: string;
+    phoneNumber?: string;
+    address?: string;
+    city?: string;
+    dateOfBirth?: string;
+    avatarUrl?: string;
+    role: UserRole;
+    createdAt: string;
+    updatedAt?: string;
 }
 
 export interface UpdateProfileRequest {
-  firstName: string;
-  lastName: string;
-  phoneNumber?: string;
-  address?: string;
-  city?: string;
-  dateOfBirth?: string;
+    firstName: string;
+    lastName: string;
+    phoneNumber?: string;
+    address?: string;
+    city?: string;
+    dateOfBirth?: string;
 }
 
 // Legacy type aliases for backward compatibility
@@ -309,6 +312,62 @@ export interface AuthenticationResponse {
     refresh_token: string;
 }
 
+// ============== BLOG TYPES ==============
+
+export type BlogStatus = "DRAFT" | "PUBLISHED" | "ARCHIVED";
+
+export interface Blog {
+    id: number;
+    title: string;
+    slug: string;
+    content: string;
+    thumbnailUrl: string | null;
+    status: BlogStatus;
+    author: User;
+    comments: Comment[];
+    createdAt: string;
+}
+
+export interface CommentResponse {
+    id: number;
+    content: string;
+    authorName: string;
+    authorMail: string;
+    blogId: number;
+    createdAt: string; // ISO datetime string
+}
+
+// Add these types to src/types/types.ts
+
+// ============== BLOG TYPES ==============
+/**
+ * Blog overview (used in blog list endpoints)
+ * Maps to BlogOverviewResponse in backend
+ */
+export interface BlogOverview {
+    id: number;
+    title: string;
+    slug: string;
+    thumbnailUrl: string | null;
+    excerpt: string;
+    authorName: string;
+    createdAt: string; // ISO date string
+    status?: BlogStatus;
+}
+
+/**
+ * Blog detail with full content
+ * Maps to BlogDetailResponse in backend
+ */
+export interface BlogDetail extends BlogOverview {
+    content: string;
+    tags?: string[];
+    comments?: CommentResponse[];
+    author?: UserResponse; // Full author object from admin endpoint
+}
+
+export type BlogOverviewResponse = BlogOverview;
+export type BlogDetailResponse = BlogDetail;
 // ============== LEGACY PUBLIC DTOS (for backward compatibility) ==============
 /**
  * Legacy PublicProductDTO - use Product or ProductDetails instead
@@ -317,15 +376,15 @@ export interface AuthenticationResponse {
 export interface PublicProductDTO {
     id: number;
     name: string;
-    brand: string;
+    brand?: string;
     modelNumber?: string;
     description?: string;
     price: number;
     priceVND: number;
-    imageUrl: string;
+    imageUrl?: string;
     quantity: number;
     isActive: boolean;
-    subCategory: SubCategory;
-    category: Category;
+    subCategoryId?: number;
+    subCategoryName?: string;
     createdAt: string;
 }

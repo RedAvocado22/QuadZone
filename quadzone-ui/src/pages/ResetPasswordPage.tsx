@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { resetPassword } from "../api/auth";
 import { toast } from "react-toastify";
@@ -18,6 +19,8 @@ const resetPasswordSchema = yup
 export default function ResetPasswordPage() {
     const navigate = useNavigate();
     const { token } = useParams<{ token: string }>();
+    const [showPassword, setShowPassword] = useState(false);
+    const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
     const resetFormik = useFormik({
         initialValues: {
@@ -42,9 +45,14 @@ export default function ResetPasswordPage() {
                     confirmPassword: values.confirmPassword
                 });
 
+                // Show success notification with toast
                 toast.success("Password reset successfully! You can now login with your new password.");
+
                 resetForm();
-                navigate("/login");
+                // Navigate to login after a short delay to show the toast
+                setTimeout(() => {
+                    navigate("/login");
+                }, 1500);
             } catch (err: any) {
                 console.error("Password reset error:", err);
                 const errorMsg =
@@ -52,6 +60,8 @@ export default function ResetPasswordPage() {
                     (typeof err.response?.data === 'string' ? err.response.data : null) ||
                     err.message ||
                     "An unexpected error occurred. Please try again or request a new reset link.";
+
+                // Show error notification with toast
                 toast.error(errorMsg);
             }
         }
@@ -94,19 +104,41 @@ export default function ResetPasswordPage() {
                                 <p className="text-gray-90 mb-4 text-center">
                                     Enter your new password below. Make sure it's strong and secure.
                                 </p>
-                                <form className="js-validate" noValidate onSubmit={resetFormik.handleSubmit}>
+                                <form
+                                    noValidate
+                                    onSubmit={resetFormik.handleSubmit}>
                                     {/* Password */}
                                     <div className="js-form-message form-group mb-4">
                                         <label className="form-label" htmlFor="resetPassword">
                                             New Password <span className="text-danger">*</span>
                                         </label>
-                                        <input
-                                            type="password"
-                                            className={`form-control ${resetFormik.touched.password && resetFormik.errors.password ? "is-invalid" : ""}`}
-                                            id="resetPassword"
-                                            placeholder="New Password"
-                                            {...resetFormik.getFieldProps("password")}
-                                        />
+                                        <div className="position-relative">
+                                            <input
+                                                type={showPassword ? "text" : "password"}
+                                                className={`form-control ${resetFormik.touched.password && resetFormik.errors.password ? "is-invalid" : ""}`}
+                                                id="resetPassword"
+                                                placeholder="New Password"
+                                                {...resetFormik.getFieldProps("password")}
+                                            />
+                                            <button
+                                                type="button"
+                                                className="btn btn-link position-absolute"
+                                                style={{
+                                                    right: "10px",
+                                                    top: "50%",
+                                                    transform: "translateY(-50%)",
+                                                    padding: "0",
+                                                    border: "none",
+                                                    background: "none",
+                                                    color: "#6c757d",
+                                                    zIndex: 10
+                                                }}
+                                                onClick={() => setShowPassword(!showPassword)}
+                                                aria-label={showPassword ? "Hide password" : "Show password"}
+                                            >
+                                                <i className={`fas ${showPassword ? "fa-eye-slash" : "fa-eye"}`}></i>
+                                            </button>
+                                        </div>
                                         {resetFormik.touched.password && resetFormik.errors.password && (
                                             <div className="invalid-feedback">{resetFormik.errors.password}</div>
                                         )}
@@ -117,13 +149,33 @@ export default function ResetPasswordPage() {
                                         <label className="form-label" htmlFor="resetConfirmPassword">
                                             Confirm New Password <span className="text-danger">*</span>
                                         </label>
-                                        <input
-                                            type="password"
-                                            className={`form-control ${resetFormik.touched.confirmPassword && resetFormik.errors.confirmPassword ? "is-invalid" : ""}`}
-                                            id="resetConfirmPassword"
-                                            placeholder="Confirm New Password"
-                                            {...resetFormik.getFieldProps("confirmPassword")}
-                                        />
+                                        <div className="position-relative">
+                                            <input
+                                                type={showConfirmPassword ? "text" : "password"}
+                                                className={`form-control ${resetFormik.touched.confirmPassword && resetFormik.errors.confirmPassword ? "is-invalid" : ""}`}
+                                                id="resetConfirmPassword"
+                                                placeholder="Confirm New Password"
+                                                {...resetFormik.getFieldProps("confirmPassword")}
+                                            />
+                                            <button
+                                                type="button"
+                                                className="btn btn-link position-absolute"
+                                                style={{
+                                                    right: "10px",
+                                                    top: "50%",
+                                                    transform: "translateY(-50%)",
+                                                    padding: "0",
+                                                    border: "none",
+                                                    background: "none",
+                                                    color: "#6c757d",
+                                                    zIndex: 10
+                                                }}
+                                                onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                                                aria-label={showConfirmPassword ? "Hide password" : "Show password"}
+                                            >
+                                                <i className={`fas ${showConfirmPassword ? "fa-eye-slash" : "fa-eye"}`}></i>
+                                            </button>
+                                        </div>
                                         {resetFormik.touched.confirmPassword &&
                                             resetFormik.errors.confirmPassword && (
                                                 <div className="invalid-feedback">

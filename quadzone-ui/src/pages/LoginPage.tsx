@@ -1,7 +1,7 @@
-import { useEffect, useState } from "react";
-import { Link, useNavigate, useParams } from "react-router-dom";
+import { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import { useUser } from "../hooks/useUser";
-import { activateAccount, forgotPassword } from "../api/auth";
+import { forgotPassword } from "../api/auth";
 import { toast } from "react-toastify";
 import { useFormik } from "formik";
 import * as yup from "yup";
@@ -23,6 +23,7 @@ const forgotPasswordSchema = yup
 export default function LoginPage() {
     const { login } = useUser();
     const [loginView, setLoginView] = useState<"login" | "forgot">("login");
+    const [showPassword, setShowPassword] = useState(false);
     const navigate = useNavigate();
 
     const loginFormik = useFormik({
@@ -154,13 +155,33 @@ export default function LoginPage() {
                                                 <label className="form-label" htmlFor="signinSrPasswordExample2">
                                                     Password <span className="text-danger">*</span>
                                                 </label>
-                                                <input
-                                                    type="password"
-                                                    className={`form-control ${loginFormik.touched.password && loginFormik.errors.password ? "is-invalid" : ""}`}
-                                                    id="signinSrPasswordExample2"
-                                                    placeholder="Password"
-                                                    {...loginFormik.getFieldProps("password")}
-                                                />
+                                                <div className="position-relative">
+                                                    <input
+                                                        type={showPassword ? "text" : "password"}
+                                                        className={`form-control ${loginFormik.touched.password && loginFormik.errors.password ? "is-invalid" : ""}`}
+                                                        id="signinSrPasswordExample2"
+                                                        placeholder="Password"
+                                                        {...loginFormik.getFieldProps("password")}
+                                                    />
+                                                    <button
+                                                        type="button"
+                                                        className="btn btn-link position-absolute"
+                                                        style={{
+                                                            right: "10px",
+                                                            top: "50%",
+                                                            transform: "translateY(-50%)",
+                                                            padding: "0",
+                                                            border: "none",
+                                                            background: "none",
+                                                            color: "#6c757d",
+                                                            zIndex: 10
+                                                        }}
+                                                        onClick={() => setShowPassword(!showPassword)}
+                                                        aria-label={showPassword ? "Hide password" : "Show password"}
+                                                    >
+                                                        <i className={`fas ${showPassword ? "fa-eye-slash" : "fa-eye"}`}></i>
+                                                    </button>
+                                                </div>
                                                 {loginFormik.touched.password && loginFormik.errors.password && (
                                                     <div className="invalid-feedback">
                                                         {loginFormik.errors.password}
