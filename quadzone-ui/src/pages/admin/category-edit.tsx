@@ -24,7 +24,7 @@ export default function Page() {
   return (
     <>
       <title>{`Edit Category - ${CONFIG.appName}`}</title>
-      <CategoryEditForm categoryId={id} onSuccess={handleSuccess} onCancel={handleCancel} />
+      <CategoryEditForm categoryId={Number(id)} onSuccess={handleSuccess} onCancel={handleCancel} />
     </>
   );
 }

@@ -31,65 +31,9 @@ public class CategoryController {
 
     private final CategoryService categoryService;
 
-    @GetMapping("/admin")
-    @Operation(
-            summary = "Get all categories (Admin)",
-            description = "Retrieve a paginated list of all categories with optional search functionality for admin users. " +
-                    "Returns categories sorted alphabetically with their active status, product counts, and image URLs. " +
-                    "Supports comprehensive search and flexible pagination."
-    )
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Successfully retrieved categories list with pagination metadata"),
-            @ApiResponse(responseCode = "400", description = "Invalid pagination parameters"),
-            @ApiResponse(responseCode = "500", description = "Internal server error")
-    })
-    public ResponseEntity<PagedResponse<CategoryResponse>> getCategories(
-            @Parameter(description = "Page number (0-indexed)", example = "0")
-            @RequestParam(defaultValue = "0") int page,
-            @Parameter(description = "Number of items per page", example = "10")
-            @RequestParam(defaultValue = "10") int size,
-            @Parameter(description = "Search query to filter categories by name", example = "electronics")
-            @RequestParam(defaultValue = "") String search
-    ) {
-        return ResponseEntity.ok(categoryService.findCategories(page, size, search));
-    }
+    
 
-    @GetMapping("/admin/{id}")
-    @Operation(
-            summary = "Get category by ID (Admin)",
-            description = "Retrieve detailed information about a specific category by its unique identifier for admin users. " +
-                    "Returns complete category details including name, active status, product count, and image URL."
-    )
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Category found and returned successfully"),
-            @ApiResponse(responseCode = "404", description = "Category not found with the provided ID"),
-            @ApiResponse(responseCode = "400", description = "Invalid category ID format")
-    })
-    public ResponseEntity<CategoryResponse> getCategoryForAdmin(
-            @Parameter(description = "Unique identifier of the category", example = "1", required = true)
-            @PathVariable Long id) {
-        return ResponseEntity.ok(categoryService.findById(id));
-    }
-
-    @PostMapping("/admin")
-    @Operation(
-            summary = "Create category (Admin)",
-            description = "Create a new product category in the system for admin users. " +
-                    "Requires category name and optional image URL. Categories are used to organize and structure the product catalog. " +
-                    "Returns the created category with its assigned unique identifier."
-    )
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "201", description = "Category created successfully"),
-            @ApiResponse(responseCode = "400", description = "Invalid input data or validation failed"),
-            @ApiResponse(responseCode = "409", description = "Category with the same name already exists"),
-            @ApiResponse(responseCode = "500", description = "Internal server error during category creation")
-    })
-    public ResponseEntity<CategoryResponse> createCategory(
-            @Parameter(description = "Category registration request containing category details", required = true)
-            @Valid @RequestBody CategoryRegisterRequest categoryRegisterRequest) {
-        CategoryResponse createdCategory = categoryService.createCategory(categoryRegisterRequest);
-        return ResponseEntity.status(HttpStatus.CREATED).body(createdCategory);
-    }
+    
 
     @GetMapping("/{id}")
     @Operation(
@@ -154,10 +98,6 @@ public class CategoryController {
         } catch (RuntimeException e) {
             return ResponseEntity.notFound().build();
         }
-    }
-    @GetMapping("/admin/all")
-    public List<CategoryResponse> getAllCategories() {
-        return categoryService.getAllCategories();
     }
 
     @GetMapping("/{categoryId}/subcategories")

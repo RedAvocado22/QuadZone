@@ -9,6 +9,7 @@ import com.quadzone.product.category.dto.CategoryResponse;
 import com.quadzone.product.category.dto.CategoryUpdateRequest;
 import com.quadzone.product.category.sub_category.SubCategory;
 import com.quadzone.product.category.sub_category.SubCategoryRepository;
+import com.quadzone.product.category.sub_category.dto.SubCategoryAdminResponse;
 import com.quadzone.product.category.sub_category.dto.SubCategoryRegisterRequest;
 import com.quadzone.product.category.sub_category.dto.SubCategoryResponse;
 import com.quadzone.product.category.sub_category.dto.SubCategoryUpdateRequest;
@@ -21,7 +22,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.ErrorResponseException;
+
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
@@ -34,6 +35,13 @@ public class CategoryService {
 
     private final CategoryRepository categoryRepository;
     private final ObjectMapper objectMapper;
+
+    public List<CategoryResponse> findAll() {
+        return categoryRepository.findAll()
+                .stream()
+                .map(CategoryResponse::from)
+                .toList();
+    }
 
     public CategoryResponse getCategory(Long id) {
         Category category = categoryRepository.findById(id)
@@ -62,47 +70,9 @@ public class CategoryService {
         categoryRepository.deleteById(id);
     }
 
-    // Admin methods
+    // ------------- ADMIN METHODS---------------
     @Transactional(readOnly = true)
-    public PagedResponse<CategoryResponse> findCategories(int page, int size, String search) {
-        Pageable pageable = PageRequest.of(Math.max(page, 0), Math.max(size, 1), Sort.by(Sort.Direction.ASC, "name"));
-
-        Page<Category> resultPage;
-        if (search != null && !search.isBlank()) {
-            resultPage = categoryRepository.search(search.trim(), pageable);
-        } else {
-            resultPage = categoryRepository.findAll(pageable);
-        }
-
-        var categories = resultPage.stream()
-                .map(CategoryResponse::from)
-                .toList();
-
-        return new PagedResponse<>(
-                categories,
-                resultPage.getTotalElements(),
-                resultPage.getNumber(),
-                resultPage.getSize()
-        );
-    }
-
-    @Transactional(readOnly = true)
-    public CategoryResponse findById(Long id) {
-        return categoryRepository.findById(id)
-                .map(CategoryResponse::from)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Category not found: " + id));
-    }
-
-    public List<CategoryResponse> findAll() {
-        return categoryRepository.findAll()
-                .stream()
-                .map(CategoryResponse::from)
-                .toList();
-    }
-
-    // Admin methods with admin DTOs
-    @Transactional(readOnly = true)
-    public PagedResponse<CategoryAdminResponse> findCategoriesForAdmin(int page, int size, String search) {
+    public PagedResponse<CategoryAdminResponse> findCategories(int page, int size, String search) {
         Pageable pageable = PageRequest.of(Math.max(page, 0), Math.max(size, 1), Sort.by(Sort.Direction.ASC, "name"));
 
         Page<Category> resultPage;
@@ -120,9 +90,16 @@ public class CategoryService {
                 categories,
                 resultPage.getTotalElements(),
                 resultPage.getNumber(),
-                resultPage.getSize()
-        );
+                resultPage.getSize());
     }
+
+    @Transactional(readOnly = true)
+    public CategoryAdminResponse findById(Long id) {
+        return categoryRepository.findById(id)
+                .map(CategoryAdminResponse::from)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Category not found: " + id));
+    }
+
 
     @Transactional(readOnly = true)
     public CategoryAdminResponse findByIdForAdmin(Long id) {
@@ -144,6 +121,7 @@ public class CategoryService {
 
         return CategoryAdminResponse.from(categoryRepository.save(category));
     }
+
     public List<CategoryResponse> getAllCategories() {
         return categoryRepository.findAll()
                 .stream()
@@ -151,18 +129,14 @@ public class CategoryService {
                 .toList();
     }
 
-
     @Autowired
     private SubCategoryRepository subCategoryRepository;
-
 
     public List<SubCategoryResponse> getSubCategoriesByCategoryId(Long categoryId) {
         Category category = categoryRepository.findById(categoryId)
                 .orElseThrow(() -> new RuntimeException("Category not found with id: " + categoryId));
 
-
         List<SubCategory> subCategories = subCategoryRepository.findByCategory_Id(categoryId);
-
 
         return subCategories.stream()
                 .map(SubCategoryResponse::from)
@@ -208,5 +182,30 @@ public class CategoryService {
             throw new RuntimeException("SubCategory does not belong to this Category");
 
         subCategoryRepository.delete(sub);
+    }
+
+    // Admin methods for subcategories with SubCategoryAdminResponse
+    @Transactional(readOnly = true)
+    public PagedResponse<SubCategoryAdminResponse> findAllSubCategoriesForAdmin(int page, int size, String search) {
+        Pageable pageable = PageRequest.of(Math.max(page, 0), Math.max(size, 1), Sort.by(Sort.Direction.ASC, "name"));
+
+        Page<SubCategory> resultPage = subCategoryRepository.findAll(pageable);
+
+        var subCategories = resultPage.stream()
+                .map(SubCategoryAdminResponse::from)
+                .toList();
+
+        return new PagedResponse<>(
+                subCategories,
+                resultPage.getTotalElements(),
+                resultPage.getNumber(),
+                resultPage.getSize());
+    }
+
+    @Transactional(readOnly = true)
+    public SubCategoryAdminResponse findSubCategoryByIdForAdmin(Long id) {
+        return subCategoryRepository.findById(id)
+                .map(SubCategoryAdminResponse::from)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "SubCategory not found: " + id));
     }
 }

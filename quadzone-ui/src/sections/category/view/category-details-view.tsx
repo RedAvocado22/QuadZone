@@ -29,7 +29,7 @@ export function CategoryDetailsView() {
       setLoading(true);
       setError(null);
       try {
-        const data = await categoriesApi.getById(id);
+        const data = await categoriesApi.getById(Number(id));
         setCategory(data);
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to load category');

@@ -276,6 +276,15 @@ export interface CategoryAdmin {
 
 export type CategoryAdminResponse = CategoryAdmin;
 
+export interface SubCategoryAdminResponse {
+    id: number;
+    name: string;
+    category: CategoryAdminResponse;
+    description: string;
+    active: boolean;
+    productCount: number;
+}
+
 // ============== HOME PAGE ==============
 export interface HomeResponse {
     categories: Category[];
