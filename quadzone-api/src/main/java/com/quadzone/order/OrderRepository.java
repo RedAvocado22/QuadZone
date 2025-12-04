@@ -35,4 +35,16 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
                 return Optional.empty();
             }
         }
+
+        /**
+         * Find orders by user ID with pagination
+         */
+        @Query("SELECT o FROM Order o WHERE o.user.id = :userId ORDER BY o.orderDate DESC")
+        Page<Order> findByUserId(@Param("userId") Long userId, Pageable pageable);
+
+        /**
+         * Find orders by user email (for guest users who register later)
+         */
+        @Query("SELECT o FROM Order o WHERE o.customerEmail = :email ORDER BY o.orderDate DESC")
+        Page<Order> findByCustomerEmail(@Param("email") String email, Pageable pageable);
 }

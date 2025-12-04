@@ -113,6 +113,27 @@ public class OrderController {
         return ResponseEntity.ok(statusResponse);
     }
 
+    // User-specific endpoint for viewing own orders
+    @GetMapping("/my-orders")
+    @Operation(
+            summary = "Get my orders",
+            description = "Retrieve a paginated list of orders for the currently authenticated user. " +
+                    "Requires authentication. Returns orders sorted by date descending."
+    )
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Successfully retrieved user's orders"),
+            @ApiResponse(responseCode = "401", description = "User not authenticated"),
+            @ApiResponse(responseCode = "404", description = "User not found")
+    })
+    public ResponseEntity<PagedResponse<OrderResponse>> getMyOrders(
+            @Parameter(description = "Page number (0-indexed)", example = "0")
+            @RequestParam(defaultValue = "0") int page,
+            @Parameter(description = "Number of items per page", example = "10")
+            @RequestParam(defaultValue = "10") int size
+    ) {
+        return ResponseEntity.ok(orderService.getMyOrders(page, size));
+    }
+
     // Regular endpoints
     @GetMapping("/{id}")
     @Operation(

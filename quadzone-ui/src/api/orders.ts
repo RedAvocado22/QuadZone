@@ -1,9 +1,9 @@
 import API from "./base";
-import type { OrderResponse, PagedResponse } from "./types";
+import type { OrderResponse, SimplePagedResponse } from "./types";
 
 // Re-export for convenience
 export type { OrderResponse as Order } from "./types";
-export type { PagedResponse as OrdersResponse } from "./types";
+export type { SimplePagedResponse as OrdersResponse } from "./types";
 
 export const ordersApi = {
   getAll: async (params: {
@@ -12,7 +12,7 @@ export const ordersApi = {
     search?: string;
     sortBy?: string;
     sortOrder?: 'asc' | 'desc';
-  } = {}): Promise<PagedResponse<OrderResponse>> => {
+  } = {}): Promise<SimplePagedResponse<OrderResponse>> => {
     const { page = 0, pageSize = 10, search = '' } = params;
 
     const queryParams = new URLSearchParams({
@@ -21,7 +21,7 @@ export const ordersApi = {
       search,
     });
 
-    const response = await API.get<PagedResponse<OrderResponse>>(`/orders/admin?${queryParams.toString()}`);
+    const response = await API.get<SimplePagedResponse<OrderResponse>>(`/orders/admin?${queryParams.toString()}`);
     return response.data;
   },
 
@@ -91,6 +91,22 @@ export const ordersApi = {
     deliveryNotes?: string;
   }): Promise<OrderResponse> => {
     const response = await API.post<OrderResponse>(`/orders/admin/${orderId}/assign-shipper`, data);
+    return response.data;
+  },
+
+  // Get orders for current user
+  getMyOrders: async (params: {
+    page?: number;
+    pageSize?: number;
+  } = {}): Promise<SimplePagedResponse<OrderResponse>> => {
+    const { page = 0, pageSize = 10 } = params;
+
+    const queryParams = new URLSearchParams({
+      page: page.toString(),
+      size: pageSize.toString(),
+    });
+
+    const response = await API.get<SimplePagedResponse<OrderResponse>>(`/orders/my-orders?${queryParams.toString()}`);
     return response.data;
   },
 };

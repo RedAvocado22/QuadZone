@@ -16,6 +16,14 @@ export interface PagedResponse<T> {
     };
 }
 
+// Simple paged response format (used by some endpoints like orders)
+export interface SimplePagedResponse<T> {
+    data: T[];
+    total: number;
+    page: number;
+    pageSize: number;
+}
+
 // ============== CATEGORY & SUBCATEGORY ==============
 /** Minimal category info (used in ProductResponse) */
 export interface CategoryName {
@@ -199,6 +207,8 @@ export interface Order {
     id: number;
     orderNumber: string;
     customerName: string;
+    customerEmail?: string;
+    customerPhone?: string;
     totalAmount: number;
     status: OrderStatus;
     orderDate: string; // ISO date string

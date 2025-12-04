@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { useProfile } from '../hooks/userProfile';
 import { useUser } from '../hooks/useUser';
+import { useMyOrders } from '../hooks/useMyOrders';
 import { format } from 'date-fns';
 import '../UserProfilePage.css';
 
@@ -10,6 +11,12 @@ const UserProfilePage = () => {
     const [activeTab, setActiveTab] = useState('account-info');
     const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
+    const [ordersPage, setOrdersPage] = useState(0);
+    const { orders, loading: ordersLoading, total: ordersTotal, totalPages } = useMyOrders({ 
+        page: ordersPage, 
+        pageSize: 5,
+        enabled: activeTab === 'orders' 
+    });
 
     const handleLogout = (e: React.MouseEvent) => {
         e.preventDefault();
@@ -264,17 +271,154 @@ const UserProfilePage = () => {
                                     {/* Orders Tab */}
                                     {activeTab === 'orders' && (
                                         <div className="axil-dashboard-order">
-                                            <div className="text-center py-5">
-                                                <i className="fas fa-shopping-cart fa-3x text-muted mb-3"></i>
-                                                <h5>You have no orders yet</h5>
-                                                <p className="text-muted">
-                                                    Start shopping to see your order history here!
-                                                </p>
-                                                <a href="/shop" className="btn btn-primary">
-                                                    <i className="fas fa-shopping-cart me-2"></i>
-                                                    Start Shopping
-                                                </a>
-                                            </div>
+                                            <h4 className="title mb-4">
+                                                <i className="fas fa-shopping-basket me-2"></i>
+                                                My Orders
+                                                {ordersTotal > 0 && (
+                                                    <span className="badge bg-primary ms-2">{ordersTotal}</span>
+                                                )}
+                                            </h4>
+                                            
+                                            {ordersLoading ? (
+                                                <div className="text-center py-5">
+                                                    <div className="spinner-border text-primary" role="status">
+                                                        <span className="visually-hidden">Loading...</span>
+                                                    </div>
+                                                    <p className="mt-3 text-muted">Loading orders...</p>
+                                                </div>
+                                            ) : orders.length === 0 ? (
+                                                <div className="text-center py-5">
+                                                    <i className="fas fa-shopping-cart fa-3x text-muted mb-3"></i>
+                                                    <h5>You have no orders yet</h5>
+                                                    <p className="text-muted">
+                                                        Start shopping to see your order history here!
+                                                    </p>
+                                                    <a href="/shop" className="btn btn-primary">
+                                                        <i className="fas fa-shopping-cart me-2"></i>
+                                                        Start Shopping
+                                                    </a>
+                                                </div>
+                                            ) : (
+                                                <>
+                                                    <div className="table-responsive">
+                                                        <table className="table table-hover">
+                                                            <thead className="table-light">
+                                                                <tr>
+                                                                    <th scope="col">Order #</th>
+                                                                    <th scope="col">Date</th>
+                                                                    <th scope="col">Items</th>
+                                                                    <th scope="col">Total</th>
+                                                                    <th scope="col">Status</th>
+                                                                    <th scope="col">Actions</th>
+                                                                </tr>
+                                                            </thead>
+                                                            <tbody>
+                                                                {orders.map((order) => (
+                                                                    <tr key={order.id}>
+                                                                        <td>
+                                                                            <strong className="text-primary">
+                                                                                {order.orderNumber}
+                                                                            </strong>
+                                                                        </td>
+                                                                        <td>
+                                                                            {order.orderDate && (
+                                                                                <>
+                                                                                    <span>{format(new Date(order.orderDate), 'dd/MM/yyyy')}</span>
+                                                                                    <br />
+                                                                                    <small className="text-muted">
+                                                                                        {format(new Date(order.orderDate), 'HH:mm')}
+                                                                                    </small>
+                                                                                </>
+                                                                            )}
+                                                                        </td>
+                                                                        <td>
+                                                                            <span>
+                                                                                {order.itemsCount} item{order.itemsCount !== 1 ? 's' : ''}
+                                                                            </span>
+                                                                        </td>
+                                                                        <td>
+                                                                            <strong>
+                                                                                ${order.totalAmount?.toFixed(2) || '0.00'}
+                                                                            </strong>
+                                                                        </td>
+                                                                        <td>
+                                                                            <span
+                                                                                className={`badge ${
+                                                                                    order.status === 'PENDING'
+                                                                                        ? 'bg-warning text-dark'
+                                                                                        : order.status === 'CONFIRMED'
+                                                                                        ? 'bg-info'
+                                                                                        : order.status === 'PROCESSING'
+                                                                                        ? 'bg-primary'
+                                                                                        : order.status === 'COMPLETED'
+                                                                                        ? 'bg-success'
+                                                                                        : order.status === 'CANCELLED'
+                                                                                        ? 'bg-danger'
+                                                                                        : 'bg-secondary'
+                                                                                }`}
+                                                                            >
+                                                                                {order.status === 'PENDING' && 'Pending'}
+                                                                                {order.status === 'CONFIRMED' && 'Confirmed'}
+                                                                                {order.status === 'PROCESSING' && 'Processing'}
+                                                                                {order.status === 'COMPLETED' && 'Completed'}
+                                                                                {order.status === 'CANCELLED' && 'Cancelled'}
+                                                                            </span>
+                                                                        </td>
+                                                                        <td>
+                                                                            <a
+                                                                                href={`/track-order?orderNumber=${order.orderNumber}`}
+                                                                                className="btn btn-sm btn-outline-primary"
+                                                                            >
+                                                                                <i className="fas fa-eye me-1"></i>
+                                                                                Track
+                                                                            </a>
+                                                                        </td>
+                                                                    </tr>
+                                                                ))}
+                                                            </tbody>
+                                                        </table>
+                                                    </div>
+
+                                                    {/* Pagination */}
+                                                    {totalPages > 1 && (
+                                                        <nav className="mt-4">
+                                                            <ul className="pagination justify-content-center">
+                                                                <li className={`page-item ${ordersPage === 0 ? 'disabled' : ''}`}>
+                                                                    <button
+                                                                        className="page-link"
+                                                                        onClick={() => setOrdersPage((p) => Math.max(0, p - 1))}
+                                                                        disabled={ordersPage === 0}
+                                                                    >
+                                                                        <i className="fas fa-chevron-left"></i>
+                                                                    </button>
+                                                                </li>
+                                                                {Array.from({ length: totalPages }, (_, i) => (
+                                                                    <li
+                                                                        key={i}
+                                                                        className={`page-item ${ordersPage === i ? 'active' : ''}`}
+                                                                    >
+                                                                        <button
+                                                                            className="page-link"
+                                                                            onClick={() => setOrdersPage(i)}
+                                                                        >
+                                                                            {i + 1}
+                                                                        </button>
+                                                                    </li>
+                                                                ))}
+                                                                <li className={`page-item ${ordersPage >= totalPages - 1 ? 'disabled' : ''}`}>
+                                                                    <button
+                                                                        className="page-link"
+                                                                        onClick={() => setOrdersPage((p) => Math.min(totalPages - 1, p + 1))}
+                                                                        disabled={ordersPage >= totalPages - 1}
+                                                                    >
+                                                                        <i className="fas fa-chevron-right"></i>
+                                                                    </button>
+                                                                </li>
+                                                            </ul>
+                                                        </nav>
+                                                    )}
+                                                </>
+                                            )}
                                         </div>
                                     )}
 
