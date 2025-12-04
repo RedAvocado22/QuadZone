@@ -16,6 +16,14 @@ export interface PagedResponse<T> {
     };
 }
 
+// Simple paged response format (used by some endpoints like orders)
+export interface SimplePagedResponse<T> {
+    data: T[];
+    total: number;
+    page: number;
+    pageSize: number;
+}
+
 // ============== CATEGORY & SUBCATEGORY ==============
 /** Minimal category info (used in ProductResponse) */
 export interface CategoryName {
@@ -242,6 +250,30 @@ export interface OrderUpdateRequest {
 }
 
 export type OrderResponse = Order;
+
+// Order item in order details
+export interface OrderItem {
+    id: number;
+    productId: number;
+    productName: string;
+    productImageUrl: string | null;
+    quantity: number;
+    price: number;
+    totalPrice: number;
+}
+
+// Order details with items
+export interface OrderDetails extends Order {
+    items: OrderItem[];
+    subtotal: number;
+    taxAmount: number;
+    shippingCost: number;
+    discountAmount: number;
+    address: string;
+    notes?: string;
+}
+
+export type OrderDetailsResponse = OrderDetails;
 
 // ============== NOTIFICATION TYPES ==============
 export interface Notification {

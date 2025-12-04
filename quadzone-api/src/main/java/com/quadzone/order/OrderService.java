@@ -2,6 +2,7 @@ package com.quadzone.order;
 
 import com.quadzone.exception.order.OrderNotFoundException;
 import com.quadzone.global.dto.PagedResponse;
+import com.quadzone.order.dto.OrderDetailsResponse;
 import com.quadzone.order.dto.OrderRegisterRequest;
 import com.quadzone.order.dto.OrderResponse;
 import com.quadzone.order.dto.OrderStatusResponse;
@@ -738,6 +739,75 @@ public class OrderService {
     private String formatOrderStatus(OrderStatus status) {
         if (status == null) return "Unknown";
         return status.name().charAt(0) + status.name().substring(1).toLowerCase().replace("_", " ");
+    }
+
+    /**
+     * Get orders for the currently authenticated user
+     * @param page Page number (0-indexed)
+     * @param size Page size
+     * @return PagedResponse with user's orders
+     */
+    @Transactional(readOnly = true)
+    public PagedResponse<OrderResponse> getMyOrders(int page, int size) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || !authentication.isAuthenticated() || 
+            authentication.getName().equals("anonymousUser")) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "User not authenticated");
+        }
+
+        User user = userRepository.findByEmail(authentication.getName())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
+
+        Pageable pageable = PageRequest.of(Math.max(page, 0), Math.max(size, 1));
+        
+        // First try to find orders by user ID
+        Page<Order> ordersPage = orderRepository.findByUserId(user.getId(), pageable);
+        
+        // If no orders found by user ID, also check by email (for orders placed before user registered)
+        if (ordersPage.isEmpty() && user.getEmail() != null) {
+            ordersPage = orderRepository.findByCustomerEmail(user.getEmail(), pageable);
+        }
+
+        var orders = ordersPage.stream()
+                .map(OrderResponse::from)
+                .toList();
+
+        return new PagedResponse<>(
+                orders,
+                ordersPage.getTotalElements(),
+                ordersPage.getNumber(),
+                ordersPage.getSize()
+        );
+    }
+
+    /**
+     * Get order details for the currently authenticated user
+     * @param orderId Order ID
+     * @return OrderDetailsResponse with order items
+     */
+    @Transactional(readOnly = true)
+    public OrderDetailsResponse getMyOrderDetails(Long orderId) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || !authentication.isAuthenticated() || 
+            authentication.getName().equals("anonymousUser")) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "User not authenticated");
+        }
+
+        User user = userRepository.findByEmail(authentication.getName())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
+
+        Order order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Order not found"));
+
+        // Check if order belongs to the user (by user ID or email)
+        boolean belongsToUser = (order.getUser() != null && order.getUser().getId().equals(user.getId()))
+                || (order.getCustomerEmail() != null && order.getCustomerEmail().equals(user.getEmail()));
+
+        if (!belongsToUser) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Order does not belong to user");
+        }
+
+        return OrderDetailsResponse.from(order);
     }
 }
 
