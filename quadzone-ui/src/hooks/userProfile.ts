@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { toast } from 'react-toastify';
-import { profileApi } from '../api/profile';
+import { profileApi, type ChangePasswordRequest } from '../api/profile';
 import type { UserProfile, UpdateProfileRequest } from '../api/types';
 import type { AxiosError } from 'axios';
 
@@ -87,6 +87,36 @@ export const useProfile = () => {
         }
     };
 
+    const changePassword = async (data: ChangePasswordRequest): Promise<boolean> => {
+        // Validate passwords match
+        if (data.newPassword !== data.confirmPassword) {
+            toast.error(' New password and confirm password do not match');
+            return false;
+        }
+
+        // Validate password strength
+        if (data.newPassword.length < 8) {
+            toast.error(' Password must be at least 8 characters long');
+            return false;
+        }
+
+        setLoading(true);
+        setError(null);
+        try {
+            await profileApi.changePassword(data);
+            toast.success(' Password changed successfully!');
+            return true;
+        } catch (err) {
+            const axiosError = err as AxiosError<ErrorResponse>;
+            const message = axiosError.response?.data?.message || 'Failed to change password';
+            setError(message);
+            toast.error(` ${message}`);
+            return false;
+        } finally {
+            setLoading(false);
+        }
+    };
+
     useEffect(() => {
         fetchProfile();
     }, [fetchProfile]);
@@ -98,6 +128,7 @@ export const useProfile = () => {
         isInitialLoading,
         updateProfile,
         uploadAvatar,
+        changePassword,
         refetchProfile: fetchProfile,
     };
 };

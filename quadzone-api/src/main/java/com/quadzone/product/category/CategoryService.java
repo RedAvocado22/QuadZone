@@ -19,7 +19,6 @@ import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.ErrorResponseException;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
@@ -76,7 +75,7 @@ public class CategoryService {
                 .map(CategoryResponse::from)
                 .toList();
 
-        return new PagedResponse<>(
+        return PagedResponse.of(
                 categories,
                 resultPage.getTotalElements(),
                 resultPage.getNumber(),
@@ -114,7 +113,7 @@ public class CategoryService {
                 .map(CategoryAdminResponse::from)
                 .toList();
 
-        return new PagedResponse<>(
+        return PagedResponse.of(
                 categories,
                 resultPage.getTotalElements(),
                 resultPage.getNumber(),

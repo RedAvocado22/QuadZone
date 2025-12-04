@@ -82,7 +82,6 @@ const Shop: React.FC = () => {
                 });
 
                 const products = response.content || [];
-                console.log(`Products fetched: ${products.length} items`);
                 setAllProducts(products);
                 setDisplayedProducts(products);
                 setTotalElements(response.page?.totalElements || 0);

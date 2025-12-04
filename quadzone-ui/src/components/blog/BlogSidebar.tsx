@@ -79,7 +79,7 @@ const BlogSidebar: React.FC<BlogSidebarProps> = ({ recentPosts, onSearch }) => {
                             </div>
                             <div className="media-body">
                                 <h4 className="font-size-14 mb-1">
-                                    <Link to={`/blog/${post.slug}`} className="text-gray-39">
+                                    <Link to={`/blogs/${post.slug}`} className="text-gray-39">
                                         {post.title}
                                     </Link>
                                 </h4>

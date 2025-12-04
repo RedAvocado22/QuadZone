@@ -44,17 +44,17 @@ public class VnPaymentService {
         vnpParams.put("vnp_Version", "2.1.0");
         vnpParams.put("vnp_Command", "pay");
         vnpParams.put("vnp_TmnCode", tmnCode);
-        
+
         long amount = (long) (vnpRequest.amount() * 100 * exchangeRateService.getUsdToVnd());
         vnpParams.put("vnp_Amount", String.valueOf(amount));
-        
+
         vnpParams.put("vnp_CurrCode", "VND");
         vnpParams.put("vnp_TxnRef", vnpRequest.orderId());
         vnpParams.put("vnp_OrderInfo", vnpRequest.orderInfo());
         vnpParams.put("vnp_OrderType", "other");
         vnpParams.put("vnp_Locale", "vn");
         vnpParams.put("vnp_ReturnUrl", buildCallbackUrl(request, vnpRequest.returnUrl()));
-        
+
         vnpParams.put("vnp_IpAddr", getIpAddress(request));
 
         Calendar cld = Calendar.getInstance(TimeZone.getTimeZone("Asia/Ho_Chi_Minh"));
@@ -77,13 +77,13 @@ public class VnPaymentService {
     public boolean verifyPaymentResponse(HttpServletRequest request) {
         try {
             Map<String, String> fields = new HashMap<>();
-            
+
             for (Enumeration<String> params = request.getParameterNames(); params.hasMoreElements(); ) {
                 String fieldName = params.nextElement();
                 if (fieldName.startsWith("vnp_")) {
                     String fieldValue = request.getParameter(fieldName);
                     if (fieldValue != null && !fieldValue.isEmpty()) {
-                        fields.put(fieldName, fieldValue);
+                        fields.put(fieldName, fieldValue); 
                     }
                 }
             }
@@ -92,7 +92,7 @@ public class VnPaymentService {
             log.debug("VNPay callback parameters: {}", fields);
 
             String vnp_SecureHash = request.getParameter("vnp_SecureHash");
-            
+
             if (vnp_SecureHash == null || vnp_SecureHash.isEmpty()) {
                 log.error("vnp_SecureHash is missing from callback");
                 return false;
@@ -106,18 +106,18 @@ public class VnPaymentService {
             }
 
             String signValue = hashAllFields(fields);
-            
+
             log.info("Hash verification - Calculated: {}, Received: {}", signValue, vnp_SecureHash);
-            
+
             boolean isValid = signValue.equalsIgnoreCase(vnp_SecureHash);
-            
+
             if (!isValid) {
                 log.warn("Hash verification FAILED. Calculated: {}, Received: {}", signValue, vnp_SecureHash);
                 log.warn("Fields used for hash calculation: {}", fields.keySet());
             } else {
                 log.info("Hash verification SUCCESS");
             }
-            
+
             return isValid;
 
         } catch (Exception e) {
@@ -178,7 +178,7 @@ public class VnPaymentService {
     private String hashAllFields(Map<String, String> fields) {
         List<String> fieldNames = new ArrayList<>(fields.keySet());
         Collections.sort(fieldNames);
-        
+
         StringBuilder sb = new StringBuilder();
         Iterator<String> itr = fieldNames.iterator();
         while (itr.hasNext()) {
@@ -194,16 +194,16 @@ public class VnPaymentService {
                     log.warn("Failed to encode field value: {}", fieldValue, e);
                     sb.append(fieldValue);
                 }
-                
+
                 if (itr.hasNext()) {
                     sb.append("&");
                 }
             }
         }
-        
+
         String signData = sb.toString();
         log.debug("Sign data for hash: {}", signData);
-        
+
         return hmacSHA512(hashSecret, signData);
     }
 
@@ -262,7 +262,7 @@ public class VnPaymentService {
                 log.error("Error confirming payment for order: {}", orderNumber, e);
                 throw new RuntimeException("Failed to confirm payment", e);
             }
-            
+
             return new VnPaymentResponse(
                     responseDto.vnp_TxnRef(),
                     responseDto.vnp_Amount(),
@@ -281,7 +281,7 @@ public class VnPaymentService {
             } catch (Exception e) {
                 log.error("Error marking payment as failed for order: {}", orderNumber, e);
             }
-            
+
             return new VnPaymentResponse(
                     responseDto.vnp_TxnRef(),
                     responseDto.vnp_Amount(),

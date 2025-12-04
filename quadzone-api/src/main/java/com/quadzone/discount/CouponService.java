@@ -4,6 +4,8 @@ import com.quadzone.discount.dto.CouponCreateRequest;
 import com.quadzone.discount.dto.CouponValidationRequest;
 import com.quadzone.discount.dto.CouponValidationResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -14,6 +16,18 @@ import java.time.LocalDateTime;
 public class CouponService {
 
     private final CouponRepository couponRepository;
+
+    public Page<Coupon> getAllCoupons(Pageable pageable, String search) {
+        if (search == null || search.isBlank()) {
+            return couponRepository.findAll(pageable);
+        }
+        return couponRepository.findByCodeContainingIgnoreCase(search, pageable);
+    }
+
+    public Coupon getCouponById(Long id) {
+        return couponRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Coupon not found with id: " + id));
+    }
 
     public Coupon createCoupon(CouponCreateRequest request) {
         Coupon coupon = new Coupon();
@@ -29,6 +43,28 @@ public class CouponService {
         coupon.setActive(request.active() != null ? request.active() : true);
 
         return couponRepository.save(coupon);
+    }
+
+    public Coupon updateCoupon(Long id, CouponCreateRequest request) {
+        Coupon coupon = getCouponById(id);
+        if (request.code() != null) coupon.setCode(request.code());
+        if (request.discountType() != null) coupon.setDiscountType(request.discountType());
+        if (request.couponValue() != null) coupon.setCouponValue(request.couponValue());
+        if (request.maxDiscountAmount() != null) coupon.setMaxDiscountAmount(request.maxDiscountAmount());
+        if (request.minOrderAmount() != null) coupon.setMinOrderAmount(request.minOrderAmount());
+        if (request.maxUsage() != null) coupon.setMaxUsage(request.maxUsage());
+        if (request.startDate() != null) coupon.setStartDate(request.startDate());
+        if (request.endDate() != null) coupon.setEndDate(request.endDate());
+        if (request.active() != null) coupon.setActive(request.active());
+
+        return couponRepository.save(coupon);
+    }
+
+    public void deleteCoupon(Long id) {
+        if (!couponRepository.existsById(id)) {
+            throw new RuntimeException("Coupon not found with id: " + id);
+        }
+        couponRepository.deleteById(id);
     }
 
     // Dùng cho API /validate: không ném lỗi ra ngoài, mà trả về object để FE hiển thị
@@ -60,6 +96,13 @@ public class CouponService {
         double finalTotal = Math.max(0, subtotal - discount);
 
         return new CouponValidationResponse(true, "Coupon applied successfully", code, discount, finalTotal);
+    }
+
+    /**
+     * Get coupon by code (for linking to order)
+     */
+    public Coupon getCouponByCode(String code) {
+        return couponRepository.findByCodeAndIsActiveTrue(code).orElse(null);
     }
 
     public double calculateDiscount(String code, double totalOrderValue) {

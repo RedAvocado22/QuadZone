@@ -1,4 +1,3 @@
-// Review.java
 package com.quadzone.review;
 
 import com.quadzone.order.OrderItem;
@@ -50,6 +49,9 @@ public class Review {
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "order_item_id", unique = true)
     private OrderItem orderItem;
+
+    @Enumerated(EnumType.STRING)
+    private ReviewStatus status = ReviewStatus.VISIBLE;
 
     @PreUpdate
     public void onUpdate() {

@@ -2,6 +2,8 @@ package com.quadzone.discount;
 
 import java.util.Optional;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.stereotype.Repository;
@@ -17,4 +19,7 @@ public interface CouponRepository extends JpaRepository<Coupon, Long> {
     @Query("UPDATE Coupon c SET c.usageCount = c.usageCount + 1 " +
             "WHERE c.id = :id AND (c.maxUsage IS NULL OR c.usageCount < c.maxUsage)")
     int incrementUsageCount(@Param("id") Long id);
+
+    @Query("SELECT c FROM Coupon c WHERE LOWER(c.code) LIKE LOWER(CONCAT('%', :search, '%'))")
+    Page<Coupon> findByCodeContainingIgnoreCase(@Param("search") String search, Pageable pageable);
 }

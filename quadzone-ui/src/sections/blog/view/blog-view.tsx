@@ -169,7 +169,7 @@ export function BlogView() {
                                         totalFavorites: 0,
                                         postedAt: blog.createdAt,
                                         author: {
-                                            name: blog.author?.name || 'Unknown',
+                                            name: blog.author?.firstName + ' ' + blog.author?.lastName || 'Unknown',
                                             avatarUrl: ''
                                         }
                                     };

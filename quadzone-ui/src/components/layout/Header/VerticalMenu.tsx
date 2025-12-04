@@ -1,9 +1,7 @@
-import { useState } from "react";
 import SearchBar from "../../shared/SearchBar";
 import CartIcon from "../../shared/CartIcon";
 
 const VerticalMenu = () => {
-    const [isMenuOpen, setIsMenuOpen] = useState(false);
 
     return (
         <div className="d-none d-xl-block bg-primary">

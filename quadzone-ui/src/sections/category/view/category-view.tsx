@@ -111,17 +111,18 @@ export function CategoryView() {
     router.push(`/admin/category/${id}/edit`);
   }, [router]);
 
-  const handleDeleteCategory = useCallback(
-    async (id: string | number) => {
-      if (!window.confirm('Are you sure you want to delete this category?')) {
+  const handleToggleStatus = useCallback(
+    async (id: string | number, currentActive: boolean) => {
+      const action = currentActive ? 'deactivate' : 'activate';
+      if (!window.confirm(`Are you sure you want to ${action} this category?`)) {
         return;
       }
       try {
-        await categoriesApi.delete(id);
+        await categoriesApi.update(id, { active: !currentActive });
         refetch();
       } catch (err) {
-        console.error('Failed to delete category:', err);
-        alert('Failed to delete category');
+        console.error(`Failed to ${action} category:`, err);
+        alert(`Failed to ${action} category`);
       }
     },
     [refetch]
@@ -199,10 +200,10 @@ export function CategoryView() {
                     onSort={onSort}
                     onSelectAllRows={onSelectAllRows}
                     headLabel={[
-                      { id: 'name', label: 'Name' },
+                      { id: 'name', label: 'Name', align: 'center' },
                       { id: 'productCount', label: 'Products', align: 'center' },
-                      { id: 'active', label: 'Status' },
-                      { id: '' },
+                      { id: 'active', label: 'Status', align: 'center' },
+                      { id: '', align: 'center' },
                     ]}
                   />
                   <TableBody>
@@ -220,7 +221,7 @@ export function CategoryView() {
                         onSelectRow={() => onSelectRow(row.id.toString())}
                         onView={handleViewCategory}
                         onEdit={handleEditCategory}
-                        onDelete={handleDeleteCategory}
+                        onToggleStatus={handleToggleStatus}
                       />
                     ))}
 
@@ -270,14 +271,14 @@ function CategoryTableRow({
   onSelectRow,
   onView,
   onEdit,
-  onDelete,
+  onToggleStatus,
 }: {
   row: CategoryRow;
   selected: boolean;
   onSelectRow: () => void;
   onView?: (id: string | number) => void;
   onEdit?: (id: string | number) => void;
-  onDelete?: (id: string | number) => void;
+  onToggleStatus?: (id: string | number, currentActive: boolean) => void;
 }) {
   const [openPopover, setOpenPopover] = useState<HTMLButtonElement | null>(null);
 
@@ -303,12 +304,12 @@ function CategoryTableRow({
     }
   }, [onEdit, row.id, handleClosePopover]);
 
-  const handleDelete = useCallback(() => {
+  const handleToggleStatus = useCallback(() => {
     handleClosePopover();
-    if (onDelete) {
-      onDelete(row.id);
+    if (onToggleStatus) {
+      onToggleStatus(row.id, row.active);
     }
-  }, [onDelete, row.id, handleClosePopover]);
+  }, [onToggleStatus, row.id, row.active, handleClosePopover]);
 
   const getStatusColor = (status: string) => {
     switch (status.toLowerCase()) {
@@ -338,7 +339,7 @@ function CategoryTableRow({
           <Checkbox disableRipple checked={selected} onChange={onSelectRow} />
         </TableCell>
 
-        <TableCell component="th" scope="row">
+        <TableCell component="th" scope="row" align="center">
           <Button variant="text" color="inherit" onClick={() => onView?.(row.id)} sx={{ p: 0, minWidth: 'auto' }}>
             {row.name}
           </Button>
@@ -346,13 +347,13 @@ function CategoryTableRow({
 
         <TableCell align="center">{row.productCount}</TableCell>
 
-        <TableCell>
+        <TableCell align="center">
           <Label color={getStatusColor(row.active ? 'active' : 'inactive')}>
             {row.active ? 'Active' : 'Inactive'}
           </Label>
         </TableCell>
 
-        <TableCell align="right">
+        <TableCell align="center">
           <IconButton onClick={handleOpenPopover}>
             <Iconify icon="eva:more-vertical-fill" />
           </IconButton>
@@ -392,9 +393,12 @@ function CategoryTableRow({
             Edit
           </MenuItem>
 
-          <MenuItem onClick={handleDelete} sx={{ color: 'error.main' }}>
-            <Iconify icon="solar:trash-bin-trash-bold" />
-            Delete
+          <MenuItem 
+            onClick={handleToggleStatus} 
+            sx={{ color: row.active ? 'warning.main' : 'success.main' }}
+          >
+            <Iconify icon={row.active ? "solar:forbidden-bold" as any : "solar:restart-bold"} />
+            {row.active ? 'Deactivate' : 'Activate'}
           </MenuItem>
         </MenuList>
       </Popover>

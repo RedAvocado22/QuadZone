@@ -6,6 +6,11 @@ import jakarta.mail.internet.AddressException;
 import jakarta.mail.internet.InternetAddress;
 import jakarta.mail.internet.MimeMessage;
 import lombok.RequiredArgsConstructor;
+
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -361,9 +366,9 @@ public class EmailSenderService {
     }
 
     private String buildOrderConfirmationEmailHtml(String customerName, String orderNumber, 
-                                                   Double totalAmount, java.time.LocalDateTime orderDate,
+                                                   Double totalAmount, LocalDateTime orderDate,
                                                    int itemsCount, String trackingUrl) {
-        String formattedDate = orderDate.format(java.time.format.DateTimeFormatter.ofPattern("dd MMMM yyyy, HH:mm"));
+        String formattedDate = orderDate.format(DateTimeFormatter.ofPattern("dd MMMM yyyy, HH:mm"));
         String formattedAmount = String.format("$%.2f", totalAmount);
         
         return String.format("""

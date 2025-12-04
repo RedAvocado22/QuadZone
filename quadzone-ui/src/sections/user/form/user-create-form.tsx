@@ -86,7 +86,6 @@ export function UserCreateForm({ onSuccess, onCancel }: UserCreateFormProps) {
                     isVerified: values.isVerified,
                     status: values.status
                 };
-                console.log(userData);
 
                 // Note: The API currently uses a default password, but we should pass the password
                 // For now, we'll create the user and the backend should handle password separately
