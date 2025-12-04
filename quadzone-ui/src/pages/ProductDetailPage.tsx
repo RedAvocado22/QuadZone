@@ -161,27 +161,9 @@ const ProductDetailPage = () => {
                     <div className="tab-pane fade" id="review" role="tabpanel">
                         <div className="mb-3">
                             <h5 className="fw-bold">Customer Reviews</h5>
-                            {/* Reviews will be available when using ProductDetailsResponse */}
+                            
                             <p className="text-muted small">No reviews yet. Be the first to review this product!</p>
                         </div>
-
-                        {/* Add Review
-            <div className="mt-4">
-              <textarea
-                className="form-control mb-3"
-                placeholder="Write your review here..."
-                rows={3}
-                value={reviewText}
-                onChange={(e) => setReviewText(e.target.value)}
-              ></textarea>
-              <button
-                className="btn btn-outline-primary"
-                disabled={submitting || !reviewText.trim()}
-                onClick={handleSubmitReview}
-              >
-                {submitting ? "Submitting..." : "Submit Review"}
-              </button>
-            </div> */}
                     </div>
                 </div>
             </div>

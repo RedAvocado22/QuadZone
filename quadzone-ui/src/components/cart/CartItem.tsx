@@ -48,7 +48,7 @@ const CartItemComponent = ({ item }: CartItemProps) => {
                 <button
                     type="button"
                     aria-label="Remove from cart"
-                    className="text-gray-32 font-size-26"
+                    className="text-gray-32 font-size-26 border-0 bg-transparent p-0"
                     onClick={async (e) => {
                         e.preventDefault();
                         if (product.id) {
@@ -82,36 +82,37 @@ const CartItemComponent = ({ item }: CartItemProps) => {
             </td>
             <td data-title="Quantity">
                 <span className="sr-only">Quantity</span>
-                <div className="border rounded-pill py-1 width-122 w-xl-80 px-3 border-color-1">
-                    <div className="js-quantity row align-items-center">
-                        <div className="col">
-                            <input
-                                className="js-result form-control h-auto border-0 rounded p-0 shadow-none"
-                                type="text"
-                                value={product.quantity}
-                                readOnly
-                            />
-                        </div>
-                        <div className="col-auto pr-1">
-                            <button
-                                type="button"
-                                className="js-minus btn btn-icon btn-xs btn-outline-secondary rounded-circle border-0"
-                                onClick={(e) => {
-                                    e.preventDefault();
-                                    handleQuantityChange(product.quantity - 1);
-                                }}>
-                                <small className="fas fa-minus btn-icon__inner"></small>
-                            </button>
-                            <button
-                                type="button"
-                                className="js-plus btn btn-icon btn-xs btn-outline-secondary rounded-circle border-0"
-                                onClick={(e) => {
-                                    e.preventDefault();
-                                    handleQuantityChange(product.quantity + 1);
-                                }}>
-                                <small className="fas fa-plus btn-icon__inner"></small>
-                            </button>
-                        </div>
+                <div className="border rounded-pill py-1 px-3 width-122 w-xl-80 border-color-1 d-flex align-items-center justify-content-center">
+                    <div
+                        className="js-quantity d-flex align-items-center justify-content-center gap-3"
+                        style={{ height: "100%" }}>
+                        <button
+                            type="button"
+                            className="js-minus btn btn-icon btn-xs btn-outline-secondary rounded-circle border-0"
+                            onClick={(e) => {
+                                e.preventDefault();
+                                handleQuantityChange(product.quantity - 1);
+                            }}>
+                            <small className="fas fa-minus btn-icon__inner"></small>
+                        </button>
+
+                        <input
+                            className="js-result form-control h-auto border-0 rounded p-0 shadow-none text-center flex-grow-0"
+                            type="text"
+                            value={product.quantity}
+                            readOnly
+                            style={{ width: "40px" }}
+                        />
+
+                        <button
+                            type="button"
+                            className="js-plus btn btn-icon btn-xs btn-outline-secondary rounded-circle border-0"
+                            onClick={(e) => {
+                                e.preventDefault();
+                                handleQuantityChange(product.quantity + 1);
+                            }}>
+                            <small className="fas fa-plus btn-icon__inner"></small>
+                        </button>
                     </div>
                 </div>
             </td>
