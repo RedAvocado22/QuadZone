@@ -101,7 +101,9 @@ function App() {
                                             <Route path="track-order" element={<TrackOrderPage />} />
                                             <Route path="order-success" element={<OrderSuccessPage />} />
                                             <Route path="vnpay-result" element={<VnPayResultPage />} />
-
+                                            {/* Blog */}
+                                            <Route path="/blogs" element={<BlogListPage/>}/>
+                                            <Route path="/blogs/:slug" element={<BlogDetailPage/>}/>
                                             {/* 404 */}
                                             {/* <Route path="*" element={<NotFound />} /> */}
                                         </Route>

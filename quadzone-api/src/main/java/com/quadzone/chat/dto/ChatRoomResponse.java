@@ -35,7 +35,6 @@ public record ChatRoomResponse(
                 .createdAt(chatRoom.getCreatedAt())
                 .closedAt(chatRoom.getClosedAt())
                 .lastMessageAt(chatRoom.getLastMessageAt())
-                .unreadCount(chatRoom.getUnreadCount()) // If your entity has this
                 .build();
     }
 }

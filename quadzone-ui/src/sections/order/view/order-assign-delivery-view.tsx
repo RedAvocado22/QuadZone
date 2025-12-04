@@ -51,33 +51,20 @@ export function OrderAssignDeliveryView() {
     page,
     pageSize: rowsPerPage,
     search: filterName,
-    sortBy: 'orderDate',
-    sortOrder: 'desc',
   });
 
   // Filter only CONFIRMED orders (case-insensitive)
   const confirmedOrders = useMemo(() => {
-    // Debug: Log all orders and their statuses
-    if (orders.length > 0) {
-      console.log('All orders:', orders.map(o => ({ id: o.id, status: o.status, orderNumber: o.orderNumber })));
-    }
-    
     const filtered = orders.filter(order => {
       const status = order.status;
       if (!status) {
-        console.log('Order missing status:', order.id, order.orderNumber);
         return false;
       }
       // Handle both string and enum formats
       const statusStr = typeof status === 'string' ? status : String(status);
-      const isConfirmed = statusStr.toUpperCase() === 'CONFIRMED';
-      if (isConfirmed) {
-        console.log('Found CONFIRMED order:', order.id, order.orderNumber, 'status:', status);
-      }
-      return isConfirmed;
+      return statusStr.toUpperCase() === 'CONFIRMED';
     });
     
-    console.log(`Filtered ${filtered.length} CONFIRMED orders from ${orders.length} total orders`);
     return filtered;
   }, [orders]);
 
@@ -345,7 +332,7 @@ export function OrderAssignDeliveryView() {
               ) : (
                 shippers.map((shipper) => (
                   <MenuItem key={shipper.id} value={shipper.id.toString()}>
-                    {shipper.name} ({shipper.email})
+                    {shipper.firstName} {shipper.lastName} ({shipper.email})
                   </MenuItem>
                 ))
               )}

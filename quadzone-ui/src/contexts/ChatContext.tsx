@@ -85,15 +85,12 @@ export const ChatProvider: React.FC<ChatProviderProps> = ({ children }) => {
                 token,
                 getToken: () => {
                     const freshToken = localStorage.getItem('access_token');
-                    console.log('[Chat] Providing fresh token for WebSocket reconnection');
                     return freshToken;
                 },
                 onConnect: () => {
-                    console.log('[Chat] WebSocket connected');
                     setIsConnected(true);
                 },
                 onDisconnect: () => {
-                    console.log('[Chat] WebSocket disconnected');
                     setIsConnected(false);
                 },
                 onError: (error) => {
@@ -116,8 +113,6 @@ export const ChatProvider: React.FC<ChatProviderProps> = ({ children }) => {
         const destination = `/queue/messages/${roomId}`;
         
         subscriptionRef.current = webSocketService.subscribe(destination, (message) => {
-            console.log('[Chat] Received message:', message);
-            
             // Handle different message types
             if (message.type === 'ROOM_CLOSED') {
                 setChatRoom(prev => prev ? { ...prev, status: ChatRoomStatus.CLOSED } : null);
@@ -171,8 +166,6 @@ export const ChatProvider: React.FC<ChatProviderProps> = ({ children }) => {
                 }
             }
         });
-        
-        console.log(`[Chat] Subscribed to room ${roomId}`);
     }, [user, isOpen]);
     
     /**

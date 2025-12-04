@@ -140,7 +140,7 @@ export function OrderCreateForm({ onSuccess, onCancel }: OrderCreateFormProps) {
                 ) : (
                   users.map((user) => (
                     <MenuItem key={user.id} value={user.id}>
-                      {user.name} ({user.email})
+                      {user.firstName} {user.lastName} ({user.email})
                     </MenuItem>
                   ))
                 )}

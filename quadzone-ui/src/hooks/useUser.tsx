@@ -83,7 +83,6 @@ const UserProvider = ({ children }: UserProviderProps) => {
             // Priority 1: Use message from backend response if available
             if (err.response?.data?.message) {
                 msg = err.response.data.message;
-                console.log(msg);
             } 
             // Priority 2: Use status-based messages if no backend message
             else if (err.response?.status) {
@@ -103,7 +102,6 @@ const UserProvider = ({ children }: UserProviderProps) => {
             }
             // Priority 3: Use error message if available
             else if (err.message) {
-                console.log(err.message);
                 msg = err.message;
             }
             

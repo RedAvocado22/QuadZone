@@ -59,7 +59,7 @@ export function UserView() {
                 try {
                     await usersApi.delete(id);
                     // Refetch users after deletion
-                    refetch();
+                    await refetch();
                 } catch (err) {
                     console.error("Failed to delete user:", err);
                     alert("Failed to delete user. Please try again.");
@@ -72,9 +72,17 @@ export function UserView() {
     // Apply client-side sorting only (filtering and pagination are done in API)
     const dataFiltered: UserProps[] = useMemo(() => {
         const sorted = [...users].sort((a, b) => {
-            const aValue = a[table.orderBy as keyof typeof a];
-            const bValue = b[table.orderBy as keyof typeof b];
-            console.log(users);
+            // Handle "name" sorting specially since API returns firstName/lastName
+            let aValue: string | undefined;
+            let bValue: string | undefined;
+            
+            if (table.orderBy === "name") {
+                aValue = `${a.firstName} ${a.lastName}`;
+                bValue = `${b.firstName} ${b.lastName}`;
+            } else {
+                aValue = a[table.orderBy as keyof typeof a] as string | undefined;
+                bValue = b[table.orderBy as keyof typeof b] as string | undefined;
+            }
 
             if (aValue === undefined || bValue === undefined) return 0;
 
@@ -88,8 +96,8 @@ export function UserView() {
         });
         // Map User to UserProps format
         return sorted.map((user) => ({
-            id: user.id,
-            name: user.name,
+            id: String(user.id),
+            name: `${user.firstName} ${user.lastName}`,
             email: user.email || "",
             role: user.role || "",
             status: user.status || "active",
