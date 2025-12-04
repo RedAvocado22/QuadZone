@@ -23,6 +23,7 @@ import com.quadzone.user.UserRepository;
 import com.quadzone.utils.email.EmailSenderService;
 import com.quadzone.order.dto.AssignOrderToShipperRequest;
 import com.quadzone.order.dto.CheckoutRequest;
+import com.quadzone.discount.Coupon;
 import com.quadzone.discount.CouponService;
 import lombok.RequiredArgsConstructor;
 
@@ -61,7 +62,7 @@ public class OrderService {
         String orderNumber;
         int maxAttempts = 10;
         int attempts = 0;
-        
+
         do {
             StringBuilder sb = new StringBuilder("ORD-");
             for (int i = 0; i < 8; i++) {
@@ -70,12 +71,12 @@ public class OrderService {
             orderNumber = sb.toString();
             attempts++;
         } while (orderRepository.existsByOrderNumber(orderNumber) && attempts < maxAttempts);
-        
+
         if (attempts >= maxAttempts) {
             // Fallback: use timestamp-based order number
             orderNumber = "ORD-" + System.currentTimeMillis();
         }
-        
+
         return orderNumber;
     }
 
@@ -218,9 +219,13 @@ public class OrderService {
 
         double discountAmount = 0.0;
         String couponCode = request.couponCode();
+        Coupon appliedCoupon = null;
+
         if (couponCode != null && !couponCode.isBlank()) {
             // Recalculate discount on backend to tránh thao túng từ FE
             discountAmount = couponService.calculateDiscount(couponCode.trim(), subtotal);
+            // Get coupon entity to link to order
+            appliedCoupon = couponService.getCouponByCode(couponCode.trim());
         } else if (request.discountAmount() != null) {
             // Fallback nếu không có coupon (trường hợp khuyến mãi khác)
             discountAmount = request.discountAmount();
@@ -243,6 +248,12 @@ public class OrderService {
         order.setOrderStatus(OrderStatus.PENDING);
         order.setNotes(request.notes());
         
+        // Link coupon to order (if applied)
+        if (appliedCoupon != null) {
+            order.setCouponCode(couponCode.trim());
+            order.setCoupon(appliedCoupon);
+        }
+
         // Build address string
         StringBuilder addressBuilder = new StringBuilder();
         addressBuilder.append(request.address());
@@ -314,6 +325,12 @@ public class OrderService {
 
         // Save order
         Order savedOrder = orderRepository.save(order);
+
+        // Generate and set order number (format: ORD-00001)
+        if (savedOrder.getOrderNumber() == null) {
+            savedOrder.setOrderNumber("ORD-" + String.format("%05d", savedOrder.getId()));
+            savedOrder = orderRepository.save(savedOrder);
+        }
 
         // If coupon was applied, consume one usage (sau khi order tạo thành công)
         if (couponCode != null && !couponCode.isBlank()) {

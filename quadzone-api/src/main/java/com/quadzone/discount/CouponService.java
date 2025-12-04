@@ -98,6 +98,13 @@ public class CouponService {
         return new CouponValidationResponse(true, "Coupon applied successfully", code, discount, finalTotal);
     }
 
+    /**
+     * Get coupon by code (for linking to order)
+     */
+    public Coupon getCouponByCode(String code) {
+        return couponRepository.findByCodeAndIsActiveTrue(code).orElse(null);
+    }
+
     public double calculateDiscount(String code, double totalOrderValue) {
         Coupon coupon = couponRepository.findByCodeAndIsActiveTrue(code)
                 .orElseThrow(() -> new RuntimeException("Coupon not found"));
