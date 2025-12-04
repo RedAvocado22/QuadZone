@@ -142,7 +142,7 @@ public class UserService {
                 .map(objectMapper::toUserResponse)
                 .toList();
 
-        return new PagedResponse<>(
+        return PagedResponse.of(
                 users,
                 resultPage.getTotalElements(),
                 resultPage.getNumber(),

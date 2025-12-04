@@ -210,7 +210,7 @@ public class ProductService {
                 .map(objectMapper::toProductResponse)
                 .toList();
 
-        return new PagedResponse<>(
+        return PagedResponse.of(
                 products,
                 resultPage.getTotalElements(),
                 resultPage.getNumber(),
@@ -241,7 +241,7 @@ public class ProductService {
                 .map(ProductAdminResponse::from)
                 .toList();
 
-        return new PagedResponse<>(
+        return PagedResponse.of(
                 products,
                 resultPage.getTotalElements(),
                 resultPage.getNumber(),

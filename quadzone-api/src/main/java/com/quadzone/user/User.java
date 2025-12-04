@@ -62,7 +62,7 @@ public class User implements UserDetails {
     private LocalDate dateOfBirth;
 
     @Column(name = "avatarUrl")
-    private String avatarUrl;
+    private String avatarUrl;   
 
     @Column(name = "updatedAt")
     private LocalDateTime updatedAt;

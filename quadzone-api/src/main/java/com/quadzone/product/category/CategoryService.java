@@ -76,7 +76,7 @@ public class CategoryService {
                 .map(CategoryResponse::from)
                 .toList();
 
-        return new PagedResponse<>(
+        return PagedResponse.of(
                 categories,
                 resultPage.getTotalElements(),
                 resultPage.getNumber(),
@@ -114,7 +114,7 @@ public class CategoryService {
                 .map(CategoryAdminResponse::from)
                 .toList();
 
-        return new PagedResponse<>(
+        return PagedResponse.of(
                 categories,
                 resultPage.getTotalElements(),
                 resultPage.getNumber(),

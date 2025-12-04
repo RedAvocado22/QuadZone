@@ -79,8 +79,7 @@ export function UserTableRow({ row, selected, onSelectRow, onEdit, onDelete }: U
           <Box
             sx={{
               gap: 2,
-              display: 'flex',
-              alignItems: 'center',
+              display: 'flex'
             }}
           >
             <Avatar alt={row.name} src={row.avatarUrl} />
@@ -88,9 +87,9 @@ export function UserTableRow({ row, selected, onSelectRow, onEdit, onDelete }: U
           </Box>
         </TableCell>
 
-        <TableCell>{row.email}</TableCell>
+        <TableCell align="center">{row.email}</TableCell>
 
-        <TableCell>{row.role}</TableCell>
+        <TableCell align="center">{row.role}</TableCell>
 
         <TableCell align="center">
           {row.isVerified ? (
@@ -100,11 +99,11 @@ export function UserTableRow({ row, selected, onSelectRow, onEdit, onDelete }: U
           )}
         </TableCell>
 
-        <TableCell>
+        <TableCell align="center">
           <Label color={(row.status === 'banned' && 'error') || 'success'}>{row.status}</Label>
         </TableCell>
 
-        <TableCell align="right">
+        <TableCell align="center">
           <IconButton onClick={handleOpenPopover}>
             <Iconify icon="eva:more-vertical-fill" />
           </IconButton>

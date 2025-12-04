@@ -150,6 +150,9 @@ export interface User {
     email: string;
     role: UserRole;
     createdAt: string; // ISO date string
+    status: string;
+    isVerified: boolean;
+    avatarUrl: string;
 }
 
 /**
@@ -199,10 +202,41 @@ export interface Order {
     id: number;
     orderNumber: string;
     customerName: string;
+    customerEmail?: string;
+    customerPhone?: string;
+    subtotal?: number;
+    taxAmount?: number;
+    shippingCost?: number;
+    discountAmount?: number;
     totalAmount: number;
     status: OrderStatus;
     orderDate: string; // ISO date string
     itemsCount: number;
+    address?: string;
+    notes?: string;
+}
+
+export interface OrderCreateRequest {
+    userId: number;
+    subtotal?: number;
+    taxAmount?: number;
+    shippingCost?: number;
+    discountAmount?: number;
+    totalAmount: number;
+    orderStatus?: OrderStatus;
+    notes?: string;
+    address?: string;
+}
+
+export interface OrderUpdateRequest {
+    subtotal?: number;
+    taxAmount?: number;
+    shippingCost?: number;
+    discountAmount?: number;
+    totalAmount?: number;
+    orderStatus?: OrderStatus;
+    notes?: string;
+    address?: string;
 }
 
 export type OrderResponse = Order;

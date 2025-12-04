@@ -81,7 +81,7 @@ export function UserView() {
     });
     // Map User to UserProps format
     return sorted.map((user) => ({
-      id: user.id,
+      id: String(user.id),
       name: user.name,
       email: user.email || '',
       role: user.role || '',
@@ -152,12 +152,12 @@ export function UserView() {
                       )
                     }
                     headLabel={[
-                      { id: 'name', label: 'Name' },
-                      { id: 'email', label: 'Email' },
-                      { id: 'role', label: 'Role' },
+                      { id: 'name', label: 'Name'},
+                      { id: 'email', label: 'Email', align: 'center' },
+                      { id: 'role', label: 'Role', align: 'center' },
                       { id: 'isVerified', label: 'Verified', align: 'center' },
-                      { id: 'status', label: 'Status' },
-                      { id: '' },
+                      { id: 'status', label: 'Status', align: 'center' },
+                      { id: '', align: 'center' },
                     ]}
                   />
                   <TableBody>

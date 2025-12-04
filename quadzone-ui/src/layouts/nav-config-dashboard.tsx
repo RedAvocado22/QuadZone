@@ -44,6 +44,11 @@ export const navData = [
     icon: <Iconify width={24} icon="solar:bag-check-bold-duotone" />,
   },
   {
+    title: 'Coupon',
+    path: '/admin/coupon',
+    icon: <Iconify width={24} icon="solar:ticket-bold-duotone" />,
+  },
+  {
     title: 'Assign Delivery',
     path: '/admin/order/assign-delivery',
     icon: <Iconify width={24} icon="solar:cart-3-bold" />,
