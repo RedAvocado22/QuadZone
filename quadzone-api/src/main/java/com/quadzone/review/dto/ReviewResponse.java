@@ -8,7 +8,7 @@ public record ReviewResponse(
         Long id,
         Integer rating,
         String title,
-        String text,
+        String content,
         LocalDateTime createdAt,
         String userName,
         Long userId
@@ -26,7 +26,7 @@ public record ReviewResponse(
                 review.getId(),
                 review.getRating(),
                 review.getTitle(),
-                review.getText(),
+                review.getContent(),
                 review.getCreatedAt(),
                 userName,
                 userId

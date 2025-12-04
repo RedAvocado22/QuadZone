@@ -90,6 +90,8 @@ function App() {
                                             {/* Pages */}
                                             <Route path="about-us" element={<AboutUsPage />} />
                                             <Route path="contact" element={<ContactUsPage />} />
+                                            <Route path="blogs" element={<BlogListPage />} />
+                                            <Route path="blogs/:id" element={<BlogDetailPage />} />
 
                                             {/* Compare + Wishlist */}
                                             <Route path="compare" element={<ComparePage />} />

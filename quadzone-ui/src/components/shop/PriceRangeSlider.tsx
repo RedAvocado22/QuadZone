@@ -22,6 +22,17 @@ const PriceRangeSlider: React.FC<PriceRangeSliderProps> = ({ min = 0, max = 3456
         setMaxValue(max);
     }, [resetTrigger, min, max]);
 
+    // Debounced effect to call onFilter when price values change
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            if (onFilter) {
+                onFilter({ min: minValue, max: maxValue });
+            }
+        }, 300); // 300ms debounce to avoid too many updates
+
+        return () => clearTimeout(timer);
+    }, [minValue, maxValue, onFilter]);
+
     const handleMinChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
         const value = Math.min(Number(e.target.value), maxValue - 1);
         setMinValue(value);

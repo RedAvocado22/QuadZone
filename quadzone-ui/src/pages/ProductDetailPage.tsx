@@ -3,6 +3,7 @@ import { Link, useParams } from "react-router-dom";
 import { useCart } from "../contexts/CartContext";
 import type { ProductDetailsResponse } from "../api/types";
 import { getProductDetails } from "../api/products";
+import { getProductReviews } from "../api/reviews";
 import { toast } from "react-toastify";
 import { useCurrency } from "../contexts/CurrencyContext";
 import { fCurrency } from "../utils/formatters";
@@ -10,7 +11,9 @@ import { fCurrency } from "../utils/formatters";
 const ProductDetailPage = () => {
     const { id } = useParams();
     const [product, setProduct] = useState<ProductDetailsResponse | null>(null);
-    const [loading, setLoading] = useState(true);
+    const [reviews, setReviews] = useState<any[]>([]);
+    const [loadingProduct, setLoadingProduct] = useState(true);
+    const [loadingReviews, setLoadingReviews] = useState(false);
     const { addToCart } = useCart();
     const { currency, convertPrice } = useCurrency();
 
@@ -20,16 +23,33 @@ const ProductDetailPage = () => {
             try {
                 const data = await getProductDetails(Number(id));
                 setProduct(data);
-                setLoading(false);
+                setLoadingProduct(false);
             } catch {
                 toast.error("Failed to load product details. Please try again later.");
-                setLoading(false);
+                setLoadingProduct(false);
             }
         };
         loadProduct();
     }, [id]);
 
-    if (loading) return <div className="text-center py-5">Loading product details...</div>;
+    useEffect(() => {
+        if (!id) return;
+        const loadReviews = async () => {
+            setLoadingReviews(true);
+            try {
+                const response = await getProductReviews(Number(id), { page: 0, size: 10 });
+                setReviews(response.content || []);
+            } catch (error) {
+                console.error("Failed to load reviews:", error);
+                setReviews([]);
+            } finally {
+                setLoadingReviews(false);
+            }
+        };
+        loadReviews();
+    }, [id]);
+
+    if (loadingProduct) return <div className="text-center py-5">Loading product details...</div>;
 
     if (!product) return <div className="text-center py-5">Product not found</div>;
 
@@ -161,27 +181,40 @@ const ProductDetailPage = () => {
                     <div className="tab-pane fade" id="review" role="tabpanel">
                         <div className="mb-3">
                             <h5 className="fw-bold">Customer Reviews</h5>
-                            {/* Reviews will be available when using ProductDetailsResponse */}
-                            <p className="text-muted small">No reviews yet. Be the first to review this product!</p>
+                            
+                            {loadingReviews ? (
+                                <p className="text-muted small">Loading reviews...</p>
+                            ) : reviews.length > 0 ? (
+                                <div className="mt-3">
+                                    {reviews.map((review) => (
+                                        <div
+                                            key={review.id}
+                                            className="border-bottom pb-3 mb-3"
+                                            style={{ borderColor: "#e9ecef" }}>
+                                            <div className="d-flex justify-content-between align-items-start">
+                                                <div>
+                                                    <h6 className="fw-bold mb-1">
+                                                        {review.title || "Untitled Review"}
+                                                    </h6>
+                                                    <p className="text-secondary small mb-2">
+                                                        By {review.userName || "Anonymous"} •{" "}
+                                                        {new Date(review.createdAt).toLocaleDateString()}
+                                                    </p>
+                                                </div>
+                                                <div className="text-warning">
+                                                    {"⭐".repeat(review.rating)}
+                                                </div>
+                                            </div>
+                                            <p className="mb-0">{review.text}</p>
+                                        </div>
+                                    ))}
+                                </div>
+                            ) : (
+                                <p className="text-muted small">
+                                    No reviews yet. Be the first to review this product!
+                                </p>
+                            )}
                         </div>
-
-                        {/* Add Review
-            <div className="mt-4">
-              <textarea
-                className="form-control mb-3"
-                placeholder="Write your review here..."
-                rows={3}
-                value={reviewText}
-                onChange={(e) => setReviewText(e.target.value)}
-              ></textarea>
-              <button
-                className="btn btn-outline-primary"
-                disabled={submitting || !reviewText.trim()}
-                onClick={handleSubmitReview}
-              >
-                {submitting ? "Submitting..." : "Submit Review"}
-              </button>
-            </div> */}
                     </div>
                 </div>
             </div>

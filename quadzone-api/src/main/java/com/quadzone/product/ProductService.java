@@ -144,12 +144,27 @@ public class ProductService {
         return (root, query, criteriaBuilder) -> {
             List<Predicate> predicates = new ArrayList<>();
             
-            // Filter by brand (case-insensitive)
+            // Filter by brand(s) (case-insensitive)
+            // Supports comma-separated brands: "Brand1,Brand2,Brand3"
             if (brand != null && !brand.trim().isEmpty()) {
-                predicates.add(criteriaBuilder.equal(
-                    criteriaBuilder.lower(root.get("brand")), 
-                    brand.toLowerCase().trim()
-                ));
+                String[] brands = brand.split(",");
+                if (brands.length == 1) {
+                    // Single brand
+                    predicates.add(criteriaBuilder.equal(
+                        criteriaBuilder.lower(root.get("brand")), 
+                        brands[0].toLowerCase().trim()
+                    ));
+                } else {
+                    // Multiple brands - use OR clause
+                    List<Predicate> brandPredicates = new ArrayList<>();
+                    for (String b : brands) {
+                        brandPredicates.add(criteriaBuilder.equal(
+                            criteriaBuilder.lower(root.get("brand")), 
+                            b.toLowerCase().trim()
+                        ));
+                    }
+                    predicates.add(criteriaBuilder.or(brandPredicates.toArray(new Predicate[0])));
+                }
             }
             
             // IMPORTANT: Product only has SubCategory, not Category directly
