@@ -6,6 +6,11 @@ import jakarta.mail.internet.AddressException;
 import jakarta.mail.internet.InternetAddress;
 import jakarta.mail.internet.MimeMessage;
 import lombok.RequiredArgsConstructor;
+
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -337,8 +342,8 @@ public class EmailSenderService {
      * @param orderDate Order date
      * @param itemsCount Number of items in the order
      */
-    public void sendOrderConfirmationEmail(String to, String orderNumber, String customerName,
-                                          Double totalAmount, java.time.LocalDateTime orderDate,
+    public void sendOrderConfirmationEmail(String to, String orderNumber, String customerName, 
+                                          Double totalAmount, java.time.LocalDateTime orderDate, 
                                           int itemsCount) {
         try {
             String trackingUrl = feBaseUrl + "/track-order?orderNumber=" + orderNumber;
@@ -360,12 +365,12 @@ public class EmailSenderService {
         }
     }
 
-    private String buildOrderConfirmationEmailHtml(String customerName, String orderNumber,
-                                                   Double totalAmount, java.time.LocalDateTime orderDate,
+    private String buildOrderConfirmationEmailHtml(String customerName, String orderNumber, 
+                                                   Double totalAmount, LocalDateTime orderDate,
                                                    int itemsCount, String trackingUrl) {
-        String formattedDate = orderDate.format(java.time.format.DateTimeFormatter.ofPattern("dd MMMM yyyy, HH:mm"));
+        String formattedDate = orderDate.format(DateTimeFormatter.ofPattern("dd MMMM yyyy, HH:mm"));
         String formattedAmount = String.format("$%.2f", totalAmount);
-
+        
         return String.format("""
             <!DOCTYPE html>
             <html lang="en">
@@ -484,7 +489,7 @@ public class EmailSenderService {
                 </table>
             </body>
             </html>
-            """, customerName, orderNumber, formattedDate, formattedAmount, itemsCount,
+            """, customerName, orderNumber, formattedDate, formattedAmount, itemsCount, 
             trackingUrl, trackingUrl, trackingUrl, java.time.Year.now().getValue());
     }
 }

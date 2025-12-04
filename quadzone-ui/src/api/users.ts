@@ -67,7 +67,7 @@ export const usersApi = {
     // Update user
     update: async (
         id: string | number,
-        user: { firstName?: string; lastName?: string; email?: string; role?: string; status?: string }
+        user: { firstName?: string; lastName?: string; email?: string; role?: string; status?: string; avatarUrl?: string; isVerified?: boolean }
     ): Promise<UserResponse> => {
         const requestBody: any = {};
         if (user.firstName !== undefined) requestBody.firstName = user.firstName;
@@ -75,6 +75,8 @@ export const usersApi = {
         if (user.email !== undefined) requestBody.email = user.email;
         if (user.role !== undefined) requestBody.role = user.role;
         if (user.status !== undefined) requestBody.status = user.status;
+        if (user.avatarUrl !== undefined) requestBody.avatarUrl = user.avatarUrl;
+        if (user.isVerified !== undefined) requestBody.isVerified = user.isVerified;
         const response = await API.put<UserResponse>(`/users/${id}`, requestBody);
         return response.data;
     },

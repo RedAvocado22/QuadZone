@@ -580,3 +580,17 @@ VALUES
  49.00, 3.92, 15.00, 0.00, 67.92,
  'CONFIRMED', 'Low-value order confirmed.', '202 Birch Ln, HCMC', 8);
 
+INSERT INTO _user (created_at, email, first_name, last_name, password, role, status)
+VALUES (NOW(), 'ship01@example.com', 'Nguyễn', 'Văn Hùng',
+        '$2y$10$TyY0L134mVANXy0zQqTnrumSCgHtK4ShKvI3eg1mik/VK2XMCqC0i',
+        'SHIPPER', 'ACTIVE');
+
+INSERT INTO _user (created_at, email, first_name, last_name, password, role, status)
+VALUES (NOW(), 'ship02@example.com', 'Trần', 'Anh Quân',
+        '$2y$10$TyY0L134mVANXy0zQqTnrumSCgHtK4ShKvI3eg1mik/VK2XMCqC0i',
+        'SHIPPER', 'ACTIVE');
+
+INSERT INTO _user (created_at, email, first_name, last_name, password, role, status)
+VALUES (NOW(), 'ship03@example.com', 'Phạm', 'Minh Tú',
+        '$2y$10$TyY0L134mVANXy0zQqTnrumSCgHtK4ShKvI3eg1mik/VK2XMCqC0i',
+        'SHIPPER', 'ACTIVE');

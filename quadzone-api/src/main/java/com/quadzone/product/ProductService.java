@@ -227,8 +227,19 @@ public class ProductService {
 
     // Admin methods with admin DTOs
     @Transactional(readOnly = true)
-    public PagedResponse<ProductAdminResponse> findProductsForAdmin(int page, int size, String search) {
-        Pageable pageable = PageRequest.of(Math.max(page, 0), Math.max(size, 1), Sort.by(Sort.Direction.DESC, "createdAt"));
+    public PagedResponse<ProductAdminResponse> findProductsForAdmin(int page, int size, String search, String sortBy) {
+        // Parse sortBy parameter (e.g., "price:asc", "createdAt:desc")
+        Sort sort = Sort.by(Sort.Direction.DESC, "createdAt"); // default sort
+        if (sortBy != null && !sortBy.isBlank()) {
+            String[] parts = sortBy.split(":");
+            String field = parts[0];
+            Sort.Direction direction = parts.length > 1 && "asc".equalsIgnoreCase(parts[1]) 
+                    ? Sort.Direction.ASC 
+                    : Sort.Direction.DESC;
+            sort = Sort.by(direction, field);
+        }
+        
+        Pageable pageable = PageRequest.of(Math.max(page, 0), Math.max(size, 1), sort);
 
         Page<Product> resultPage;
         if (search != null && !search.isBlank()) {

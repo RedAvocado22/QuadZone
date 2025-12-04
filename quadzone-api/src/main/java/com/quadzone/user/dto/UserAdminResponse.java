@@ -11,8 +11,9 @@ public record UserAdminResponse(
         String email,
         String password,
         UserRole role,
-        UserStatus status
-
+        UserStatus status,
+        String avatarUrl,
+        Boolean isVerified
 ) {
     public static UserAdminResponse from(final User user) {
         return new UserAdminResponse(
@@ -22,7 +23,9 @@ public record UserAdminResponse(
                 user.getEmail(),
                 user.getPassword(),
                 user.getRole(),
-                user.getStatus()
+                user.getStatus(),
+                user.getAvatarUrl(),
+                user.getStatus() == UserStatus.ACTIVE
         );
     }
 }

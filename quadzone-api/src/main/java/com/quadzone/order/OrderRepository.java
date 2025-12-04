@@ -20,6 +20,26 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
         Page<Order> search(@Param("keyword") String keyword, Pageable pageable);
         
         /**
+         * Find orders by status
+         */
+        Page<Order> findByOrderStatus(OrderStatus status, Pageable pageable);
+
+
+        /**
+         * Search orders with status filter
+         */
+        @Query("""
+                        SELECT o
+                        FROM Order o
+                        WHERE o.orderStatus = :status
+                          AND (LOWER(COALESCE(o.user.firstName, '') || ' ' || COALESCE(o.user.lastName, ''))
+                                LIKE LOWER(CONCAT('%', :keyword, '%'))
+                           OR LOWER(COALESCE(o.user.email, '')) LIKE LOWER(CONCAT('%', :keyword, '%'))
+                           OR LOWER(COALESCE(o.orderNumber, '')) LIKE LOWER(CONCAT('%', :keyword, '%')))
+                        """)
+        Page<Order> searchByQueryAndStatus(@Param("keyword") String keyword, @Param("status") OrderStatus status, Pageable pageable);
+        
+        /**
          * Find order by order number
          */
         Optional<Order> findByOrderNumber(String orderNumber);

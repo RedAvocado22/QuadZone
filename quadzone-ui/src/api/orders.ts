@@ -10,14 +10,19 @@ export const ordersApi = {
     page?: number;
     pageSize?: number;
     search?: string;
+    status?: string;
   } = {}): Promise<PagedResponse<OrderResponse>> => {
-    const { page = 0, pageSize = 10, search = '' } = params;
+    const { page = 0, pageSize = 10, search = '', status } = params;
 
     const queryParams = new URLSearchParams({
       page: page.toString(),
       size: pageSize.toString(),
       search,
     });
+
+    if (status) {
+      queryParams.append('status', status);
+    }
 
     const response = await API.get<PagedResponse<OrderResponse>>(`/orders/admin?${queryParams.toString()}`);
     return response.data;

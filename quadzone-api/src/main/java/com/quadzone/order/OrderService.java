@@ -165,13 +165,32 @@ public class OrderService {
 
     // Admin methods
     @Transactional(readOnly = true)
-    public PagedResponse<OrderResponse> findOrders(int page, int size, String search) {
+    public PagedResponse<OrderResponse> findOrders(int page, int size, String search, String status) {
         Pageable pageable = PageRequest.of(Math.max(page, 0), Math.max(size, 1), Sort.by(Sort.Direction.DESC, "orderDate"));
 
         Page<Order> resultPage;
-        if (search != null && !search.isBlank()) {
+        
+        // Parse status if provided
+        OrderStatus orderStatus = null;
+        if (status != null && !status.isBlank()) {
+            try {
+                orderStatus = OrderStatus.valueOf(status.trim().toUpperCase());
+            } catch (IllegalArgumentException e) {
+                // Invalid status, ignore filter
+            }
+        }
+        
+        if (search != null && !search.isBlank() && orderStatus != null) {
+            // Both search and status filter
+            resultPage = orderRepository.searchByQueryAndStatus(search.trim(), orderStatus, pageable);
+        } else if (search != null && !search.isBlank()) {
+            // Only search
             resultPage = orderRepository.search(search.trim(), pageable);
+        } else if (orderStatus != null) {
+            // Only status filter
+            resultPage = orderRepository.findByOrderStatus(orderStatus, pageable);
         } else {
+            // No filters
             resultPage = orderRepository.findAll(pageable);
         }
 

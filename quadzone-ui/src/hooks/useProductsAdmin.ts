@@ -7,11 +7,7 @@ interface UseProductsOptions {
   page?: number;
   pageSize?: number;
   search?: string;
-  category?: string;
-  price?: string;
-  gender?: string[];
-  colors?: string[];
-  rating?: string;
+  sortBy?: string;
   enabled?: boolean;
 }
 
@@ -20,11 +16,7 @@ export function useProducts(options: UseProductsOptions = {}) {
     page = 0,
     pageSize = 12,
     search = '',
-    category,
-    price,
-    gender,
-    colors,
-    rating,
+    sortBy = 'newest',
     enabled = true,
   } = options;
 
@@ -44,11 +36,7 @@ export function useProducts(options: UseProductsOptions = {}) {
           page,
           pageSize,
           search,
-          category,
-          price,
-          gender,
-          colors,
-          rating,
+          sortBy,
         });
         setProducts(response.content ?? []);
         setTotal(response.page?.totalElements ?? 0);
@@ -63,7 +51,7 @@ export function useProducts(options: UseProductsOptions = {}) {
     };
 
     fetchProducts();
-  }, [page, pageSize, search, category, price, gender, colors, rating, enabled]);
+  }, [page, pageSize, search, sortBy, enabled]);
 
   const refetch = async () => {
     setLoading(true);
@@ -73,11 +61,7 @@ export function useProducts(options: UseProductsOptions = {}) {
         page,
         pageSize,
         search,
-        category,
-        price,
-        gender,
-        colors,
-        rating,
+        sortBy,
       });
       setProducts(response.content ?? []);
       setTotal(response.page?.totalElements ?? 0);

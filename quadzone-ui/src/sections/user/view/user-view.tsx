@@ -53,16 +53,19 @@ export function UserView() {
         [router]
     );
 
-    const handleDeleteUser = useCallback(
-        async (id: string) => {
-            if (window.confirm("Are you sure you want to delete this user?")) {
+    const handleToggleStatus = useCallback(
+        async (id: string, currentStatus: string) => {
+            const isSuspended = currentStatus === "SUSPENDED";
+            const action = isSuspended ? "activate" : "suspend";
+            
+            if (window.confirm(`Are you sure you want to ${action} this user?`)) {
                 try {
-                    await usersApi.delete(id);
-                    // Refetch users after deletion
+                    const newStatus = isSuspended ? "ACTIVE" : "SUSPENDED";
+                    await usersApi.update(id, { status: newStatus });
                     await refetch();
                 } catch (err) {
-                    console.error("Failed to delete user:", err);
-                    alert("Failed to delete user. Please try again.");
+                    console.error(`Failed to ${action} user:`, err);
+                    alert(`Failed to ${action} user. Please try again.`);
                 }
             }
         },
@@ -183,7 +186,7 @@ export function UserView() {
                                                 selected={table.selected.includes(row.id)}
                                                 onSelectRow={() => table.onSelectRow(row.id)}
                                                 onEdit={handleEditUser}
-                                                onDelete={handleDeleteUser}
+                                                onToggleStatus={handleToggleStatus}
                                             />
                                         ))}
 

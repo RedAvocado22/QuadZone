@@ -1,9 +1,7 @@
 package com.quadzone.blog;
 
 import java.text.Normalizer;
-import java.time.LocalDateTime;
 import java.util.List;
-import java.util.regex.Pattern;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;

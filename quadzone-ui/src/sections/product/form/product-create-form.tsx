@@ -76,11 +76,20 @@ const productCreateSchema = yup.object({
     .positive('Weight must be greater than 0')
     .nullable(),
   color: yup.string().nullable(),
-  imageUrl: yup.string().url('Must be a valid URL').nullable(),
+  imageUrl: yup.string()
+    .test('is-valid-image-path', 'Must be a valid URL or local image path', (value: string | null | undefined) => {
+      if (!value) return true; // Allow empty
+      // Allow http/https URLs
+      if (value.startsWith('http://') || value.startsWith('https://')) return true;
+      // Allow local paths from /src/assets/img or @img
+      if (value.startsWith('/src/assets/img') || value.startsWith('@img')) return true;
+      return false;
+    })
+    .nullable(),
   categoryId: yup.number().required('Category is required'),
   subCategoryId: yup.number().required('Subcategory is required'),
   imageMethod: yup.string().oneOf(['url', 'upload']).required(),
-  isActive: yup.boolean(),
+  isActive: yup.boolean().required('Active status is required').default(true),
 });
 
 export function ProductCreateForm({ onSuccess, onCancel }: ProductCreateFormProps) {

@@ -13,7 +13,9 @@ public record UserResponse(
         String email,
         UserRole role,
         LocalDateTime createdAt,
-        UserStatus status
+        UserStatus status,
+        String avatarUrl,
+        Boolean isVerified
 ) {
     public static UserResponse from(User user) {
         return new UserResponse(
@@ -23,7 +25,9 @@ public record UserResponse(
                 user.getEmail(),
                 user.getRole(),
                 user.getCreatedAt(),
-                user.getStatus()
+                user.getStatus(),
+                user.getAvatarUrl(),
+                user.getStatus() == UserStatus.ACTIVE
         );
     }
 }

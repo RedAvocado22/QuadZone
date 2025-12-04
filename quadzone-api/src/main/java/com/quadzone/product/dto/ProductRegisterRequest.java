@@ -41,7 +41,9 @@ public record ProductRegisterRequest(
 
         SubCategory subCategory,  // Allow null for now, can be set later
 
-        Category category
+        Category category,
+
+        Boolean isActive  // Active status - visible in shop
 ) {
     public static Product toProduct(ProductRegisterRequest request) {
         String imageUrl = request.imageUrl() != null && !request.imageUrl().trim().isEmpty()
@@ -60,6 +62,7 @@ public record ProductRegisterRequest(
                 .color(request.color())
                 .imageUrl(imageUrl)
                 .subCategory(request.subCategory())  // Can be null, should be set via update
+                .isActive(request.isActive() != null ? request.isActive() : true)  // Default to active
                 .build();
     }
 }

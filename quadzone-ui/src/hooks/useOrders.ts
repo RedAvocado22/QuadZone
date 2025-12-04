@@ -7,11 +7,12 @@ interface UseOrdersOptions {
   page?: number;
   pageSize?: number;
   search?: string;
+  status?: string;
   enabled?: boolean;
 }
 
 export function useOrders(options: UseOrdersOptions = {}) {
-  const { page = 0, pageSize = 10, search = '', enabled = true } = options;
+  const { page = 0, pageSize = 10, search = '', status, enabled = true } = options;
 
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(false);
@@ -25,7 +26,7 @@ export function useOrders(options: UseOrdersOptions = {}) {
       setLoading(true);
       setError(null);
       try {
-        const response = await ordersApi.getAll({ page, pageSize, search });
+        const response = await ordersApi.getAll({ page, pageSize, search, status });
         setOrders(response.content ?? []);
         setTotal(response.page?.totalElements ?? 0);
       } catch (err) {
@@ -38,13 +39,13 @@ export function useOrders(options: UseOrdersOptions = {}) {
     };
 
     fetchOrders();
-  }, [page, pageSize, search, enabled]);
+  }, [page, pageSize, search, status, enabled]);
 
   const refetch = async () => {
     setLoading(true);
     setError(null);
     try {
-      const response = await ordersApi.getAll({ page, pageSize, search });
+      const response = await ordersApi.getAll({ page, pageSize, search, status });
       setOrders(response.content ?? []);
       setTotal(response.page?.totalElements ?? 0);
     } catch (err) {
