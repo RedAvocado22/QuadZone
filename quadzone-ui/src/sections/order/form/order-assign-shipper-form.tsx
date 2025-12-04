@@ -67,7 +67,7 @@ export function OrderAssignShipperForm({ orderId, onSuccess, onCancel }: OrderAs
     loadData();
   }, [orderId]);
 
-  const handleChange = (field: keyof typeof formData) =>
+  const handleChange = (field: keyof typeof formData): React.ChangeEventHandler<HTMLInputElement | HTMLTextAreaElement> =>
     (event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
       const value = event.target.value;
       setFormData((prev) => ({
@@ -170,7 +170,7 @@ export function OrderAssignShipperForm({ orderId, onSuccess, onCancel }: OrderAs
                 ) : (
                   shippers.map((shipper) => (
                     <MenuItem key={shipper.id} value={shipper.id.toString()}>
-                      {shipper.name} ({shipper.email})
+                      {shipper.firstName} {shipper.lastName} ({shipper.email})
                     </MenuItem>
                   ))
                 )}

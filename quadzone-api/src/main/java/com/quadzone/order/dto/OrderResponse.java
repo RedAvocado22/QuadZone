@@ -10,10 +10,16 @@ public record OrderResponse(
         String customerName,
         String customerEmail,
         String customerPhone,
+        Double subtotal,
+        Double taxAmount,
+        Double shippingCost,
+        Double discountAmount,
         Double totalAmount,
         OrderStatus status,
         LocalDateTime orderDate,
-        int itemsCount
+        int itemsCount,
+        String address,
+        String notes
 ) {
     public static OrderResponse from(Order order) {
         var user = order.getUser();
@@ -38,16 +44,28 @@ public record OrderResponse(
         }
         
         int itemsCount = order.getOrderItems() != null ? order.getOrderItems().size() : 0;
+        
+        // Use stored orderNumber, fallback to generated if null (for legacy orders)
+        String orderNum = order.getOrderNumber() != null 
+                ? order.getOrderNumber() 
+                : "ORD-" + String.format("%05d", order.getId());
+        
         return new OrderResponse(
                 order.getId(),
-                "ORD-" + String.format("%05d", order.getId()),
+                orderNum,
                 customerName,
                 customerEmail,
                 customerPhone,
+                order.getSubtotal(),
+                order.getTaxAmount(),
+                order.getShippingCost(),
+                order.getDiscountAmount(),
                 order.getTotalAmount(),
                 order.getOrderStatus(),
                 order.getOrderDate(),
-                itemsCount
+                itemsCount,
+                order.getAddress(),
+                order.getNotes()
         );
     }
 }

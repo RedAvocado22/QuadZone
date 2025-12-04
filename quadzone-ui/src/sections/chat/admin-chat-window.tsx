@@ -66,8 +66,6 @@ export function AdminChatWindow({ room, onRoomUpdate }: AdminChatWindowProps) {
     const destination = `/queue/messages/${room.id}`;
 
     subscriptionRef.current = webSocketService.subscribe(destination, (message) => {
-      console.log('[Admin Chat] Received message:', message);
-
       // Handle room status updates
       if (message.type === 'ROOM_CLOSED') {
         if (onRoomUpdate) {

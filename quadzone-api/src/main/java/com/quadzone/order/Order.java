@@ -1,12 +1,12 @@
 package com.quadzone.order;
 
+import com.quadzone.discount.Coupon;
 import com.quadzone.order.dto.OrderUpdateRequest;
 import com.quadzone.payment.Payment;
 import com.quadzone.user.User;
 import jakarta.persistence.*;
 import lombok.*;
 
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -22,6 +22,9 @@ public class Order {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    @Column(unique = true)
+    private String orderNumber;
 
     @Column
     private LocalDateTime orderDate;
@@ -50,6 +53,14 @@ public class Order {
 
     @Column(columnDefinition = "TEXT")
     private String address;
+
+    // Coupon applied to this order
+    @Column(name = "coupon_code")
+    private String couponCode;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "coupon_id")
+    private Coupon coupon;
 
     // Guest customer information (snapshot for guest checkout)
     @Column(name = "customer_first_name")

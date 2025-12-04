@@ -53,11 +53,6 @@ const MiddleHeader = () => {
                                         </a>
                                     </li>
                                     <li className="nav-item u-header__nav-item">
-                                        <a className="nav-link u-header__nav-link" href="/faq">
-                                            FAQs
-                                        </a>
-                                    </li>
-                                    <li className="nav-item u-header__nav-item">
                                         <a className="nav-link u-header__nav-link" href="/contact">
                                             Contact Us
                                         </a>
@@ -74,8 +69,8 @@ const MiddleHeader = () => {
                             <div className="ml-2">
                                 <div className="phone">
                                     <strong>Support</strong>{" "}
-                                    <a href="tel:800856800604" className="text-gray-90">
-                                        (+800) 856 800 604
+                                    <a href="tel:0123456789" className="text-gray-90">
+                                        (+84) 123 456 789
                                     </a>
                                 </div>
                                 <div className="email">

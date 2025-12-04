@@ -47,9 +47,11 @@ public class OrderController {
             @Parameter(description = "Number of items per page", example = "10")
             @RequestParam(defaultValue = "10") int size,
             @Parameter(description = "Search query to filter orders by ID, customer name, or status", example = "pending")
-            @RequestParam(defaultValue = "") String search
+            @RequestParam(defaultValue = "") String search,
+            @Parameter(description = "Filter by order status (PENDING, CONFIRMED, PROCESSING, COMPLETED, CANCELLED)", example = "CONFIRMED")
+            @RequestParam(required = false) String status
     ) {
-        return ResponseEntity.ok(orderService.findOrders(page, size, search));
+        return ResponseEntity.ok(orderService.findOrders(page, size, search, status));
     }
 
     @GetMapping("/admin/{id}")

@@ -9,8 +9,9 @@ public record UserUpdateRequest(
         String email,
         String password,
         UserRole role,
-        UserStatus status
-
+        UserStatus status,
+        String avatarUrl,
+        Boolean isVerified
 ) {
 }
 

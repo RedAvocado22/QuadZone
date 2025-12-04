@@ -3,8 +3,6 @@ package com.quadzone.utils;
 import com.quadzone.blog.Blog;
 import com.quadzone.blog.dto.BlogOverviewResponse;
 import com.quadzone.product.Product;
-import com.quadzone.product.category.sub_category.SubCategory;
-import com.quadzone.product.category.sub_category.dto.SubCategoryResponse;
 import com.quadzone.product.dto.ProductDetailsResponse;
 import com.quadzone.product.dto.ProductRegisterRequest;
 import com.quadzone.product.dto.ProductResponse;

@@ -28,7 +28,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -62,9 +61,11 @@ public class AdminController {
             @Parameter(description = "Number of items per page", example = "10")
             @RequestParam(defaultValue = "10") int size,
             @Parameter(description = "Search query to filter products by name, brand, or description", example = "laptop")
-            @RequestParam(defaultValue = "") String search
+            @RequestParam(defaultValue = "") String search,
+            @Parameter(description = "Sort by field and direction (e.g., 'price:asc', 'createdAt:desc')", example = "createdAt:desc")
+            @RequestParam(required = false) String sortBy
     ) {
-        return ResponseEntity.ok(productService.findProductsForAdmin(page, size, search));
+        return ResponseEntity.ok(productService.findProductsForAdmin(page, size, search, sortBy));
     }
 
     @GetMapping("/products/{id}")

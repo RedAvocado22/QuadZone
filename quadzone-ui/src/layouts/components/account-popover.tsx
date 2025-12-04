@@ -30,11 +30,11 @@ export type AccountPopoverProps = IconButtonProps & {
 export function AccountPopover({ data = [], sx, ...other }: AccountPopoverProps) {
   const router = useRouter();
   const pathname = usePathname();
-  const { user } = useUser();
+  const { user,logout } = useUser();
 
   const [openPopover, setOpenPopover] = useState<HTMLButtonElement | null>(null);
 
-  const fullName = user?.firstname + ' ' + user?.lastname;
+  const fullName = user?.firstName + ' ' + user?.lastName;
   const displayName = fullName || 'Admin User';
   const email = user?.email || 'admin@example.com';
   const initials = fullName?.charAt(0) || 'A';
@@ -42,6 +42,11 @@ export function AccountPopover({ data = [], sx, ...other }: AccountPopoverProps)
   const handleOpenPopover = useCallback((event: React.MouseEvent<HTMLButtonElement>) => {
     setOpenPopover(event.currentTarget);
   }, []);
+
+    const handleLogout = (e: React.MouseEvent<HTMLButtonElement>) => {
+        e.preventDefault();
+        logout();
+    };
 
   const handleClosePopover = useCallback(() => {
     setOpenPopover(null);
@@ -139,7 +144,7 @@ export function AccountPopover({ data = [], sx, ...other }: AccountPopoverProps)
         <Divider sx={{ borderStyle: 'dashed' }} />
 
         <Box sx={{ p: 1 }}>
-          <Button fullWidth color="error" size="medium" variant="text">
+          <Button fullWidth color="error" size="medium" variant="text" onClick={handleLogout}>
             Logout
           </Button>
         </Box>

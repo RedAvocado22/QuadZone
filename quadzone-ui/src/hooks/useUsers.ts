@@ -26,8 +26,8 @@ export function useUsers(options: UseUsersOptions = {}) {
       setError(null);
       try {
         const response = await usersApi.getAll({ page, pageSize, search });
-        setUsers(response.data);
-        setTotal(response.total);
+        setUsers(response.content ?? []);
+        setTotal(response.page?.totalElements ?? 0);
       } catch (err) {
         setError(err instanceof Error ? err : new Error('Failed to fetch users'));
         // Fallback to empty array on error
@@ -46,8 +46,8 @@ export function useUsers(options: UseUsersOptions = {}) {
     setError(null);
     try {
       const response = await usersApi.getAll({ page, pageSize, search });
-      setUsers(response.data);
-      setTotal(response.total);
+      setUsers(response.content ?? []);
+      setTotal(response.page?.totalElements ?? 0);
     } catch (err) {
       setError(err instanceof Error ? err : new Error('Failed to fetch users'));
     } finally {

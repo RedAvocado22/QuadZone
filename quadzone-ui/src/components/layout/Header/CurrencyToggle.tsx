@@ -12,7 +12,6 @@ const CurrencyToggle = () => {
     const handleToggle = (e: React.MouseEvent) => {
         e.preventDefault();
         e.stopPropagation();
-        console.log("Toggle clicked, current isOpen:", isOpen);
         
         if (buttonRef.current) {
             const rect = buttonRef.current.getBoundingClientRect();
@@ -28,7 +27,6 @@ const CurrencyToggle = () => {
     const handleCurrencyChange = (newCurrency: "USD" | "VND", e: React.MouseEvent) => {
         e.preventDefault();
         e.stopPropagation();
-        console.log("Currency change clicked:", newCurrency);
         setCurrency(newCurrency);
         setIsOpen(false);
     };

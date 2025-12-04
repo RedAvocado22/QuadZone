@@ -13,6 +13,7 @@ public record ProductUpdateRequest(
         Double weight,
         String color,
         String imageUrl,
-        SubCategory subCategory
+        SubCategory subCategory,
+        Boolean isActive
 ) {
 }

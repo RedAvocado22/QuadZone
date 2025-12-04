@@ -1,13 +1,18 @@
 package com.quadzone.discount;
 
+import com.quadzone.order.Order;
 import jakarta.persistence.*;
 import lombok.Data;
+import lombok.ToString;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "coupons")
 @Data
+@ToString(exclude = "orders")
 public class Coupon {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -31,4 +36,8 @@ public class Coupon {
     private LocalDateTime startDate;
     private LocalDateTime endDate;
     private boolean isActive;
+
+    // Orders that used this coupon
+    @OneToMany(mappedBy = "coupon")
+    private List<Order> orders = new ArrayList<>();
 }

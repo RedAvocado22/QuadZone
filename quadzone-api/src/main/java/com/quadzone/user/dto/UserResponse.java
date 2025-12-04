@@ -8,20 +8,26 @@ import java.time.LocalDateTime;
 
 public record UserResponse(
         Long id,
-        String name,
+        String firstName,
+        String lastName,
         String email,
         UserRole role,
         LocalDateTime createdAt,
-        UserStatus status
+        UserStatus status,
+        String avatarUrl,
+        Boolean isVerified
 ) {
     public static UserResponse from(User user) {
         return new UserResponse(
                 user.getId(),
-                user.getFullName(),
+                user.getFirstName(),
+                user.getLastName(),
                 user.getEmail(),
                 user.getRole(),
                 user.getCreatedAt(),
-                user.getStatus()
+                user.getStatus(),
+                user.getAvatarUrl(),
+                user.getStatus() == UserStatus.ACTIVE
         );
     }
 }
