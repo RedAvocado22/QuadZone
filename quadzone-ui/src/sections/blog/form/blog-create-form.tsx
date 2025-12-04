@@ -38,7 +38,12 @@ const blogCreateSchema = yup.object({
     .min(100, 'Content must be at least 100 characters'),
   thumbnailUrl: yup
     .string()
-    .url('Thumbnail URL must be a valid URL')
+    .test('is-valid-image-path', 'Must be a valid URL or local image path', (value: string | null | undefined) => {
+      if (!value) return true;
+      if (value.startsWith('http://') || value.startsWith('https://')) return true;
+      if (value.startsWith('/src/assets/img') || value.startsWith('@img')) return true;
+      return false;
+    })
     .nullable(),
   status: yup
     .string()

@@ -11,21 +11,13 @@ export const productsApi = {
     page?: number;
     pageSize?: number;
     search?: string;
-    category?: string;
-    price?: string;
-    gender?: string[];
-    colors?: string[];
-    rating?: string;
+    sortBy?: string;
   }): Promise<PagedResponse<ProductAdminResponse>> => {
     const {
       page = 0,
       pageSize = 12,
       search = '',
-      category,
-      price,
-      gender,
-      colors,
-      rating,
+      sortBy = 'newest',
     } = params ?? {};
 
     const queryParams = new URLSearchParams({
@@ -34,11 +26,21 @@ export const productsApi = {
       search,
     });
 
-    if (category) queryParams.append('category', category);
-    if (price) queryParams.append('price', price);
-    if (gender) queryParams.append('gender', gender.join(','));
-    if (colors) queryParams.append('colors', colors.join(','));
-    if (rating) queryParams.append('rating', rating);
+    // Map frontend sort options to backend sort format
+    if (sortBy) {
+      switch (sortBy) {
+        case 'priceDesc':
+          queryParams.append('sortBy', 'price:desc');
+          break;
+        case 'priceAsc':
+          queryParams.append('sortBy', 'price:asc');
+          break;
+        case 'newest':
+        default:
+          queryParams.append('sortBy', 'createdAt:desc');
+          break;
+      }
+    }
 
     const response = await API.get<PagedResponse<ProductAdminResponse>>(`/admin/products?${queryParams.toString()}`);
     return response.data;
@@ -64,7 +66,8 @@ export const productsApi = {
       color: product.color || '',
       imageUrl: product.imageUrl || '',
       subCategory: product.subCategoryId ? { id: product.subCategoryId } : null,
-      category: product.categoryId ? { id:product.categoryId } : null
+      category: product.categoryId ? { id: product.categoryId } : null,
+      isActive: product.isActive ?? true,
     }; 
 
     const response = await API.post<ProductAdminResponse>('/products', requestBody);

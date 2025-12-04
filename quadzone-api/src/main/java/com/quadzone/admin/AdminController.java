@@ -45,23 +45,30 @@ public class AdminController {
         private final SubCategoryService subCategoryService;
         private final UploadService uploadService;
 
-        @GetMapping("/products")
-        @Operation(summary = "Get all products (Admin)", description = "Retrieve a paginated list of all products with optional search functionality. "
-                        +
-                        "Supports pagination with configurable page size and search by product name, brand, or description. "
-                        +
-                        "Returns a PagedResponse containing the product list, total count, and pagination metadata.")
-        @ApiResponses(value = {
-                        @ApiResponse(responseCode = "200", description = "Successfully retrieved products list"),
-                        @ApiResponse(responseCode = "400", description = "Invalid pagination parameters"),
-                        @ApiResponse(responseCode = "500", description = "Internal server error")
-        })
-        public ResponseEntity<PagedResponse<ProductAdminResponse>> getProducts(
-                        @Parameter(description = "Page number (0-indexed)", example = "0") @RequestParam(defaultValue = "0") int page,
-                        @Parameter(description = "Number of items per page", example = "10") @RequestParam(defaultValue = "10") int size,
-                        @Parameter(description = "Search query to filter products by name, brand, or description", example = "laptop") @RequestParam(defaultValue = "") String search) {
-                return ResponseEntity.ok(productService.findProductsForAdmin(page, size, search));
-        }
+    @GetMapping("/products")
+    @Operation(
+            summary = "Get all products (Admin)",
+            description = "Retrieve a paginated list of all products with optional search functionality. " +
+                    "Supports pagination with configurable page size and search by product name, brand, or description. " +
+                    "Returns a PagedResponse containing the product list, total count, and pagination metadata."
+    )
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Successfully retrieved products list"),
+            @ApiResponse(responseCode = "400", description = "Invalid pagination parameters"),
+            @ApiResponse(responseCode = "500", description = "Internal server error")
+    })
+    public ResponseEntity<PagedResponse<ProductAdminResponse>> getProducts(
+            @Parameter(description = "Page number (0-indexed)", example = "0")
+            @RequestParam(defaultValue = "0") int page,
+            @Parameter(description = "Number of items per page", example = "10")
+            @RequestParam(defaultValue = "10") int size,
+            @Parameter(description = "Search query to filter products by name, brand, or description", example = "laptop")
+            @RequestParam(defaultValue = "") String search,
+            @Parameter(description = "Sort by field and direction (e.g., 'price:asc', 'createdAt:desc')", example = "createdAt:desc")
+            @RequestParam(required = false) String sortBy
+    ) {
+        return ResponseEntity.ok(productService.findProductsForAdmin(page, size, search, sortBy));
+    }
 
         @GetMapping("/products/{id}")
         @Operation(summary = "Get product by ID (Admin)", description = "Retrieve detailed information about a specific product by its unique identifier. "

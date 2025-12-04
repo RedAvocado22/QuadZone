@@ -111,7 +111,6 @@ const ShopControlBar = ({
             onChange={(e) => onSortChange(e.target.value as SortOption)}
           >
             <option value="default">Default sorting</option>
-            <option value="popularity">Sort by popularity</option>
             <option value="latest">Sort by latest</option>
             <option value="price-low">Sort by price: low to high</option>
             <option value="price-high">Sort by price: high to low</option>

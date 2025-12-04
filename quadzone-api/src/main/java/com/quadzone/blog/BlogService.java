@@ -1,9 +1,7 @@
 package com.quadzone.blog;
 
 import java.text.Normalizer;
-import java.time.LocalDateTime;
 import java.util.List;
-import java.util.regex.Pattern;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -92,14 +90,14 @@ public class BlogService {
                 }
             }
 
-            return new PagedResponse<>(
+            return PagedResponse.of(
                     blogs.getContent().stream().map(BlogDetailResponse::from).toList(),
                     blogs.getTotalElements(),
                     blogs.getNumber(),
                     blogs.getSize());
         } catch (Exception e) {
             log.error("Error fetching blogs for admin", e);
-            return new PagedResponse<>(List.of(), 0, page, size);
+            return PagedResponse.of(List.of(), 0, page, size);
         }
     }
 

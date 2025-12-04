@@ -144,12 +144,27 @@ public class ProductService {
         return (root, query, criteriaBuilder) -> {
             List<Predicate> predicates = new ArrayList<>();
             
-            // Filter by brand (case-insensitive)
+            // Filter by brand(s) (case-insensitive)
+            // Supports comma-separated brands: "Brand1,Brand2,Brand3"
             if (brand != null && !brand.trim().isEmpty()) {
-                predicates.add(criteriaBuilder.equal(
-                    criteriaBuilder.lower(root.get("brand")), 
-                    brand.toLowerCase().trim()
-                ));
+                String[] brands = brand.split(",");
+                if (brands.length == 1) {
+                    // Single brand
+                    predicates.add(criteriaBuilder.equal(
+                        criteriaBuilder.lower(root.get("brand")), 
+                        brands[0].toLowerCase().trim()
+                    ));
+                } else {
+                    // Multiple brands - use OR clause
+                    List<Predicate> brandPredicates = new ArrayList<>();
+                    for (String b : brands) {
+                        brandPredicates.add(criteriaBuilder.equal(
+                            criteriaBuilder.lower(root.get("brand")), 
+                            b.toLowerCase().trim()
+                        ));
+                    }
+                    predicates.add(criteriaBuilder.or(brandPredicates.toArray(new Predicate[0])));
+                }
             }
             
             // IMPORTANT: Product only has SubCategory, not Category directly
@@ -210,7 +225,7 @@ public class ProductService {
                 .map(objectMapper::toProductResponse)
                 .toList();
 
-        return new PagedResponse<>(
+        return PagedResponse.of(
                 products,
                 resultPage.getTotalElements(),
                 resultPage.getNumber(),
@@ -227,8 +242,19 @@ public class ProductService {
 
     // Admin methods with admin DTOs
     @Transactional(readOnly = true)
-    public PagedResponse<ProductAdminResponse> findProductsForAdmin(int page, int size, String search) {
-        Pageable pageable = PageRequest.of(Math.max(page, 0), Math.max(size, 1), Sort.by(Sort.Direction.DESC, "createdAt"));
+    public PagedResponse<ProductAdminResponse> findProductsForAdmin(int page, int size, String search, String sortBy) {
+        // Parse sortBy parameter (e.g., "price:asc", "createdAt:desc")
+        Sort sort = Sort.by(Sort.Direction.DESC, "createdAt"); // default sort
+        if (sortBy != null && !sortBy.isBlank()) {
+            String[] parts = sortBy.split(":");
+            String field = parts[0];
+            Sort.Direction direction = parts.length > 1 && "asc".equalsIgnoreCase(parts[1]) 
+                    ? Sort.Direction.ASC 
+                    : Sort.Direction.DESC;
+            sort = Sort.by(direction, field);
+        }
+        
+        Pageable pageable = PageRequest.of(Math.max(page, 0), Math.max(size, 1), sort);
 
         Page<Product> resultPage;
         if (search != null && !search.isBlank()) {
@@ -241,7 +267,7 @@ public class ProductService {
                 .map(ProductAdminResponse::from)
                 .toList();
 
-        return new PagedResponse<>(
+        return PagedResponse.of(
                 products,
                 resultPage.getTotalElements(),
                 resultPage.getNumber(),

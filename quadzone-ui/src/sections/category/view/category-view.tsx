@@ -382,7 +382,7 @@ function CategoryOrSubcategoryRow({
     onEdit?.(row.id);
   }, [onEdit, row.id, handleClosePopover]);
 
-  const handleDelete = useCallback(() => {
+  const handleToggleStatus = useCallback(() => {
     handleClosePopover();
     onDelete?.(row.id);
   }, [onDelete, row.id, handleClosePopover]);
@@ -410,7 +410,7 @@ function CategoryOrSubcategoryRow({
           </Label>
         </TableCell>
 
-        <TableCell align="right">
+        <TableCell align="center">
           <IconButton onClick={handleOpenPopover}>
             <Iconify icon="eva:more-vertical-fill" />
           </IconButton>

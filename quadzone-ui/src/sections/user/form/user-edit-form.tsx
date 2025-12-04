@@ -84,11 +84,9 @@ export function UserEditForm({ userId, onSuccess, onCancel }: UserEditFormProps)
                     isVerified: values.isVerified,
                     status: values.status
                 };
-                console.log(userData);
                 await usersApi.update(userId, userData);
 
                 if (onSuccess) {
-                    console.log(userData);
                     onSuccess();
                 }
             } catch (error: any) {
@@ -107,7 +105,6 @@ export function UserEditForm({ userId, onSuccess, onCancel }: UserEditFormProps)
             try {
                 const user = await usersApi.getById(userId);
                 const avatarMethod = user.avatarUrl?.startsWith("data:") ? "upload" : "url";
-                console.log(user);
 
                 formik.setValues({
                     firstName: user.firstName || "",

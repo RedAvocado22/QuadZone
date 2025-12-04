@@ -3,6 +3,7 @@ package com.quadzone.order;
 import com.quadzone.global.dto.PagedResponse;
 import com.quadzone.order.dto.AssignOrderToShipperRequest;
 import com.quadzone.order.dto.CheckoutRequest;
+import com.quadzone.order.dto.OrderDetailsResponse;
 import com.quadzone.order.dto.OrderRegisterRequest;
 import com.quadzone.order.dto.OrderResponse;
 import com.quadzone.order.dto.OrderStatusResponse;
@@ -47,9 +48,11 @@ public class OrderController {
             @Parameter(description = "Number of items per page", example = "10")
             @RequestParam(defaultValue = "10") int size,
             @Parameter(description = "Search query to filter orders by ID, customer name, or status", example = "pending")
-            @RequestParam(defaultValue = "") String search
+            @RequestParam(defaultValue = "") String search,
+            @Parameter(description = "Filter by order status (PENDING, CONFIRMED, PROCESSING, COMPLETED, CANCELLED)", example = "CONFIRMED")
+            @RequestParam(required = false) String status
     ) {
-        return ResponseEntity.ok(orderService.findOrders(page, size, search));
+        return ResponseEntity.ok(orderService.findOrders(page, size, search, status));
     }
 
     @GetMapping("/admin/{id}")
@@ -111,6 +114,47 @@ public class OrderController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(statusResponse);
         }
         return ResponseEntity.ok(statusResponse);
+    }
+
+    // User-specific endpoint for viewing own orders
+    @GetMapping("/my-orders")
+    @Operation(
+            summary = "Get my orders",
+            description = "Retrieve a paginated list of orders for the currently authenticated user. " +
+                    "Requires authentication. Returns orders sorted by date descending."
+    )
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Successfully retrieved user's orders"),
+            @ApiResponse(responseCode = "401", description = "User not authenticated"),
+            @ApiResponse(responseCode = "404", description = "User not found")
+    })
+    public ResponseEntity<PagedResponse<OrderResponse>> getMyOrders(
+            @Parameter(description = "Page number (0-indexed)", example = "0")
+            @RequestParam(defaultValue = "0") int page,
+            @Parameter(description = "Number of items per page", example = "10")
+            @RequestParam(defaultValue = "10") int size
+    ) {
+        return ResponseEntity.ok(orderService.getMyOrders(page, size));
+    }
+
+    // User-specific endpoint for viewing own order details with items
+    @GetMapping("/my-orders/{id}")
+    @Operation(
+            summary = "Get my order details",
+            description = "Retrieve detailed information about a specific order for the currently authenticated user. " +
+                    "Includes order items with product information. Requires authentication."
+    )
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Successfully retrieved order details"),
+            @ApiResponse(responseCode = "401", description = "User not authenticated"),
+            @ApiResponse(responseCode = "403", description = "Order does not belong to user"),
+            @ApiResponse(responseCode = "404", description = "Order not found")
+    })
+    public ResponseEntity<OrderDetailsResponse> getMyOrderDetails(
+            @Parameter(description = "Unique identifier of the order", example = "1", required = true)
+            @PathVariable Long id
+    ) {
+        return ResponseEntity.ok(orderService.getMyOrderDetails(id));
     }
 
     // Regular endpoints

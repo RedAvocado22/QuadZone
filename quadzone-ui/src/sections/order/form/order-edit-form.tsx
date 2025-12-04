@@ -11,7 +11,8 @@ import CircularProgress from '@mui/material/CircularProgress';
 import MenuItem from '@mui/material/MenuItem';
 
 import { DashboardContent } from 'src/layouts/dashboard';
-import { ordersApi, type Order } from 'src/api/orders';
+import { ordersApi } from 'src/api/orders';
+import type { OrderStatus } from 'src/api/types';
 
 // ----------------------------------------------------------------------
 
@@ -21,8 +22,7 @@ interface OrderEditFormProps {
   onCancel?: () => void;
 }
 
-const STATUS_OPTIONS: Order['status'][] = ['pending', 'processing', 'completed', 'cancelled'];
-const PAYMENT_STATUS_OPTIONS: Order['paymentStatus'][] = ['pending', 'paid', 'failed'];
+const STATUS_OPTIONS: OrderStatus[] = ['PENDING', 'CONFIRMED', 'PROCESSING', 'COMPLETED', 'CANCELLED'];
 
 export function OrderEditForm({ orderId, onSuccess, onCancel }: OrderEditFormProps) {
   const [loading, setLoading] = useState(false);
@@ -32,11 +32,14 @@ export function OrderEditForm({ orderId, onSuccess, onCancel }: OrderEditFormPro
   const [formData, setFormData] = useState({
     orderNumber: '',
     customerName: '',
-    total: 0,
-    items: 1,
-    status: 'pending' as Order['status'],
-    paymentStatus: 'pending' as Order['paymentStatus'],
-    createdAt: new Date().toISOString().slice(0, 10),
+    subtotal: 0,
+    taxAmount: 0,
+    shippingCost: 0,
+    discountAmount: 0,
+    totalAmount: 0,
+    orderStatus: 'PENDING' as OrderStatus,
+    notes: '',
+    address: '',
   });
 
   useEffect(() => {
@@ -48,11 +51,14 @@ export function OrderEditForm({ orderId, onSuccess, onCancel }: OrderEditFormPro
         setFormData({
           orderNumber: order.orderNumber || '',
           customerName: order.customerName || '',
-          total: order.total ?? 0,
-          items: order.items ?? 0,
-          status: order.status || 'pending',
-          paymentStatus: order.paymentStatus || 'pending',
-          createdAt: order.createdAt ? new Date(order.createdAt).toISOString().slice(0, 10) : new Date().toISOString().slice(0, 10),
+          subtotal: order.subtotal ?? 0,
+          taxAmount: order.taxAmount ?? 0,
+          shippingCost: order.shippingCost ?? 0,
+          discountAmount: order.discountAmount ?? 0,
+          totalAmount: order.totalAmount ?? 0,
+          orderStatus: order.status || 'PENDING',
+          notes: order.notes || '',
+          address: order.address || '',
         });
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to load order');
@@ -69,7 +75,9 @@ export function OrderEditForm({ orderId, onSuccess, onCancel }: OrderEditFormPro
       const value = event.target.value;
       setFormData((prev) => ({
         ...prev,
-        [field]: ['total', 'items'].includes(field) ? Number(value) : value,
+        [field]: ['subtotal', 'taxAmount', 'shippingCost', 'discountAmount', 'totalAmount'].includes(field)
+          ? Number(value)
+          : value,
       }));
       setError(null);
     };
@@ -78,24 +86,18 @@ export function OrderEditForm({ orderId, onSuccess, onCancel }: OrderEditFormPro
     event.preventDefault();
     setError(null);
 
-    if (!formData.orderNumber || !formData.customerName) {
-      setError('Order number and customer name are required');
-      return;
-    }
-
-    const payload: Partial<Order> = {
-      orderNumber: formData.orderNumber,
-      customerName: formData.customerName,
-      total: Number(formData.total) || 0,
-      items: Number(formData.items) || 0,
-      status: formData.status,
-      paymentStatus: formData.paymentStatus,
-      createdAt: new Date(formData.createdAt).toISOString(),
-    };
-
     setLoading(true);
     try {
-      await ordersApi.update(orderId, payload);
+      await ordersApi.update(orderId, {
+        subtotal: formData.subtotal,
+        taxAmount: formData.taxAmount,
+        shippingCost: formData.shippingCost,
+        discountAmount: formData.discountAmount,
+        totalAmount: formData.totalAmount,
+        orderStatus: formData.orderStatus,
+        notes: formData.notes || undefined,
+        address: formData.address || undefined,
+      });
       if (onSuccess) {
         onSuccess();
       }
@@ -131,21 +133,27 @@ export function OrderEditForm({ orderId, onSuccess, onCancel }: OrderEditFormPro
             <Stack spacing={3}>
               {error && <Alert severity="error">{error}</Alert>}
 
-              <TextField
-                fullWidth
-                label="Order Number"
-                required
-                value={formData.orderNumber}
-                onChange={handleChange('orderNumber')}
-              />
+              <Box
+                sx={{
+                  display: 'grid',
+                  gap: 2,
+                  gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)' },
+                }}
+              >
+                <TextField
+                  fullWidth
+                  label="Order Number"
+                  value={formData.orderNumber}
+                  disabled
+                />
 
-              <TextField
-                fullWidth
-                label="Customer Name"
-                required
-                value={formData.customerName}
-                onChange={handleChange('customerName')}
-              />
+                <TextField
+                  fullWidth
+                  label="Customer Name"
+                  value={formData.customerName}
+                  disabled
+                />
+              </Box>
 
               <Box
                 sx={{
@@ -157,19 +165,19 @@ export function OrderEditForm({ orderId, onSuccess, onCancel }: OrderEditFormPro
                 <TextField
                   fullWidth
                   type="number"
-                  label="Total"
-                  value={formData.total}
-                  onChange={handleChange('total')}
+                  label="Subtotal"
+                  value={formData.subtotal}
+                  onChange={handleChange('subtotal')}
                   inputProps={{ min: 0, step: 0.01 }}
                 />
 
                 <TextField
                   fullWidth
                   type="number"
-                  label="Items"
-                  value={formData.items}
-                  onChange={handleChange('items')}
-                  inputProps={{ min: 0 }}
+                  label="Tax Amount"
+                  value={formData.taxAmount}
+                  onChange={handleChange('taxAmount')}
+                  inputProps={{ min: 0, step: 0.01 }}
                 />
               </Box>
 
@@ -181,28 +189,49 @@ export function OrderEditForm({ orderId, onSuccess, onCancel }: OrderEditFormPro
                 }}
               >
                 <TextField
-                  select
                   fullWidth
-                  label="Status"
-                  value={formData.status}
-                  onChange={handleChange('status')}
-                >
-                  {STATUS_OPTIONS.map((option) => (
-                    <MenuItem key={option} value={option} sx={{ textTransform: 'capitalize' }}>
-                      {option}
-                    </MenuItem>
-                  ))}
-                </TextField>
+                  type="number"
+                  label="Shipping Cost"
+                  value={formData.shippingCost}
+                  onChange={handleChange('shippingCost')}
+                  inputProps={{ min: 0, step: 0.01 }}
+                />
+
+                <TextField
+                  fullWidth
+                  type="number"
+                  label="Discount Amount"
+                  value={formData.discountAmount}
+                  onChange={handleChange('discountAmount')}
+                  inputProps={{ min: 0, step: 0.01 }}
+                />
+              </Box>
+
+              <Box
+                sx={{
+                  display: 'grid',
+                  gap: 2,
+                  gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)' },
+                }}
+              >
+                <TextField
+                  fullWidth
+                  type="number"
+                  label="Total Amount"
+                  value={formData.totalAmount}
+                  onChange={handleChange('totalAmount')}
+                  inputProps={{ min: 0, step: 0.01 }}
+                />
 
                 <TextField
                   select
                   fullWidth
-                  label="Payment Status"
-                  value={formData.paymentStatus}
-                  onChange={handleChange('paymentStatus')}
+                  label="Status"
+                  value={formData.orderStatus}
+                  onChange={handleChange('orderStatus')}
                 >
-                  {PAYMENT_STATUS_OPTIONS.map((option) => (
-                    <MenuItem key={option} value={option} sx={{ textTransform: 'capitalize' }}>
+                  {STATUS_OPTIONS.map((option) => (
+                    <MenuItem key={option} value={option}>
                       {option}
                     </MenuItem>
                   ))}
@@ -211,11 +240,20 @@ export function OrderEditForm({ orderId, onSuccess, onCancel }: OrderEditFormPro
 
               <TextField
                 fullWidth
-                type="date"
-                label="Created At"
-                InputLabelProps={{ shrink: true }}
-                value={formData.createdAt}
-                onChange={handleChange('createdAt')}
+                label="Address"
+                multiline
+                rows={2}
+                value={formData.address}
+                onChange={handleChange('address')}
+              />
+
+              <TextField
+                fullWidth
+                label="Notes"
+                multiline
+                rows={2}
+                value={formData.notes}
+                onChange={handleChange('notes')}
               />
 
               <Box sx={{ display: 'flex', gap: 2, justifyContent: 'flex-end' }}>

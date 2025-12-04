@@ -27,7 +27,7 @@ export const getProducts = async (params: ProductFilterParams = {}): Promise<Pag
         if (params.search) requestParams.search = params.search;
         if (params.categoryId !== undefined) requestParams.categoryId = params.categoryId;
         if (params.subcategoryId !== undefined) requestParams.subcategoryId = params.subcategoryId;
-        if (params.brand) requestParams.brands = params.brand;
+        if (params.brand) requestParams.brand = params.brand;
         if (params.minPrice !== undefined) requestParams.minPrice = params.minPrice;
         if (params.maxPrice !== undefined) requestParams.maxPrice = params.maxPrice;
         if (params.sortBy) requestParams.sortBy = params.sortBy;

@@ -24,7 +24,7 @@ const BlogDetailPage: React.FC = () => {
     useEffect(() => {
         const fetchBlogDetail = async () => {
             if (!slug) {
-                navigate("/blog");
+                navigate("/blogs");
                 return;
             }
 
@@ -101,7 +101,7 @@ const BlogDetailPage: React.FC = () => {
                 <div className="alert alert-danger" role="alert">
                     {error || "Blog post not found"}
                 </div>
-                <Link to="/blog" className="btn btn-primary">
+                <Link to="/blogs" className="btn btn-primary">
                     Back to Blog
                 </Link>
             </div>
@@ -120,7 +120,7 @@ const BlogDetailPage: React.FC = () => {
                                     <Link to="/">Home</Link>
                                 </li>
                                 <li className="breadcrumb-item flex-shrink-0 flex-xl-shrink-1">
-                                    <Link to="/blog">Blog</Link>
+                                    <Link to="/blogs">Blog</Link>
                                 </li>
                                 <li
                                     className="breadcrumb-item flex-shrink-0 flex-xl-shrink-1 active"
@@ -311,7 +311,7 @@ const BlogDetailPage: React.FC = () => {
                     <div className="col-xl-3 col-wd">
                         <BlogSidebar
                             recentPosts={recentPosts}
-                            onSearch={(query) => navigate(`/blog?search=${query}`)}
+                            onSearch={(query) => navigate(`/blogs?search=${query}`)}
                         />
                     </div>
                 </div>

@@ -34,18 +34,9 @@ export interface UpdateBlogStatusRequest {
 export const getBlogs = async (params: BlogFilterParams = {}): Promise<PagedResponse<BlogOverviewResponse>> => {
     try {
         const response = await API.get('/public/blogs', { params });
-        // Backend returns { data, total, page, pageSize }
-        // Convert to frontend PagedResponse format { content, page: { size, number, totalElements, totalPages } }
-        const backendData = response.data;
-        return {
-            content: backendData.data || [],
-            page: {
-                size: backendData.pageSize || 10,
-                number: backendData.page || 0,
-                totalElements: backendData.total || 0,
-                totalPages: Math.ceil((backendData.total || 0) / (backendData.pageSize || 10))
-            }
-        };
+        // Backend returns PagedResponse format: { content: [], page: { size, number, totalElements, totalPages } }
+        // This matches our frontend PagedResponse type, no transformation needed
+        return response.data;
     } catch (error) {
         console.error('Error fetching blogs:', error);
         throw error;
@@ -73,8 +64,8 @@ export const getRecentBlogs = async (limit: number = 5): Promise<BlogOverviewRes
         const response = await API.get('/public/blog', { 
             params: { page: 0, size: limit } 
         });
-        // Backend returns { data, total, page, pageSize }
-        return response.data.data || [];
+        // Backend returns PagedResponse format: { content: [], page: {...} }
+        return response.data.content || [];
     } catch (error) {
         console.error('Error fetching recent blogs:', error);
         throw error;
@@ -197,25 +188,10 @@ export const deleteBlog = async (id: number): Promise<void> => {
 export const getAdminBlogs = async (params: BlogFilterParams = {}): Promise<PagedResponse<BlogDetailResponse>> => {
     try {
         const response = await API.get('/admin/blogs', { params });
-        console.log('getAdminBlogs raw response:', response);
-        console.log('getAdminBlogs response.data:', response.data);
         
-        // Backend returns: { data: [], total: number, page: number, pageSize: number }
-        // Frontend expects: { content: [], page: { size, number, totalElements, totalPages } }
-        const { data, total, page, pageSize } = response.data;
-        
-        const transformedResponse: PagedResponse<BlogDetailResponse> = {
-            content: data || [],
-            page: {
-                size: pageSize || 10,
-                number: page || 0,
-                totalElements: total || 0,
-                totalPages: Math.ceil((total || 0) / (pageSize || 10))
-            }
-        };
-        
-        console.log('Transformed response:', transformedResponse);
-        return transformedResponse;
+        // Backend returns PagedResponse format: { content: [], page: { size, number, totalElements, totalPages } }
+        // This matches our frontend PagedResponse type, no transformation needed
+        return response.data;
     } catch (error) {
         console.error('Error fetching admin blogs:', error);
         throw error;

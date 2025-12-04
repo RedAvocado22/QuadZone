@@ -39,17 +39,14 @@ export class WebSocketService {
                 connectHeaders: {
                     Authorization: `Bearer ${config.token}`,
                 },
-                debug: (str) => {
-                    console.log('[WebSocket Debug]', str);
-                },
+                debug: () => {},
                 reconnectDelay: this.reconnectDelay,
                 heartbeatIncoming: 4000,
                 heartbeatOutgoing: 4000,
             });
             
             // Set up connection handlers
-            this.client.onConnect = (frame) => {
-                console.log('[WebSocket] Connected:', frame);
+            this.client.onConnect = (_frame) => {
                 this.reconnectAttempts = 0;
                 
                 if (config.onConnect) {
@@ -59,9 +56,7 @@ export class WebSocketService {
                 resolve();
             };
             
-            this.client.onDisconnect = (frame) => {
-                console.log('[WebSocket] Disconnected:', frame);
-                
+            this.client.onDisconnect = (_frame) => {
                 if (config.onDisconnect) {
                     config.onDisconnect();
                 }
@@ -102,16 +97,12 @@ export class WebSocketService {
     private attemptReconnect(): void {
         this.reconnectAttempts++;
         
-        console.log(`[WebSocket] Reconnection attempt ${this.reconnectAttempts}/${this.maxReconnectAttempts}`);
-        
         setTimeout(() => {
             if (this.config && this.client) {
                 // Get fresh token before reconnecting
                 const freshToken = this.config.getToken ? this.config.getToken() : this.config.token;
                 
                 if (freshToken) {
-                    console.log('[WebSocket] Using fresh token for reconnection');
-                    
                     // Update the client with fresh token
                     this.client.configure({
                         webSocketFactory: () => {
@@ -144,7 +135,6 @@ export class WebSocketService {
             
             // Deactivate the client
             this.client.deactivate();
-            console.log('[WebSocket] Disconnected manually');
         }
     }
     
@@ -170,7 +160,6 @@ export class WebSocketService {
         const subscriptionId = `sub-${Date.now()}-${Math.random()}`;
         this.subscriptions.set(subscriptionId, subscription);
         
-        console.log(`[WebSocket] Subscribed to ${destination}`);
         return subscriptionId;
     }
     
@@ -182,7 +171,6 @@ export class WebSocketService {
         if (subscription) {
             subscription.unsubscribe();
             this.subscriptions.delete(subscriptionId);
-            console.log(`[WebSocket] Unsubscribed from ${subscriptionId}`);
         }
     }
     
@@ -201,8 +189,6 @@ export class WebSocketService {
             body: messageBody,
             headers,
         });
-        
-        console.log(`[WebSocket] Sent message to ${destination}:`, body);
     }
     
     /**

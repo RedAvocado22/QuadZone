@@ -1,25 +1,28 @@
 import API from "./base";
-import type { OrderResponse, PagedResponse } from "./types";
+import type { OrderResponse, OrderCreateRequest, OrderUpdateRequest, PagedResponse, OrderStatus } from "./types";
 
 // Re-export for convenience
-export type { OrderResponse as Order } from "./types";
-export type { PagedResponse as OrdersResponse } from "./types";
+export type { OrderResponse as Order, OrderDetailsResponse as OrderDetails } from "./types";
+export type { SimplePagedResponse as OrdersResponse } from "./types";
 
 export const ordersApi = {
   getAll: async (params: {
     page?: number;
     pageSize?: number;
     search?: string;
-    sortBy?: string;
-    sortOrder?: 'asc' | 'desc';
+    status?: string;
   } = {}): Promise<PagedResponse<OrderResponse>> => {
-    const { page = 0, pageSize = 10, search = '' } = params;
+    const { page = 0, pageSize = 10, search = '', status } = params;
 
     const queryParams = new URLSearchParams({
       page: page.toString(),
       size: pageSize.toString(),
       search,
     });
+
+    if (status) {
+      queryParams.append('status', status);
+    }
 
     const response = await API.get<PagedResponse<OrderResponse>>(`/orders/admin?${queryParams.toString()}`);
     return response.data;
@@ -30,29 +33,13 @@ export const ordersApi = {
     return response.data;
   },
 
-  create: async (order: { userId: number; totalAmount: number; status?: OrderResponse['status']; subtotal?: number; taxAmount?: number; shippingCost?: number; discountAmount?: number; notes?: string; address?: string }): Promise<OrderResponse> => {
-    const requestBody = {
-      userId: order.userId,
-      subtotal: order.subtotal ?? order.totalAmount * 0.9,
-      taxAmount: order.taxAmount ?? order.totalAmount * 0.1,
-      shippingCost: order.shippingCost ?? 0,
-      discountAmount: order.discountAmount ?? 0,
-      totalAmount: order.totalAmount,
-      orderStatus: order.status ?? 'PENDING',
-      notes: order.notes ?? '',
-      address: order.address ?? '',
-    };
-
-    const response = await API.post<OrderResponse>('/orders/admin', requestBody);
+  create: async (order: OrderCreateRequest): Promise<OrderResponse> => {
+    const response = await API.post<OrderResponse>('/orders/admin', order);
     return response.data;
   },
 
-  update: async (id: string | number, order: { totalAmount?: number; status?: OrderResponse['status'] }): Promise<OrderResponse> => {
-    const requestBody: any = {};
-    if (order.totalAmount !== undefined) requestBody.totalAmount = order.totalAmount;
-    if (order.status !== undefined) requestBody.orderStatus = order.status;
-
-    const response = await API.put<OrderResponse>(`/orders/${id}`, requestBody);
+  update: async (id: string | number, order: OrderUpdateRequest): Promise<OrderResponse> => {
+    const response = await API.put<OrderResponse>(`/orders/${id}`, order);
     return response.data;
   },
 
@@ -91,6 +78,28 @@ export const ordersApi = {
     deliveryNotes?: string;
   }): Promise<OrderResponse> => {
     const response = await API.post<OrderResponse>(`/orders/admin/${orderId}/assign-shipper`, data);
+    return response.data;
+  },
+
+  // Get orders for current user
+  getMyOrders: async (params: {
+    page?: number;
+    pageSize?: number;
+  } = {}): Promise<SimplePagedResponse<OrderResponse>> => {
+    const { page = 0, pageSize = 10 } = params;
+
+    const queryParams = new URLSearchParams({
+      page: page.toString(),
+      size: pageSize.toString(),
+    });
+
+    const response = await API.get<SimplePagedResponse<OrderResponse>>(`/orders/my-orders?${queryParams.toString()}`);
+    return response.data;
+  },
+
+  // Get order details with items for current user
+  getMyOrderDetails: async (orderId: number): Promise<OrderDetailsResponse> => {
+    const response = await API.get<OrderDetailsResponse>(`/orders/my-orders/${orderId}`);
     return response.data;
   },
 };

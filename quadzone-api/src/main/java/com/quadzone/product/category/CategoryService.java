@@ -22,7 +22,6 @@ import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
@@ -86,7 +85,7 @@ public class CategoryService {
                 .map(CategoryAdminResponse::from)
                 .toList();
 
-        return new PagedResponse<>(
+        return PagedResponse.of(
                 categories,
                 resultPage.getTotalElements(),
                 resultPage.getNumber(),
@@ -100,6 +99,36 @@ public class CategoryService {
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Category not found: " + id));
     }
 
+    public List<CategoryResponse> findAll() {
+        return categoryRepository.findAll()
+                .stream()
+                .map(CategoryResponse::from)
+                .toList();
+    }
+
+    // Admin methods with admin DTOs
+    @Transactional(readOnly = true)
+    public PagedResponse<CategoryAdminResponse> findCategoriesForAdmin(int page, int size, String search) {
+        Pageable pageable = PageRequest.of(Math.max(page, 0), Math.max(size, 1), Sort.by(Sort.Direction.ASC, "name"));
+
+        Page<Category> resultPage;
+        if (search != null && !search.isBlank()) {
+            resultPage = categoryRepository.search(search.trim(), pageable);
+        } else {
+            resultPage = categoryRepository.findAll(pageable);
+        }
+
+        var categories = resultPage.stream()
+                .map(CategoryAdminResponse::from)
+                .toList();
+
+        return PagedResponse.of(
+                categories,
+                resultPage.getTotalElements(),
+                resultPage.getNumber(),
+                resultPage.getSize()
+        );
+    }
 
     @Transactional(readOnly = true)
     public CategoryAdminResponse findByIdForAdmin(Long id) {

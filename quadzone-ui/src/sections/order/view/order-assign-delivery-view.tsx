@@ -6,10 +6,12 @@ import Table from '@mui/material/Table';
 import Button from '@mui/material/Button';
 import Dialog from '@mui/material/Dialog';
 import TableRow from '@mui/material/TableRow';
+import Checkbox from '@mui/material/Checkbox';
 import TableBody from '@mui/material/TableBody';
 import TableCell from '@mui/material/TableCell';
 import Typography from '@mui/material/Typography';
 import TextField from '@mui/material/TextField';
+import IconButton from '@mui/material/IconButton';
 import DialogTitle from '@mui/material/DialogTitle';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
@@ -18,14 +20,21 @@ import TablePagination from '@mui/material/TablePagination';
 import CircularProgress from '@mui/material/CircularProgress';
 import MenuItem from '@mui/material/MenuItem';
 import Alert from '@mui/material/Alert';
+import Popover from '@mui/material/Popover';
+import MenuList from '@mui/material/MenuList';
+import { menuItemClasses } from '@mui/material/MenuItem';
 
 import { DashboardContent } from 'src/layouts/dashboard';
 import { useOrders } from 'src/hooks/useOrders';
 import { ordersApi } from 'src/api/orders';
 import { usersApi, type User } from 'src/api/users';
+import { useRouter } from 'src/routing/hooks';
 
-import { Label } from 'src/components/label';
+import { Iconify } from 'src/components/iconify';
 import { Scrollbar } from 'src/components/scrollbar';
+
+import { UserTableToolbar } from '../../user/user-table-toolbar';
+import { UserTableHead } from '../../user/user-table-head';
 import { TableNoData } from '../../user/table-no-data';
 import { TableEmptyRows } from '../../user/table-empty-rows';
 import { emptyRows } from '../../user/utils';
@@ -43,43 +52,67 @@ type OrderRow = {
 };
 
 export function OrderAssignDeliveryView() {
+  const router = useRouter();
   const [page, setPage] = useState(0);
-  const [rowsPerPage, setRowsPerPage] = useState(10);
+  const [orderBy, setOrderBy] = useState('orderDate');
+  const [rowsPerPage, setRowsPerPage] = useState(5);
+  const [selected, setSelected] = useState<string[]>([]);
+  const [order, setOrder] = useState<'asc' | 'desc'>('desc');
   const [filterName, setFilterName] = useState('');
 
-  const { orders, loading, error, refetch } = useOrders({
+  const { orders, loading, error, total, refetch } = useOrders({
     page,
     pageSize: rowsPerPage,
     search: filterName,
-    sortBy: 'orderDate',
-    sortOrder: 'desc',
+    status: 'CONFIRMED',
   });
 
-  // Filter only CONFIRMED orders (case-insensitive)
-  const confirmedOrders = useMemo(() => {
-    // Debug: Log all orders and their statuses
-    if (orders.length > 0) {
-      console.log('All orders:', orders.map(o => ({ id: o.id, status: o.status, orderNumber: o.orderNumber })));
-    }
-    
-    const filtered = orders.filter(order => {
-      const status = order.status;
-      if (!status) {
-        console.log('Order missing status:', order.id, order.orderNumber);
-        return false;
+  // Apply client-side sorting
+  const sortedOrders = useMemo(() => {
+    if (!orders || !Array.isArray(orders)) return [];
+    const sorted = [...orders].sort((a, b) => {
+      let aValue: any;
+      let bValue: any;
+
+      switch (orderBy) {
+        case 'orderNumber':
+          aValue = a.orderNumber;
+          bValue = b.orderNumber;
+          break;
+        case 'customerName':
+          aValue = a.customerName;
+          bValue = b.customerName;
+          break;
+        case 'itemsCount':
+          aValue = a.itemsCount;
+          bValue = b.itemsCount;
+          break;
+        case 'totalAmount':
+          aValue = a.totalAmount;
+          bValue = b.totalAmount;
+          break;
+        case 'orderDate':
+          aValue = new Date(a.orderDate).getTime();
+          bValue = new Date(b.orderDate).getTime();
+          break;
+        default:
+          return 0;
       }
-      // Handle both string and enum formats
-      const statusStr = typeof status === 'string' ? status : String(status);
-      const isConfirmed = statusStr.toUpperCase() === 'CONFIRMED';
-      if (isConfirmed) {
-        console.log('Found CONFIRMED order:', order.id, order.orderNumber, 'status:', status);
+
+      if (aValue === undefined || bValue === undefined) return 0;
+
+      if (typeof aValue === 'string' && typeof bValue === 'string') {
+        const comparison = aValue.toLowerCase().localeCompare(bValue.toLowerCase());
+        return order === 'asc' ? comparison : -comparison;
       }
-      return isConfirmed;
+
+      if (order === 'asc') {
+        return (aValue as number) - (bValue as number);
+      }
+      return (bValue as number) - (aValue as number);
     });
-    
-    console.log(`Filtered ${filtered.length} CONFIRMED orders from ${orders.length} total orders`);
-    return filtered;
-  }, [orders]);
+    return sorted;
+  }, [orders, orderBy, order]);
 
   // Dialog state
   const [openDialog, setOpenDialog] = useState(false);
@@ -109,8 +142,8 @@ export function OrderAssignDeliveryView() {
     }
   }, [openDialog]);
 
-  const handleOpenDialog = useCallback((order: OrderRow) => {
-    setSelectedOrder(order);
+  const handleOpenDialog = useCallback((orderRow: OrderRow) => {
+    setSelectedOrder(orderRow);
     setSelectedShipperId('');
     setOpenDialog(true);
   }, []);
@@ -136,7 +169,6 @@ export function OrderAssignDeliveryView() {
         shipperId: Number(selectedShipperId),
       });
       
-      // Success - close dialog and refresh orders
       handleCloseDialog();
       refetch();
     } catch (err: any) {
@@ -146,24 +178,38 @@ export function OrderAssignDeliveryView() {
     }
   }, [selectedOrder, selectedShipperId, refetch, handleCloseDialog]);
 
-  const getStatusColor = (status: string) => {
-    switch (status.toUpperCase()) {
-      case 'COMPLETED':
-        return 'success';
-      case 'PENDING':
-        return 'warning';
-      case 'CANCELLED':
-        return 'error';
-      case 'PROCESSING':
-        return 'info';
-      case 'CONFIRMED':
-        return 'info';
-      default:
-        return 'default';
-    }
-  };
+  const handleViewOrder = useCallback((id: string | number) => {
+    router.push(`/admin/order/${id}`);
+  }, [router]);
 
-  const notFound = !confirmedOrders.length && !!filterName && !loading;
+  const onSort = useCallback(
+    (id: string) => {
+      const isAsc = orderBy === id && order === 'asc';
+      setOrder(isAsc ? 'desc' : 'asc');
+      setOrderBy(id);
+    },
+    [order, orderBy]
+  );
+
+  const onSelectAllRows = useCallback((checked: boolean) => {
+    if (checked) {
+      setSelected(sortedOrders.map((ord) => ord.id.toString()));
+      return;
+    }
+    setSelected([]);
+  }, [sortedOrders]);
+
+  const onSelectRow = useCallback(
+    (id: string) => {
+      const newSelected = selected.includes(id)
+        ? selected.filter((value) => value !== id)
+        : [...selected, id];
+      setSelected(newSelected);
+    },
+    [selected]
+  );
+
+  const notFound = !sortedOrders.length && !!filterName && !loading;
 
   return (
     <>
@@ -178,18 +224,14 @@ export function OrderAssignDeliveryView() {
         </Box>
 
         <Card>
-          <Box sx={{ p: 2.5, borderBottom: '1px solid', borderColor: 'divider' }}>
-            <TextField
-              fullWidth
-              placeholder="Search orders..."
-              value={filterName}
-              onChange={(e) => {
-                setFilterName(e.target.value);
-                setPage(0);
-              }}
-              sx={{ maxWidth: 400 }}
-            />
-          </Box>
+          <UserTableToolbar
+            numSelected={selected.length}
+            filterName={filterName}
+            onFilterName={(event: React.ChangeEvent<HTMLInputElement>) => {
+              setFilterName(event.target.value);
+              setPage(0);
+            }}
+          />
 
           {loading ? (
             <Box sx={{ display: 'flex', justifyContent: 'center', p: 3 }}>
@@ -207,68 +249,56 @@ export function OrderAssignDeliveryView() {
               <Scrollbar>
                 <TableContainer sx={{ overflow: 'unset' }}>
                   <Table sx={{ minWidth: 800 }}>
-                    <thead>
-                      <TableRow>
-                        <TableCell>Order #</TableCell>
-                        <TableCell>Customer</TableCell>
-                        <TableCell align="center">Items</TableCell>
-                        <TableCell>Total</TableCell>
-                        <TableCell>Status</TableCell>
-                        <TableCell>Order Date</TableCell>
-                        <TableCell align="right">Action</TableCell>
-                      </TableRow>
-                    </thead>
+                    <UserTableHead
+                      order={order}
+                      orderBy={orderBy}
+                      rowCount={sortedOrders.length}
+                      numSelected={selected.length}
+                      onSort={onSort}
+                      onSelectAllRows={onSelectAllRows}
+                      headLabel={[
+                        { id: 'orderNumber', label: 'Order #', align: 'center' },
+                        { id: 'customerName', label: 'Customer', align: 'center' },
+                        { id: 'itemsCount', label: 'Items', align: 'center' },
+                        { id: 'totalAmount', label: 'Total', align: 'center' },
+                        { id: 'orderDate', label: 'Order Date', align: 'center' },
+                        { id: '', label: '', align: 'center' },
+                      ]}
+                    />
                     <TableBody>
-                      {confirmedOrders.map((order) => (
-                        <TableRow key={order.id} hover>
-                          <TableCell>
-                            <Typography variant="subtitle2">{order.orderNumber}</Typography>
-                          </TableCell>
-                          <TableCell>{order.customerName}</TableCell>
-                          <TableCell align="center">{order.itemsCount}</TableCell>
-                          <TableCell>${order.totalAmount.toFixed(2)}</TableCell>
-                          <TableCell>
-                            <Label color={getStatusColor(order.status)}>
-                              {order.status}
-                            </Label>
-                          </TableCell>
-                          <TableCell>
-                            {new Date(order.orderDate).toLocaleDateString()}
-                          </TableCell>
-                          <TableCell align="right">
-                            <Button
-                              variant="contained"
-                              size="small"
-                              onClick={() => handleOpenDialog({
-                                id: order.id,
-                                orderNumber: order.orderNumber,
-                                customerName: order.customerName,
-                                totalAmount: order.totalAmount,
-                                status: order.status,
-                                orderDate: order.orderDate,
-                                itemsCount: order.itemsCount,
-                              })}
-                            >
-                              Assign Shipper
-                            </Button>
-                          </TableCell>
-                        </TableRow>
+                      {sortedOrders.map((row) => (
+                        <AssignDeliveryTableRow
+                          key={row.id}
+                          row={{
+                            id: row.id,
+                            orderNumber: row.orderNumber,
+                            customerName: row.customerName,
+                            totalAmount: row.totalAmount,
+                            status: row.status,
+                            orderDate: row.orderDate,
+                            itemsCount: row.itemsCount,
+                          }}
+                          selected={selected.includes(row.id.toString())}
+                          onSelectRow={() => onSelectRow(row.id.toString())}
+                          onView={handleViewOrder}
+                          onAssign={handleOpenDialog}
+                        />
                       ))}
 
-                      {!notFound && confirmedOrders.length === 0 && !loading && (
+                      {!notFound && sortedOrders.length === 0 && !loading && (
                         <TableRow>
                           <TableCell colSpan={7} align="center" sx={{ py: 8 }}>
                             <Typography variant="body2" color="text.secondary">
-                              No confirmed orders available. Only orders with CONFIRMED status can be assigned to shippers.
+                              No confirmed orders available for assignment.
                             </Typography>
                           </TableCell>
                         </TableRow>
                       )}
 
-                      {!notFound && confirmedOrders.length > 0 && (
+                      {!notFound && sortedOrders.length > 0 && (
                         <TableEmptyRows
                           height={68}
-                          emptyRows={emptyRows(page, rowsPerPage, confirmedOrders.length)}
+                          emptyRows={emptyRows(page, rowsPerPage, total)}
                           colSpan={7}
                         />
                       )}
@@ -282,7 +312,7 @@ export function OrderAssignDeliveryView() {
               <TablePagination
                 component="div"
                 page={page}
-                count={confirmedOrders.length}
+                count={total}
                 rowsPerPage={rowsPerPage}
                 onPageChange={(_, newPage) => setPage(newPage)}
                 rowsPerPageOptions={[5, 10, 25]}
@@ -345,7 +375,7 @@ export function OrderAssignDeliveryView() {
               ) : (
                 shippers.map((shipper) => (
                   <MenuItem key={shipper.id} value={shipper.id.toString()}>
-                    {shipper.name} ({shipper.email})
+                    {shipper.firstName} {shipper.lastName} ({shipper.email})
                   </MenuItem>
                 ))
               )}
@@ -369,3 +399,119 @@ export function OrderAssignDeliveryView() {
   );
 }
 
+// ----------------------------------------------------------------------
+
+function AssignDeliveryTableRow({
+  row,
+  selected,
+  onSelectRow,
+  onView,
+  onAssign,
+}: {
+  row: OrderRow;
+  selected: boolean;
+  onSelectRow: () => void;
+  onView?: (id: string | number) => void;
+  onAssign?: (row: OrderRow) => void;
+}) {
+  const [openPopover, setOpenPopover] = useState<HTMLButtonElement | null>(null);
+
+  const handleOpenPopover = useCallback((event: React.MouseEvent<HTMLButtonElement>) => {
+    setOpenPopover(event.currentTarget);
+  }, []);
+
+  const handleClosePopover = useCallback(() => {
+    setOpenPopover(null);
+  }, []);
+
+  const handleView = useCallback(() => {
+    handleClosePopover();
+    if (onView) {
+      onView(row.id);
+    }
+  }, [onView, row.id, handleClosePopover]);
+
+  const handleAssign = useCallback(() => {
+    handleClosePopover();
+    if (onAssign) {
+      onAssign(row);
+    }
+  }, [onAssign, row, handleClosePopover]);
+
+  return (
+    <>
+      <TableRow
+        hover
+        tabIndex={-1}
+        role="checkbox"
+        selected={selected}
+        sx={{
+          '& .MuiTableCell-root': {
+            verticalAlign: 'middle',
+          },
+        }}
+      >
+        <TableCell padding="checkbox">
+          <Checkbox disableRipple checked={selected} onChange={onSelectRow} />
+        </TableCell>
+
+        <TableCell component="th" scope="row" align="center">
+          <Button variant="text" color="inherit" onClick={() => onView?.(row.id)} sx={{ p: 0, minWidth: 'auto' }}>
+            {row.orderNumber}
+          </Button>
+        </TableCell>
+
+        <TableCell align="center">{row.customerName || '-'}</TableCell>
+
+        <TableCell align="center">{row.itemsCount ?? 0}</TableCell>
+
+        <TableCell align="center">${(row.totalAmount ?? 0).toFixed(2)}</TableCell>
+
+        <TableCell align="center">
+          {row.orderDate ? new Date(row.orderDate).toLocaleDateString() : '-'}
+        </TableCell>
+
+        <TableCell align="center">
+          <IconButton onClick={handleOpenPopover}>
+            <Iconify icon="eva:more-vertical-fill" />
+          </IconButton>
+        </TableCell>
+      </TableRow>
+
+      <Popover
+        open={!!openPopover}
+        anchorEl={openPopover}
+        onClose={handleClosePopover}
+        anchorOrigin={{ vertical: 'top', horizontal: 'left' }}
+        transformOrigin={{ vertical: 'top', horizontal: 'right' }}
+      >
+        <MenuList
+          disablePadding
+          sx={{
+            p: 0.5,
+            gap: 0.5,
+            width: 160,
+            display: 'flex',
+            flexDirection: 'column',
+            [`& .${menuItemClasses.root}`]: {
+              px: 1,
+              gap: 2,
+              borderRadius: 0.75,
+              [`&.${menuItemClasses.selected}`]: { bgcolor: 'action.selected' },
+            },
+          }}
+        >
+          <MenuItem onClick={handleView}>
+            <Iconify icon="solar:eye-bold" />
+            View
+          </MenuItem>
+
+          <MenuItem onClick={handleAssign} sx={{ color: 'primary.main' }}>
+            <Iconify icon={"solar:map-arrow-right-bold" as any} />
+            Assign Shipper
+          </MenuItem>
+        </MenuList>
+      </Popover>
+    </>
+  );
+}
