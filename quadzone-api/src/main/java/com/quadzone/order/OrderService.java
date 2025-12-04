@@ -2,6 +2,7 @@ package com.quadzone.order;
 
 import com.quadzone.exception.order.OrderNotFoundException;
 import com.quadzone.global.dto.PagedResponse;
+import com.quadzone.order.dto.OrderDetailsResponse;
 import com.quadzone.order.dto.OrderRegisterRequest;
 import com.quadzone.order.dto.OrderResponse;
 import com.quadzone.order.dto.OrderStatusResponse;
@@ -711,6 +712,36 @@ public class OrderService {
                 ordersPage.getNumber(),
                 ordersPage.getSize()
         );
+    }
+
+    /**
+     * Get order details for the currently authenticated user
+     * @param orderId Order ID
+     * @return OrderDetailsResponse with order items
+     */
+    @Transactional(readOnly = true)
+    public OrderDetailsResponse getMyOrderDetails(Long orderId) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || !authentication.isAuthenticated() || 
+            authentication.getName().equals("anonymousUser")) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "User not authenticated");
+        }
+
+        User user = userRepository.findByEmail(authentication.getName())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
+
+        Order order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Order not found"));
+
+        // Check if order belongs to the user (by user ID or email)
+        boolean belongsToUser = (order.getUser() != null && order.getUser().getId().equals(user.getId()))
+                || (order.getCustomerEmail() != null && order.getCustomerEmail().equals(user.getEmail()));
+
+        if (!belongsToUser) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Order does not belong to user");
+        }
+
+        return OrderDetailsResponse.from(order);
     }
 }
 

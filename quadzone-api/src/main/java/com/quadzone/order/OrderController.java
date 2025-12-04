@@ -3,6 +3,7 @@ package com.quadzone.order;
 import com.quadzone.global.dto.PagedResponse;
 import com.quadzone.order.dto.AssignOrderToShipperRequest;
 import com.quadzone.order.dto.CheckoutRequest;
+import com.quadzone.order.dto.OrderDetailsResponse;
 import com.quadzone.order.dto.OrderRegisterRequest;
 import com.quadzone.order.dto.OrderResponse;
 import com.quadzone.order.dto.OrderStatusResponse;
@@ -132,6 +133,26 @@ public class OrderController {
             @RequestParam(defaultValue = "10") int size
     ) {
         return ResponseEntity.ok(orderService.getMyOrders(page, size));
+    }
+
+    // User-specific endpoint for viewing own order details with items
+    @GetMapping("/my-orders/{id}")
+    @Operation(
+            summary = "Get my order details",
+            description = "Retrieve detailed information about a specific order for the currently authenticated user. " +
+                    "Includes order items with product information. Requires authentication."
+    )
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Successfully retrieved order details"),
+            @ApiResponse(responseCode = "401", description = "User not authenticated"),
+            @ApiResponse(responseCode = "403", description = "Order does not belong to user"),
+            @ApiResponse(responseCode = "404", description = "Order not found")
+    })
+    public ResponseEntity<OrderDetailsResponse> getMyOrderDetails(
+            @Parameter(description = "Unique identifier of the order", example = "1", required = true)
+            @PathVariable Long id
+    ) {
+        return ResponseEntity.ok(orderService.getMyOrderDetails(id));
     }
 
     // Regular endpoints

@@ -220,6 +220,30 @@ export interface Order {
 
 export type OrderResponse = Order;
 
+// Order item in order details
+export interface OrderItem {
+    id: number;
+    productId: number;
+    productName: string;
+    productImageUrl: string | null;
+    quantity: number;
+    price: number;
+    totalPrice: number;
+}
+
+// Order details with items
+export interface OrderDetails extends Order {
+    items: OrderItem[];
+    subtotal: number;
+    taxAmount: number;
+    shippingCost: number;
+    discountAmount: number;
+    address: string;
+    notes?: string;
+}
+
+export type OrderDetailsResponse = OrderDetails;
+
 // ============== NOTIFICATION TYPES ==============
 export interface Notification {
     id: number;

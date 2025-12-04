@@ -1,8 +1,8 @@
 import API from "./base";
-import type { OrderResponse, SimplePagedResponse } from "./types";
+import type { OrderResponse, OrderDetailsResponse, SimplePagedResponse } from "./types";
 
 // Re-export for convenience
-export type { OrderResponse as Order } from "./types";
+export type { OrderResponse as Order, OrderDetailsResponse as OrderDetails } from "./types";
 export type { SimplePagedResponse as OrdersResponse } from "./types";
 
 export const ordersApi = {
@@ -107,6 +107,12 @@ export const ordersApi = {
     });
 
     const response = await API.get<SimplePagedResponse<OrderResponse>>(`/orders/my-orders?${queryParams.toString()}`);
+    return response.data;
+  },
+
+  // Get order details with items for current user
+  getMyOrderDetails: async (orderId: number): Promise<OrderDetailsResponse> => {
+    const response = await API.get<OrderDetailsResponse>(`/orders/my-orders/${orderId}`);
     return response.data;
   },
 };
