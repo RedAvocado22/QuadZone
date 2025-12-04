@@ -90,6 +90,8 @@ function App() {
                                             {/* Pages */}
                                             <Route path="about-us" element={<AboutUsPage />} />
                                             <Route path="contact" element={<ContactUsPage />} />
+                                            <Route path="blogs" element={<BlogListPage />} />
+                                            <Route path="blogs/:id" element={<BlogDetailPage />} />
 
                                             {/* Compare + Wishlist */}
                                             <Route path="compare" element={<ComparePage />} />
@@ -101,7 +103,9 @@ function App() {
                                             <Route path="track-order" element={<TrackOrderPage />} />
                                             <Route path="order-success" element={<OrderSuccessPage />} />
                                             <Route path="vnpay-result" element={<VnPayResultPage />} />
-
+                                            {/* Blog */}
+                                            <Route path="/blogs" element={<BlogListPage/>}/>
+                                            <Route path="/blogs/:slug" element={<BlogDetailPage/>}/>
                                             {/* 404 */}
                                             {/* <Route path="*" element={<NotFound />} /> */}
                                         </Route>

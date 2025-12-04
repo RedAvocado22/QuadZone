@@ -22,7 +22,7 @@ const BlogCard: React.FC<BlogCardProps> = ({ blog }) => {
         <article className="card mb-13 border-0">
             <div className="row">
                 <div className="col-lg-4 mb-5 mb-lg-0">
-                    <Link to={`/blog/${blog.slug}`} className="d-block">
+                    <Link to={`/blogs/${blog.slug}`} className="d-block">
                         <img 
                             className="img-fluid min-height-250 object-fit-cover" 
                             src={blog.thumbnailUrl || 'https://via.placeholder.com/400x250'} 

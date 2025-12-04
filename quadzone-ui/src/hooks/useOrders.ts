@@ -7,13 +7,12 @@ interface UseOrdersOptions {
   page?: number;
   pageSize?: number;
   search?: string;
-  sortBy?: string;
-  sortOrder?: 'asc' | 'desc';
+  status?: string;
   enabled?: boolean;
 }
 
 export function useOrders(options: UseOrdersOptions = {}) {
-  const { page = 0, pageSize = 10, search = '', sortBy = 'createdAt', sortOrder = 'desc', enabled = true } = options;
+  const { page = 0, pageSize = 10, search = '', status, enabled = true } = options;
 
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(false);
@@ -27,9 +26,9 @@ export function useOrders(options: UseOrdersOptions = {}) {
       setLoading(true);
       setError(null);
       try {
-        const response = await ordersApi.getAll({ page, pageSize, search, sortBy, sortOrder });
-        setOrders(response.data);
-        setTotal(response.total);
+        const response = await ordersApi.getAll({ page, pageSize, search, status });
+        setOrders(response.content ?? []);
+        setTotal(response.page?.totalElements ?? 0);
       } catch (err) {
         setError(err instanceof Error ? err : new Error('Failed to fetch orders'));
         setOrders([]);
@@ -40,15 +39,15 @@ export function useOrders(options: UseOrdersOptions = {}) {
     };
 
     fetchOrders();
-  }, [page, pageSize, search, sortBy, sortOrder, enabled]);
+  }, [page, pageSize, search, status, enabled]);
 
   const refetch = async () => {
     setLoading(true);
     setError(null);
     try {
-      const response = await ordersApi.getAll({ page, pageSize, search, sortBy, sortOrder });
-      setOrders(response.data);
-      setTotal(response.total);
+      const response = await ordersApi.getAll({ page, pageSize, search, status });
+      setOrders(response.content ?? []);
+      setTotal(response.page?.totalElements ?? 0);
     } catch (err) {
       setError(err instanceof Error ? err : new Error('Failed to fetch orders'));
     } finally {

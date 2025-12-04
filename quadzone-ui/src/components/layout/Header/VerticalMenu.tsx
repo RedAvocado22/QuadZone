@@ -1,9 +1,7 @@
-import { useState } from "react";
 import SearchBar from "../../shared/SearchBar";
 import CartIcon from "../../shared/CartIcon";
 
 const VerticalMenu = () => {
-    const [isMenuOpen, setIsMenuOpen] = useState(false);
 
     return (
         <div className="d-none d-xl-block bg-primary">
@@ -22,9 +20,7 @@ const VerticalMenu = () => {
                                             className="btn-link btn-remove-focus btn-block d-flex card-btn py-3 text-lh-1 px-4 shadow-none btn-primary rounded-top-lg border-0 font-weight-bold text-gray-90"
                                             onClick={() => setIsMenuOpen(!isMenuOpen)}>
                                             
-                                            <span className="text-gray-90 ml-3">
-                                                <span className="ec ec-arrow-down-search"></span>
-                                            </span>
+                                            
                                         </button>
                                     </div>
 

@@ -141,7 +141,7 @@ public class ChatController {
         notification.put("type", "STAFF_ASSIGNED");
         notification.put("roomId", roomId);
         notification.put("staffId", staffId);
-        notification.put("staffName", chatRoom.getStaffName());
+        notification.put("staffName", chatRoom.staffName());
         messagingTemplate.convertAndSend("/queue/messages/" + roomId, notification);
         
         return ResponseEntity.ok(chatRoom);
@@ -172,7 +172,7 @@ public class ChatController {
      */
     @MessageMapping("/chat.send")
     public void sendMessage(@Payload ChatMessageRequest messageRequest, Principal principal) {
-        log.info("Received message from {}: {}", principal.getName(), messageRequest.getContent());
+        log.info("Received message from {}: {}", principal.getName(), messageRequest.content());
         
         // The service will handle saving and broadcasting
         ChatMessageResponse savedMessage = chatMessageService.saveMessage(messageRequest);

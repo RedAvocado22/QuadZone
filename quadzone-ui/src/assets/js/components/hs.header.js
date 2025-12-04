@@ -410,8 +410,6 @@
 
       if (this.element.hasClass('u-header--sticky-top-md')) {
 
-        console.log(1);
-
         if (this.element.hasClass('u-header--show-hide-md')) {
 
           observers['md'].push(

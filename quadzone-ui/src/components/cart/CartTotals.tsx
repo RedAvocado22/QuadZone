@@ -40,11 +40,6 @@ const CartTotals = () => {
                         </tr>
                     </tbody>
                 </table>
-                <button
-                    type="button"
-                    className="btn btn-primary-dark-w ml-md-2 px-5 px-md-4 px-lg-5 w-100 w-md-auto d-md-none">
-                    Proceed to checkout
-                </button>
             </div>
         </div>
     );

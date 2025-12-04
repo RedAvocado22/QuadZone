@@ -1,5 +1,5 @@
 import API from "./base";
-import type { OrderResponse, OrderDetailsResponse, SimplePagedResponse } from "./types";
+import type { OrderResponse, OrderCreateRequest, OrderUpdateRequest, PagedResponse, OrderStatus } from "./types";
 
 // Re-export for convenience
 export type { OrderResponse as Order, OrderDetailsResponse as OrderDetails } from "./types";
@@ -10,10 +10,9 @@ export const ordersApi = {
     page?: number;
     pageSize?: number;
     search?: string;
-    sortBy?: string;
-    sortOrder?: 'asc' | 'desc';
-  } = {}): Promise<SimplePagedResponse<OrderResponse>> => {
-    const { page = 0, pageSize = 10, search = '' } = params;
+    status?: string;
+  } = {}): Promise<PagedResponse<OrderResponse>> => {
+    const { page = 0, pageSize = 10, search = '', status } = params;
 
     const queryParams = new URLSearchParams({
       page: page.toString(),
@@ -21,7 +20,11 @@ export const ordersApi = {
       search,
     });
 
-    const response = await API.get<SimplePagedResponse<OrderResponse>>(`/orders/admin?${queryParams.toString()}`);
+    if (status) {
+      queryParams.append('status', status);
+    }
+
+    const response = await API.get<PagedResponse<OrderResponse>>(`/orders/admin?${queryParams.toString()}`);
     return response.data;
   },
 
@@ -30,29 +33,13 @@ export const ordersApi = {
     return response.data;
   },
 
-  create: async (order: { userId: number; totalAmount: number; status?: OrderResponse['status']; subtotal?: number; taxAmount?: number; shippingCost?: number; discountAmount?: number; notes?: string; address?: string }): Promise<OrderResponse> => {
-    const requestBody = {
-      userId: order.userId,
-      subtotal: order.subtotal ?? order.totalAmount * 0.9,
-      taxAmount: order.taxAmount ?? order.totalAmount * 0.1,
-      shippingCost: order.shippingCost ?? 0,
-      discountAmount: order.discountAmount ?? 0,
-      totalAmount: order.totalAmount,
-      orderStatus: order.status ?? 'PENDING',
-      notes: order.notes ?? '',
-      address: order.address ?? '',
-    };
-
-    const response = await API.post<OrderResponse>('/orders/admin', requestBody);
+  create: async (order: OrderCreateRequest): Promise<OrderResponse> => {
+    const response = await API.post<OrderResponse>('/orders/admin', order);
     return response.data;
   },
 
-  update: async (id: string | number, order: { totalAmount?: number; status?: OrderResponse['status'] }): Promise<OrderResponse> => {
-    const requestBody: any = {};
-    if (order.totalAmount !== undefined) requestBody.totalAmount = order.totalAmount;
-    if (order.status !== undefined) requestBody.orderStatus = order.status;
-
-    const response = await API.put<OrderResponse>(`/orders/${id}`, requestBody);
+  update: async (id: string | number, order: OrderUpdateRequest): Promise<OrderResponse> => {
+    const response = await API.put<OrderResponse>(`/orders/${id}`, order);
     return response.data;
   },
 

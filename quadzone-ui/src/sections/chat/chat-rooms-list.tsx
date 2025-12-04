@@ -140,7 +140,7 @@ export function ChatRoomsList({ selectedRoomId, onRoomSelect, onRefresh }: ChatR
         ) : filteredRooms.length === 0 ? (
           <Box sx={{ textAlign: 'center', py: 4 }}>
             <Iconify
-              icon="eva:inbox-outline"
+              icon={"eva:inbox-outline" as any}
               sx={{ width: 64, height: 64, mb: 2, color: 'text.disabled' }}
             />
             <Typography variant="body2" color="text.secondary">

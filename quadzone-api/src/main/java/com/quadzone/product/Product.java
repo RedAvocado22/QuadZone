@@ -58,7 +58,8 @@ public class Product {
     private String imageUrl;
 
     @Column(name = "created_at", updatable = false)
-    private final LocalDateTime createdAt = LocalDateTime.now();
+    @Builder.Default
+    private LocalDateTime createdAt = LocalDateTime.now();
 
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
@@ -116,6 +117,9 @@ public class Product {
         }
         if (request.subCategory() != null) {
             this.setSubCategory(request.subCategory());
+        }
+        if(request.isActive() != null){
+            this.setActive(request.isActive());
         }
     }
 

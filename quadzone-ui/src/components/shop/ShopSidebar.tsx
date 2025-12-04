@@ -14,9 +14,10 @@ interface ShopSidebarProps {
         subcategoryId?: number;
     }) => void;
     onClearAll?: () => void;
+    clearTrigger?: number; // Trigger from parent to clear sidebar state
 }
 
-const ShopSidebar: React.FC<ShopSidebarProps> = ({ isOpen, onClose, onApplyFilters, onClearAll }) => {
+const ShopSidebar: React.FC<ShopSidebarProps> = ({ isOpen, onClose, onApplyFilters, onClearAll, clearTrigger }) => {
     const [categories, setCategories] = useState<PublicCategoryDTO[]>([]);
     const [brands, setBrands] = useState<PublicBrandDTO[]>([]);
     const [expandedCategories, setExpandedCategories] = useState<Record<number, boolean>>({});
@@ -43,6 +44,17 @@ const ShopSidebar: React.FC<ShopSidebarProps> = ({ isOpen, onClose, onApplyFilte
         };
         fetchData();
     }, []);
+
+    // Watch for clear trigger from parent (e.g., "Clear All Filters" button clicked)
+    useEffect(() => {
+        if (clearTrigger !== undefined && clearTrigger > 0) {
+            setSelectedBrands([]);
+            setPriceRange(null);
+            setSelectedCategoryId(undefined);
+            setSelectedSubcategoryId(undefined);
+            setResetTrigger((prev) => prev + 1);
+        }
+    }, [clearTrigger]);
 
     const toggleCategory = (index: number) => {
         setExpandedCategories((prev) => ({
@@ -90,6 +102,13 @@ const ShopSidebar: React.FC<ShopSidebarProps> = ({ isOpen, onClose, onApplyFilte
 
     const handlePriceFilter = (range: { min: number; max: number }) => {
         setPriceRange(range);
+        // Immediately apply price filter to parent without waiting for Apply button
+        onApplyFilters({
+            brands: selectedBrands,
+            priceRange: range,
+            categoryId: selectedCategoryId,
+            subcategoryId: selectedSubcategoryId
+        });
     };
 
     return (

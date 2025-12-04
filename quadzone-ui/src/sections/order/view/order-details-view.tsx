@@ -9,11 +9,13 @@ import Button from '@mui/material/Button';
 import Typography from '@mui/material/Typography';
 import CircularProgress from '@mui/material/CircularProgress';
 import Alert from '@mui/material/Alert';
+import Divider from '@mui/material/Divider';
 
 import { DashboardContent } from 'src/layouts/dashboard';
 import { ordersApi } from 'src/api/orders';
 import { Label } from 'src/components/label';
 import { fCurrency } from 'src/utils/formatters';
+import type { OrderResponse } from 'src/api/types';
 
 // ----------------------------------------------------------------------
 
@@ -22,7 +24,7 @@ export function OrderDetailsView() {
   const router = useRouter();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [order, setOrder] = useState<any>(null);
+  const [order, setOrder] = useState<OrderResponse | null>(null);
 
   useEffect(() => {
     const loadOrder = async () => {
@@ -73,7 +75,21 @@ export function OrderDetailsView() {
     );
   }
 
-  const formatStatus = (status: string) => status.charAt(0).toUpperCase() + status.slice(1);
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'COMPLETED':
+        return 'success';
+      case 'PENDING':
+        return 'warning';
+      case 'CANCELLED':
+        return 'error';
+      case 'PROCESSING':
+      case 'CONFIRMED':
+        return 'info';
+      default:
+        return 'default';
+    }
+  };
 
   return (
     <DashboardContent>
@@ -92,52 +108,143 @@ export function OrderDetailsView() {
 
         <Card sx={{ p: 3 }}>
           <Stack spacing={3}>
-            <Typography variant="h5">Order #{order.orderNumber}</Typography>
-
-            <Box sx={{ display: 'flex', gap: 3, flexWrap: 'wrap' }}>
-              <Typography variant="body1"><strong>Customer:</strong> {order.customerName}</Typography>
-              <Typography variant="body1"><strong>Total:</strong> {fCurrency(order.total)}</Typography>
-              <Typography variant="body1"><strong>Items:</strong> {order.items}</Typography>
-              <Typography variant="body1"><strong>Created:</strong> {new Date(order.createdAt).toLocaleDateString()}</Typography>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+              <Typography variant="h5">{order.orderNumber}</Typography>
+              <Label color={getStatusColor(order.status)}>
+                {order.status}
+              </Label>
             </Box>
 
-            <Box sx={{ display: 'flex', gap: 3, flexWrap: 'wrap' }}>
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <Divider />
+
+            <Box sx={{ display: 'grid', gap: 3, gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', md: 'repeat(3, 1fr)' } }}>
+              <Box>
                 <Typography variant="subtitle2" color="text.secondary">
-                  Status:
+                  Customer Name
                 </Typography>
-                <Label
-                  color={
-                    order.status === 'completed'
-                      ? 'success'
-                      : order.status === 'pending'
-                      ? 'warning'
-                      : order.status === 'cancelled'
-                      ? 'error'
-                      : 'info'
-                  }
-                >
-                  {formatStatus(order.status)}
-                </Label>
+                <Typography variant="body1">
+                  {order.customerName}
+                </Typography>
               </Box>
 
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              {order.customerEmail && (
+                <Box>
+                  <Typography variant="subtitle2" color="text.secondary">
+                    Customer Email
+                  </Typography>
+                  <Typography variant="body1">
+                    {order.customerEmail}
+                  </Typography>
+                </Box>
+              )}
+
+              {order.customerPhone && (
+                <Box>
+                  <Typography variant="subtitle2" color="text.secondary">
+                    Customer Phone
+                  </Typography>
+                  <Typography variant="body1">
+                    {order.customerPhone}
+                  </Typography>
+                </Box>
+              )}
+
+              <Box>
                 <Typography variant="subtitle2" color="text.secondary">
-                  Payment:
+                  Items Count
                 </Typography>
-                <Label
-                  color={
-                    order.paymentStatus === 'paid'
-                      ? 'success'
-                      : order.paymentStatus === 'pending'
-                      ? 'warning'
-                      : 'error'
-                  }
-                >
-                  {formatStatus(order.paymentStatus)}
-                </Label>
+                <Typography variant="body1">
+                  {order.itemsCount}
+                </Typography>
+              </Box>
+
+              <Box>
+                <Typography variant="subtitle2" color="text.secondary">
+                  Order Date
+                </Typography>
+                <Typography variant="body1">
+                  {new Date(order.orderDate).toLocaleString()}
+                </Typography>
+              </Box>
+
+              {order.address && (
+                <Box>
+                  <Typography variant="subtitle2" color="text.secondary">
+                    Address
+                  </Typography>
+                  <Typography variant="body1">
+                    {order.address}
+                  </Typography>
+                </Box>
+              )}
+            </Box>
+
+            <Divider sx={{ my: 2 }} />
+
+            <Typography variant="h6" gutterBottom>
+              Payment Details
+            </Typography>
+
+            <Box sx={{ display: 'grid', gap: 3, gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', md: 'repeat(4, 1fr)' } }}>
+              <Box>
+                <Typography variant="subtitle2" color="text.secondary">
+                  Subtotal
+                </Typography>
+                <Typography variant="body1">
+                  {fCurrency(order.subtotal ?? 0)}
+                </Typography>
+              </Box>
+
+              <Box>
+                <Typography variant="subtitle2" color="text.secondary">
+                  Tax Amount
+                </Typography>
+                <Typography variant="body1">
+                  {fCurrency(order.taxAmount ?? 0)}
+                </Typography>
+              </Box>
+
+              <Box>
+                <Typography variant="subtitle2" color="text.secondary">
+                  Shipping Cost
+                </Typography>
+                <Typography variant="body1">
+                  {fCurrency(order.shippingCost ?? 0)}
+                </Typography>
+              </Box>
+
+              <Box>
+                <Typography variant="subtitle2" color="text.secondary">
+                  Discount
+                </Typography>
+                <Typography variant="body1" color="error.main">
+                  -{fCurrency(order.discountAmount ?? 0)}
+                </Typography>
               </Box>
             </Box>
+
+            <Box sx={{ mt: 2, p: 2, bgcolor: 'grey.100', borderRadius: 1 }}>
+              <Typography variant="subtitle2" color="text.secondary">
+                Total Amount
+              </Typography>
+              <Typography variant="h5" fontWeight="bold" color="primary.main">
+                {fCurrency(order.totalAmount)}
+              </Typography>
+            </Box>
+
+            {order.notes && (
+              <>
+                <Divider sx={{ my: 2 }} />
+                <Box>
+                  <Typography variant="subtitle2" color="text.secondary" gutterBottom>
+                    Notes
+                  </Typography>
+                  <Typography variant="body1">
+                    {order.notes}
+                  </Typography>
+                </Box>
+              </>
+            )}
           </Stack>
         </Card>
       </Stack>

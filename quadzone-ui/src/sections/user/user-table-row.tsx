@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import React, { useState, useCallback } from "react";
 
 import Box from "@mui/material/Box";
 import Avatar from "@mui/material/Avatar";
@@ -12,6 +12,7 @@ import MenuItem, { menuItemClasses } from "@mui/material/MenuItem";
 
 import { Label } from "src/components/label";
 import { Iconify } from "src/components/iconify";
+import { getAvatarUrl } from "src/utils/imageHelper";
 import type { UserRole } from "src/hooks";
 import type { userStatus } from "src/api/types";
 
@@ -32,10 +33,10 @@ type UserTableRowProps = {
     selected: boolean;
     onSelectRow: () => void;
     onEdit?: (id: string) => void;
-    onDelete?: (id: string) => void;
+    onToggleStatus?: (id: string, currentStatus: userStatus) => void;
 };
 
-export function UserTableRow({ row, selected, onSelectRow, onEdit, onDelete }: UserTableRowProps) {
+export function UserTableRow({ row, selected, onSelectRow, onEdit, onToggleStatus }: UserTableRowProps) {
     const [openPopover, setOpenPopover] = useState<HTMLButtonElement | null>(null);
 
     const handleOpenPopover = useCallback((event: React.MouseEvent<HTMLButtonElement>) => {
@@ -53,12 +54,14 @@ export function UserTableRow({ row, selected, onSelectRow, onEdit, onDelete }: U
         }
     }, [row.id, onEdit, handleClosePopover]);
 
-    const handleDelete = useCallback(() => {
+    const handleToggleStatus = useCallback(() => {
         handleClosePopover();
-        if (onDelete) {
-            onDelete(row.id);
+        if (onToggleStatus) {
+            onToggleStatus(row.id, row.status);
         }
-    }, [row.id, onDelete, handleClosePopover]);
+    }, [row.id, row.status, onToggleStatus, handleClosePopover]);
+
+    const isSuspended = row.status === "SUSPENDED";
 
     return (
         <>
@@ -83,7 +86,7 @@ export function UserTableRow({ row, selected, onSelectRow, onEdit, onDelete }: U
                             display: "flex",
                             alignItems: "center"
                         }}>
-                        <Avatar alt={row.name} src={row.avatarUrl} />
+                        <Avatar alt={row.name} src={getAvatarUrl(row.avatarUrl)} />
                         {row.name}
                     </Box>
                 </TableCell>
@@ -101,7 +104,7 @@ export function UserTableRow({ row, selected, onSelectRow, onEdit, onDelete }: U
                 </TableCell>
 
                 <TableCell>
-                    <Label color={(row.status === "banned" && "error") || "success"}>{row.status}</Label>
+                    <Label color={(row.status === "SUSPENDED" && "error") || "success"}>{row.status}</Label>
                 </TableCell>
 
                 <TableCell align="right">
@@ -122,7 +125,7 @@ export function UserTableRow({ row, selected, onSelectRow, onEdit, onDelete }: U
                     sx={{
                         p: 0.5,
                         gap: 0.5,
-                        width: 140,
+                        width: 160,
                         display: "flex",
                         flexDirection: "column",
                         [`& .${menuItemClasses.root}`]: {
@@ -137,9 +140,12 @@ export function UserTableRow({ row, selected, onSelectRow, onEdit, onDelete }: U
                         Edit
                     </MenuItem>
 
-                    <MenuItem onClick={handleDelete} sx={{ color: "error.main" }}>
-                        <Iconify icon="solar:trash-bin-trash-bold" />
-                        Delete
+                    <MenuItem 
+                        onClick={handleToggleStatus} 
+                        sx={{ color: isSuspended ? "success.main" : "warning.main" }}
+                    >
+                        <Iconify icon={isSuspended ? "solar:restart-bold" : "solar:forbidden-bold" as any} />
+                        {isSuspended ? "Activate" : "Suspend"}
                     </MenuItem>
                 </MenuList>
             </Popover>

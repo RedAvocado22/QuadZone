@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 import Box from '@mui/material/Box';
 import Card from '@mui/material/Card';
@@ -11,7 +11,9 @@ import CircularProgress from '@mui/material/CircularProgress';
 import MenuItem from '@mui/material/MenuItem';
 
 import { DashboardContent } from 'src/layouts/dashboard';
-import { ordersApi, type Order } from 'src/api/orders';
+import { ordersApi } from 'src/api/orders';
+import { usersApi } from 'src/api/users';
+import type { OrderStatus, UserResponse } from 'src/api/types';
 
 // ----------------------------------------------------------------------
 
@@ -20,29 +22,54 @@ interface OrderCreateFormProps {
   onCancel?: () => void;
 }
 
-const STATUS_OPTIONS: Order['status'][] = ['pending', 'processing', 'completed', 'cancelled'];
-const PAYMENT_STATUS_OPTIONS: Order['paymentStatus'][] = ['pending', 'paid', 'failed'];
+const STATUS_OPTIONS: OrderStatus[] = ['PENDING', 'CONFIRMED', 'PROCESSING', 'COMPLETED', 'CANCELLED'];
 
 export function OrderCreateForm({ onSuccess, onCancel }: OrderCreateFormProps) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [users, setUsers] = useState<UserResponse[]>([]);
+  const [loadingUsers, setLoadingUsers] = useState(true);
 
   const [formData, setFormData] = useState({
-    orderNumber: '',
-    customerName: '',
-    total: 0,
-    items: 1,
-    status: 'pending' as Order['status'],
-    paymentStatus: 'pending' as Order['paymentStatus'],
-    createdAt: new Date().toISOString().slice(0, 10),
+    userId: 0,
+    subtotal: 0,
+    taxAmount: 0,
+    shippingCost: 0,
+    discountAmount: 0,
+    totalAmount: 0,
+    orderStatus: 'PENDING' as OrderStatus,
+    notes: '',
+    address: '',
   });
+
+  useEffect(() => {
+    const fetchUsers = async () => {
+      try {
+        const response = await usersApi.getAll({ pageSize: 100 });
+        setUsers(response.content);
+      } catch (err) {
+        console.error('Failed to fetch users:', err);
+      } finally {
+        setLoadingUsers(false);
+      }
+    };
+    fetchUsers();
+  }, []);
+
+  // Auto calculate total
+  useEffect(() => {
+    const total = formData.subtotal + formData.taxAmount + formData.shippingCost - formData.discountAmount;
+    setFormData(prev => ({ ...prev, totalAmount: Math.max(0, total) }));
+  }, [formData.subtotal, formData.taxAmount, formData.shippingCost, formData.discountAmount]);
 
   const handleChange = (field: keyof typeof formData) =>
     (event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
       const value = event.target.value;
       setFormData((prev) => ({
         ...prev,
-        [field]: ['total', 'items'].includes(field) ? Number(value) : value,
+        [field]: ['userId', 'subtotal', 'taxAmount', 'shippingCost', 'discountAmount', 'totalAmount'].includes(field)
+          ? Number(value)
+          : value,
       }));
       setError(null);
     };
@@ -51,24 +78,29 @@ export function OrderCreateForm({ onSuccess, onCancel }: OrderCreateFormProps) {
     event.preventDefault();
     setError(null);
 
-    if (!formData.orderNumber || !formData.customerName) {
-      setError('Order number and customer name are required');
+    if (!formData.userId) {
+      setError('Please select a customer');
       return;
     }
 
-    const payload: Omit<Order, 'id'> = {
-      orderNumber: formData.orderNumber,
-      customerName: formData.customerName,
-      total: Number(formData.total) || 0,
-      items: Number(formData.items) || 0,
-      status: formData.status,
-      paymentStatus: formData.paymentStatus,
-      createdAt: new Date(formData.createdAt).toISOString(),
-    };
+    if (formData.totalAmount <= 0) {
+      setError('Total amount must be greater than 0');
+      return;
+    }
 
     setLoading(true);
     try {
-      await ordersApi.create(payload);
+      await ordersApi.create({
+        userId: formData.userId,
+        subtotal: formData.subtotal,
+        taxAmount: formData.taxAmount,
+        shippingCost: formData.shippingCost,
+        discountAmount: formData.discountAmount,
+        totalAmount: formData.totalAmount,
+        orderStatus: formData.orderStatus,
+        notes: formData.notes || undefined,
+        address: formData.address || undefined,
+      });
       if (onSuccess) {
         onSuccess();
       }
@@ -95,20 +127,24 @@ export function OrderCreateForm({ onSuccess, onCancel }: OrderCreateFormProps) {
               {error && <Alert severity="error">{error}</Alert>}
 
               <TextField
+                select
                 fullWidth
-                label="Order Number"
+                label="Customer"
                 required
-                value={formData.orderNumber}
-                onChange={handleChange('orderNumber')}
-              />
-
-              <TextField
-                fullWidth
-                label="Customer Name"
-                required
-                value={formData.customerName}
-                onChange={handleChange('customerName')}
-              />
+                value={formData.userId || ''}
+                onChange={handleChange('userId')}
+                disabled={loadingUsers}
+              >
+                {loadingUsers ? (
+                  <MenuItem value="">Loading...</MenuItem>
+                ) : (
+                  users.map((user) => (
+                    <MenuItem key={user.id} value={user.id}>
+                      {user.firstName} {user.lastName} ({user.email})
+                    </MenuItem>
+                  ))
+                )}
+              </TextField>
 
               <Box
                 sx={{
@@ -120,19 +156,19 @@ export function OrderCreateForm({ onSuccess, onCancel }: OrderCreateFormProps) {
                 <TextField
                   fullWidth
                   type="number"
-                  label="Total"
-                  value={formData.total}
-                  onChange={handleChange('total')}
+                  label="Subtotal"
+                  value={formData.subtotal}
+                  onChange={handleChange('subtotal')}
                   inputProps={{ min: 0, step: 0.01 }}
                 />
 
                 <TextField
                   fullWidth
                   type="number"
-                  label="Items"
-                  value={formData.items}
-                  onChange={handleChange('items')}
-                  inputProps={{ min: 0 }}
+                  label="Tax Amount"
+                  value={formData.taxAmount}
+                  onChange={handleChange('taxAmount')}
+                  inputProps={{ min: 0, step: 0.01 }}
                 />
               </Box>
 
@@ -144,28 +180,50 @@ export function OrderCreateForm({ onSuccess, onCancel }: OrderCreateFormProps) {
                 }}
               >
                 <TextField
-                  select
                   fullWidth
-                  label="Status"
-                  value={formData.status}
-                  onChange={handleChange('status')}
-                >
-                  {STATUS_OPTIONS.map((option) => (
-                    <MenuItem key={option} value={option} sx={{ textTransform: 'capitalize' }}>
-                      {option}
-                    </MenuItem>
-                  ))}
-                </TextField>
+                  type="number"
+                  label="Shipping Cost"
+                  value={formData.shippingCost}
+                  onChange={handleChange('shippingCost')}
+                  inputProps={{ min: 0, step: 0.01 }}
+                />
+
+                <TextField
+                  fullWidth
+                  type="number"
+                  label="Discount Amount"
+                  value={formData.discountAmount}
+                  onChange={handleChange('discountAmount')}
+                  inputProps={{ min: 0, step: 0.01 }}
+                />
+              </Box>
+
+              <Box
+                sx={{
+                  display: 'grid',
+                  gap: 2,
+                  gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)' },
+                }}
+              >
+                <TextField
+                  fullWidth
+                  type="number"
+                  label="Total Amount"
+                  value={formData.totalAmount}
+                  onChange={handleChange('totalAmount')}
+                  inputProps={{ min: 0, step: 0.01 }}
+                  helperText="Auto-calculated from subtotal + tax + shipping - discount"
+                />
 
                 <TextField
                   select
                   fullWidth
-                  label="Payment Status"
-                  value={formData.paymentStatus}
-                  onChange={handleChange('paymentStatus')}
+                  label="Status"
+                  value={formData.orderStatus}
+                  onChange={handleChange('orderStatus')}
                 >
-                  {PAYMENT_STATUS_OPTIONS.map((option) => (
-                    <MenuItem key={option} value={option} sx={{ textTransform: 'capitalize' }}>
+                  {STATUS_OPTIONS.map((option) => (
+                    <MenuItem key={option} value={option}>
                       {option}
                     </MenuItem>
                   ))}
@@ -174,11 +232,20 @@ export function OrderCreateForm({ onSuccess, onCancel }: OrderCreateFormProps) {
 
               <TextField
                 fullWidth
-                type="date"
-                label="Created At"
-                InputLabelProps={{ shrink: true }}
-                value={formData.createdAt}
-                onChange={handleChange('createdAt')}
+                label="Address"
+                multiline
+                rows={2}
+                value={formData.address}
+                onChange={handleChange('address')}
+              />
+
+              <TextField
+                fullWidth
+                label="Notes"
+                multiline
+                rows={2}
+                value={formData.notes}
+                onChange={handleChange('notes')}
               />
 
               <Box sx={{ display: 'flex', gap: 2, justifyContent: 'flex-end' }}>

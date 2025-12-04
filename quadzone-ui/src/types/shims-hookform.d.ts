@@ -22,4 +22,6 @@ declare module "yup" {
     export const string: any;
     export const object: any;
     export const ref: (s: string) => any;
+    export const number: any;
+    export const boolean: any;
 }

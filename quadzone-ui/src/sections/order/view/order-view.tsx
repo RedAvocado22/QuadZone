@@ -62,6 +62,7 @@ export function OrderView() {
 
   // Apply client-side sorting
   const sortedOrders = useMemo(() => {
+    if (!orders || !Array.isArray(orders)) return [];
     const sorted = [...orders].sort((a, b) => {
       let aValue: any;
       let bValue: any;
@@ -220,13 +221,13 @@ export function OrderView() {
                     onSort={onSort}
                     onSelectAllRows={onSelectAllRows}
                     headLabel={[
-                      { id: 'orderNumber', label: 'Order #' },
-                      { id: 'customerName', label: 'Customer' },
+                      { id: 'orderNumber', label: 'Order #', align: 'center' },
+                      { id: 'customerName', label: 'Customer', align: 'center' },
                       { id: 'itemsCount', label: 'Items', align: 'center' },
-                      { id: 'totalAmount', label: 'Total' },
-                      { id: 'status', label: 'Status' },
-                      { id: 'orderDate', label: 'Created' },
-                      { id: '' },
+                      { id: 'totalAmount', label: 'Total', align: 'center' },
+                      { id: 'status', label: 'Status', align: 'center' },
+                      { id: 'orderDate', label: 'Created', align: 'center' },
+                      { id: '', align: 'center' },
                     ]}
                   />
                   <TableBody>
@@ -337,7 +338,7 @@ function OrderTableRow({
   }, [onDelete, row.id, handleClosePopover]);
 
   const getStatusColor = (status: string) => {
-    switch (status.toLowerCase()) {
+    switch (status?.toLowerCase()) {
       case 'completed':
         return 'success';
       case 'pending':
@@ -345,6 +346,7 @@ function OrderTableRow({
       case 'cancelled':
         return 'error';
       case 'processing':
+      case 'confirmed':
         return 'info';
       default:
         return 'default';
@@ -369,25 +371,25 @@ function OrderTableRow({
           <Checkbox disableRipple checked={selected} onChange={onSelectRow} />
         </TableCell>
 
-        <TableCell component="th" scope="row">
+        <TableCell component="th" scope="row" align="center">
           <Button variant="text" color="inherit" onClick={() => onView?.(row.id)} sx={{ p: 0, minWidth: 'auto' }}>
             {row.orderNumber}
           </Button>
         </TableCell>
 
-        <TableCell>{row.customerName}</TableCell>
+        <TableCell align="center">{row.customerName || '-'}</TableCell>
 
-        <TableCell align="center">{row.itemsCount}</TableCell>
+        <TableCell align="center">{row.itemsCount ?? 0}</TableCell>
 
-        <TableCell>${row.totalAmount.toFixed(2)}</TableCell>
+        <TableCell align="center">${(row.totalAmount ?? 0).toFixed(2)}</TableCell>
 
-        <TableCell>
-          <Label color={getStatusColor(row.status)}>{row.status}</Label>
+        <TableCell align="center">
+          <Label color={getStatusColor(row.status)}>{row.status || '-'}</Label>
         </TableCell>
 
-        <TableCell>{new Date(row.orderDate).toLocaleDateString()}</TableCell>
+        <TableCell align="center">{row.orderDate ? new Date(row.orderDate).toLocaleDateString() : '-'}</TableCell>
 
-        <TableCell align="right">
+        <TableCell align="center">
           <IconButton onClick={handleOpenPopover}>
             <Iconify icon="eva:more-vertical-fill" />
           </IconButton>

@@ -45,11 +45,9 @@ export function AdminChatView() {
               return freshToken;
             },
             onConnect: () => {
-              console.log('[Admin Chat] WebSocket connected');
               setIsConnected(true);
             },
             onDisconnect: () => {
-              console.log('[Admin Chat] WebSocket disconnected');
               setIsConnected(false);
             },
             onError: (error) => {
@@ -80,7 +78,7 @@ export function AdminChatView() {
     <DashboardContent maxWidth="xl">
       {/* Header */}
       <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
-        <Iconify icon="solar:chat-round-line-bold-duotone" sx={{ width: 32, height: 32, mr: 2 }} />
+        <Iconify icon={"solar:chat-round-line-bold-duotone" as any} sx={{ width: 32, height: 32, mr: 2 }} />
         <Typography variant="h4">Chat Management</Typography>
         <Box sx={{ ml: 'auto', display: 'flex', alignItems: 'center', gap: 1 }}>
           <Box
@@ -100,7 +98,7 @@ export function AdminChatView() {
       {/* Chat interface */}
       <Grid container spacing={3} sx={{ height: 'calc(100vh - 200px)' }}>
         {/* Left: Room list */}
-        <Grid item xs={12} md={4}>
+        <Grid item xs={12} md={4} component={Box as any}>
           <ChatRoomsList
             selectedRoomId={selectedRoom?.id}
             onRoomSelect={handleRoomSelect}
@@ -109,7 +107,7 @@ export function AdminChatView() {
         </Grid>
 
         {/* Right: Chat window */}
-        <Grid item xs={12} md={8}>
+        <Grid item xs={12} md={8} component={Box as any}>
           {selectedRoom ? (
             <AdminChatWindow room={selectedRoom} onRoomUpdate={handleRoomUpdate} />
           ) : (
@@ -127,7 +125,7 @@ export function AdminChatView() {
             >
               <Box sx={{ textAlign: 'center' }}>
                 <Iconify
-                  icon="solar:chat-round-line-bold-duotone"
+                  icon={"solar:chat-round-line-bold-duotone" as any}
                   sx={{ width: 80, height: 80, mb: 2, color: 'text.disabled' }}
                 />
                 <Typography variant="h6" color="text.secondary">

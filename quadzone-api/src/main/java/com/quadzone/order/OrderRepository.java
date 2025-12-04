@@ -17,12 +17,12 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
                         WHERE LOWER(COALESCE(o.user.firstName, '') || ' ' || COALESCE(o.user.lastName, ''))
                                 LIKE LOWER(CONCAT('%', :keyword, '%'))
                            OR LOWER(COALESCE(o.user.email, '')) LIKE LOWER(CONCAT('%', :keyword, '%'))
+                           OR LOWER(COALESCE(o.orderNumber, '')) LIKE LOWER(CONCAT('%', :keyword, '%'))
                         """)
         Page<Order> search(@Param("keyword") String keyword, Pageable pageable);
         
         /**
-         * Find order by order number (format: ORD-00001)
-         * Extracts the numeric ID from the order number
+         * Find orders by status
          */
         default Optional<Order> findByOrderNumber(String orderNumber) {
             try {
@@ -55,4 +55,30 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
          */
         @Query("SELECT o FROM Order o WHERE o.user.id = :userId AND o.orderStatus = :status")
         List<Order> findByUserIdAndOrderStatus(@Param("userId") Long userId, @Param("status") OrderStatus status);
+        Page<Order> findByOrderStatus(OrderStatus status, Pageable pageable);
+
+
+        /**
+         * Search orders with status filter
+         */
+        @Query("""
+                        SELECT o
+                        FROM Order o
+                        WHERE o.orderStatus = :status
+                          AND (LOWER(COALESCE(o.user.firstName, '') || ' ' || COALESCE(o.user.lastName, ''))
+                                LIKE LOWER(CONCAT('%', :keyword, '%'))
+                           OR LOWER(COALESCE(o.user.email, '')) LIKE LOWER(CONCAT('%', :keyword, '%'))
+                           OR LOWER(COALESCE(o.orderNumber, '')) LIKE LOWER(CONCAT('%', :keyword, '%')))
+                        """)
+        Page<Order> searchByQueryAndStatus(@Param("keyword") String keyword, @Param("status") OrderStatus status, Pageable pageable);
+        
+        /**
+         * Find order by order number
+         */
+        Optional<Order> findByOrderNumber(String orderNumber);
+
+        /**
+         * Check if order number exists
+         */
+        boolean existsByOrderNumber(String orderNumber);
 }

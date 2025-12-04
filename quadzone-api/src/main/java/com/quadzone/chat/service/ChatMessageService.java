@@ -37,16 +37,16 @@ public class ChatMessageService {
      * Save a new message
      */
     public ChatMessageResponse saveMessage(ChatMessageRequest request) {
-        ChatRoom chatRoom = chatRoomRepository.findById(request.getRoomId())
+        ChatRoom chatRoom = chatRoomRepository.findById(request.roomId())
                 .orElseThrow(() -> new ChatRoomNotFoundException("Chat room not found"));
         
-        User sender = userRepository.findById(request.getSenderId())
+        User sender = userRepository.findById(request.senderId())
                 .orElseThrow(() -> new RuntimeException("Sender not found"));
         
         ChatMessage message = ChatMessage.builder()
                 .chatRoom(chatRoom)
                 .sender(sender)
-                .content(request.getContent())
+                .content(request.content())
                 .messageType(MessageType.TEXT)
                 .read(false)
                 .build();
@@ -58,13 +58,13 @@ public class ChatMessageService {
         chatRoomRepository.save(chatRoom);
         
         log.info("Saved message {} in room {} from user {}", 
-                message.getId(), request.getRoomId(), request.getSenderId());
+                message.getId(), request.roomId(), request.senderId());
         
         // Convert to response DTO
         ChatMessageResponse response = ChatMessageResponse.from(message);
         
         // Broadcast message to all subscribers of this chat room
-        broadcastMessage(request.getRoomId(), response);
+        broadcastMessage(request.roomId(), response);
         
         return response;
     }

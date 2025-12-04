@@ -41,7 +41,14 @@ export const yupQuantity = yup
 
 export const yupUrl = yup
     .string()
-    .url("Must be a valid URL")
+    .test('is-valid-image-path', 'Must be a valid URL or local image path', (value: string | null | undefined) => {
+        if (!value) return true; // Allow empty
+        // Allow http/https URLs
+        if (value.startsWith('http://') || value.startsWith('https://')) return true;
+        // Allow local paths from /src/assets/img or @img
+        if (value.startsWith('/src/assets/img') || value.startsWith('@img')) return true;
+        return false;
+    })
     .nullable();
 
 export const yupOptionalString = yup.string().nullable();

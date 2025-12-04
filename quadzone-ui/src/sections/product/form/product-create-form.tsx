@@ -16,12 +16,15 @@ import Alert from '@mui/material/Alert';
 import CircularProgress from '@mui/material/CircularProgress';
 import ToggleButton from '@mui/material/ToggleButton';
 import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
+import Switch from '@mui/material/Switch';
+import FormControlLabel from '@mui/material/FormControlLabel';
 
 import { Iconify } from 'src/components/iconify';
 import { DashboardContent } from 'src/layouts/dashboard';
-import { productsApi, type Product } from 'src/api/productsAdmin';
+import { productsApi } from 'src/api/productsAdmin';
 import { uploadApi } from 'src/api/upload';
 import {  categoriesApi , type Category } from 'src/api/categories';
+import { type SubCategory } from 'src/api/types';
 
 // ----------------------------------------------------------------------
 
@@ -44,6 +47,7 @@ interface FormValues {
   categoryId: number | '';
   subCategoryId: number | '';
   imageMethod: 'url' | 'upload';
+  isActive: boolean;
 }
 
 const productCreateSchema = yup.object({
@@ -72,10 +76,20 @@ const productCreateSchema = yup.object({
     .positive('Weight must be greater than 0')
     .nullable(),
   color: yup.string().nullable(),
-  imageUrl: yup.string().url('Must be a valid URL').nullable(),
+  imageUrl: yup.string()
+    .test('is-valid-image-path', 'Must be a valid URL or local image path', (value: string | null | undefined) => {
+      if (!value) return true; // Allow empty
+      // Allow http/https URLs
+      if (value.startsWith('http://') || value.startsWith('https://')) return true;
+      // Allow local paths from /src/assets/img or @img
+      if (value.startsWith('/src/assets/img') || value.startsWith('@img')) return true;
+      return false;
+    })
+    .nullable(),
   categoryId: yup.number().required('Category is required'),
   subCategoryId: yup.number().required('Subcategory is required'),
   imageMethod: yup.string().oneOf(['url', 'upload']).required(),
+  isActive: yup.boolean().required('Active status is required').default(true),
 });
 
 export function ProductCreateForm({ onSuccess, onCancel }: ProductCreateFormProps) {
@@ -100,6 +114,7 @@ export function ProductCreateForm({ onSuccess, onCancel }: ProductCreateFormProp
       categoryId: '',
       subCategoryId: '',
       imageMethod: 'url',
+      isActive: true,
     },
     
     validationSchema: productCreateSchema,
@@ -117,7 +132,8 @@ export function ProductCreateForm({ onSuccess, onCancel }: ProductCreateFormProp
           color: values.color || '',
           imageUrl: values.imageUrl && values.imageUrl.trim() ? values.imageUrl.trim() : '',
           subCategoryId: values.subCategoryId as number,
-            categoryId: values.categoryId as number
+          categoryId: values.categoryId as number,
+          isActive: values.isActive,
         };
 
         await productsApi.create(productData);
@@ -445,6 +461,18 @@ useEffect(() => {
                   helperText={formik.touched.color && formik.errors.color}
                 />
               </Box>
+
+              {/* Active Status */}
+              <FormControlLabel
+                control={
+                  <Switch
+                    checked={formik.values.isActive}
+                    onChange={(e) => formik.setFieldValue('isActive', e.target.checked)}
+                    color="primary"
+                  />
+                }
+                label={formik.values.isActive ? 'Active (visible in shop)' : 'Inactive (hidden from shop)'}
+              />
 
               {/* Product Image */}
               <Typography variant="h6" sx={{ mt: 2 }}>Product Image</Typography>

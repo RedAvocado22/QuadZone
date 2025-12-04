@@ -70,9 +70,9 @@ public class ReviewService {
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Product not found"));
 
         Review review = new Review();
-        review.setRating(request.rating());
-        review.setTitle(request.title());
-        review.setText(request.text());
+        review.setRating(reviewResponse.rating());
+        review.setTitle(reviewResponse.title());
+        review.setContent(reviewResponse.content());
         review.setProduct(product);
         review.setUser(user);
 
