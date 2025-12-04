@@ -2,6 +2,7 @@ package com.quadzone.user.dto;
 
 import com.quadzone.user.User;
 import com.quadzone.user.UserRole;
+import com.quadzone.user.UserStatus;
 
 import java.time.LocalDateTime;
 
@@ -10,7 +11,8 @@ public record UserResponse(
         String name,
         String email,
         UserRole role,
-        LocalDateTime createdAt
+        LocalDateTime createdAt,
+        UserStatus status
 ) {
     public static UserResponse from(User user) {
         return new UserResponse(
@@ -18,7 +20,8 @@ public record UserResponse(
                 user.getFullName(),
                 user.getEmail(),
                 user.getRole(),
-                user.getCreatedAt()
+                user.getCreatedAt(),
+                user.getStatus()
         );
     }
 }

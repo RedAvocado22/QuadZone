@@ -1,7 +1,7 @@
 import { CONFIG } from 'src/config-global';
 import { useParams } from 'react-router-dom';
 import { useRouter } from 'src/routing/hooks';
-import { PostEditForm } from 'src/sections/blog/form';
+import { BlogEditForm } from 'src/sections/blog/form/blog-edit-form';
 
 // ----------------------------------------------------------------------
 
@@ -23,8 +23,8 @@ export default function Page() {
 
   return (
     <>
-      <title>{`Edit Post - ${CONFIG.appName}`}</title>
-      <PostEditForm postId={id} onSuccess={handleSuccess} onCancel={handleCancel} />
+      <title>{`Edit Blog - ${CONFIG.appName}`}</title>
+      <BlogEditForm blogId={Number.parseInt(id, 10)} onSuccess={handleSuccess} onCancel={handleCancel} />
     </>
   );
 }

@@ -337,8 +337,8 @@ public class EmailSenderService {
      * @param orderDate Order date
      * @param itemsCount Number of items in the order
      */
-    public void sendOrderConfirmationEmail(String to, String orderNumber, String customerName, 
-                                          Double totalAmount, java.time.LocalDateTime orderDate, 
+    public void sendOrderConfirmationEmail(String to, String orderNumber, String customerName,
+                                          Double totalAmount, java.time.LocalDateTime orderDate,
                                           int itemsCount) {
         try {
             String trackingUrl = feBaseUrl + "/track-order?orderNumber=" + orderNumber;
@@ -360,12 +360,12 @@ public class EmailSenderService {
         }
     }
 
-    private String buildOrderConfirmationEmailHtml(String customerName, String orderNumber, 
+    private String buildOrderConfirmationEmailHtml(String customerName, String orderNumber,
                                                    Double totalAmount, java.time.LocalDateTime orderDate,
                                                    int itemsCount, String trackingUrl) {
         String formattedDate = orderDate.format(java.time.format.DateTimeFormatter.ofPattern("dd MMMM yyyy, HH:mm"));
         String formattedAmount = String.format("$%.2f", totalAmount);
-        
+
         return String.format("""
             <!DOCTYPE html>
             <html lang="en">
@@ -484,7 +484,7 @@ public class EmailSenderService {
                 </table>
             </body>
             </html>
-            """, customerName, orderNumber, formattedDate, formattedAmount, itemsCount, 
+            """, customerName, orderNumber, formattedDate, formattedAmount, itemsCount,
             trackingUrl, trackingUrl, trackingUrl, java.time.Year.now().getValue());
     }
 }

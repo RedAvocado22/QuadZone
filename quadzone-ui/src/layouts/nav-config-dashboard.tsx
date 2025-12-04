@@ -48,4 +48,9 @@ export const navData = [
     path: '/admin/order/assign-delivery',
     icon: <Iconify width={24} icon="solar:cart-3-bold" />,
   },
+  {
+    title: 'Chat',
+    path: '/admin/chat',
+    icon: <Iconify width={24} icon="solar:chat-round-line-bold-duotone" />,
+  },
 ];

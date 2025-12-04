@@ -37,7 +37,9 @@ public class SecurityConfiguration {
             "/api/v1/orders/public/**", // Allow public order tracking
             "/api/v1/coupons/**",        // Allow public coupon validation & creation if needed
             "/api/v1/shipping/**",        // Allow shipping cost calculation
-            "/api/v1/payments/**"
+            "/api/v1/payments/**",
+            "/api/v1/orders/public/**",  // Allow public order tracking
+            "/ws/**"
     };
 
     @Value("${frontend.baseurl:http://localhost:5173}")
@@ -57,6 +59,9 @@ public class SecurityConfiguration {
                         .requestMatchers(WHITE_LIST).permitAll()
                         .requestMatchers("/api/v*/cart/**").authenticated()
                         .requestMatchers("/api/v*/wishlist/**").authenticated()
+                        .requestMatchers("/api/v*/chat/rooms").hasAnyAuthority(UserRole.ADMIN.name(), UserRole.STAFF.name())
+                        .requestMatchers("/api/v*/chat/room/*/assign").hasAuthority(UserRole.ADMIN.name())
+                        .requestMatchers("/api/v*/chat/**").authenticated()
                         .requestMatchers("/api/v*/admin/**").hasAnyAuthority(UserRole.ADMIN.name(), UserRole.STAFF.name())
                         .anyRequest().authenticated()
                 )

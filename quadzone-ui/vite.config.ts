@@ -26,5 +26,9 @@ export default defineConfig({
             '@assets': path.resolve(__dirname, './src/assets'),
             'src': path.resolve(__dirname, './src')
         }
+    },
+
+    define: {
+        global: 'globalThis',
     }
 });

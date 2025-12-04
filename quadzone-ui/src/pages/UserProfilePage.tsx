@@ -1,13 +1,29 @@
 import { useState, useRef, useEffect } from 'react';
 import { useProfile } from '../hooks/userProfile';
+import { useUser } from '../hooks/useUser';
 import { format } from 'date-fns';
 import '../UserProfilePage.css';
 
 const UserProfilePage = () => {
-    const { profile, loading, isInitialLoading, updateProfile, uploadAvatar } = useProfile();
+    const { profile, loading, isInitialLoading, updateProfile, uploadAvatar, changePassword } = useProfile();
+    const { logout } = useUser();
     const [activeTab, setActiveTab] = useState('account-info');
     const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
+    const [showCurrentPassword, setShowCurrentPassword] = useState(false);
+    const [showNewPassword, setShowNewPassword] = useState(false);
+    const [showConfirmNewPassword, setShowConfirmNewPassword] = useState(false);
+
+    const [passwordData, setPasswordData] = useState({
+        currentPassword: '',
+        newPassword: '',
+        confirmPassword: '',
+    });
+
+    const handleLogout = (e: React.MouseEvent) => {
+        e.preventDefault();
+        logout();
+    };
 
     const [formData, setFormData] = useState({
         firstName: '',
@@ -57,6 +73,28 @@ const UserProfilePage = () => {
 
     const handleAvatarClick = () => {
         fileInputRef.current?.click();
+    };
+
+    const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const { name, value } = e.target;
+        setPasswordData((prev) => ({ ...prev, [name]: value }));
+    };
+
+    const handleChangePassword = async (e: React.FormEvent) => {
+        e.preventDefault();
+        const success = await changePassword({
+            currentPassword: passwordData.currentPassword,
+            newPassword: passwordData.newPassword,
+            confirmPassword: passwordData.confirmPassword,
+        });
+
+        if (success) {
+            setPasswordData({
+                currentPassword: '',
+                newPassword: '',
+                confirmPassword: '',
+            });
+        }
     };
 
     if (isInitialLoading) {
@@ -165,9 +203,12 @@ const UserProfilePage = () => {
                                             >
                                                 <i className="fas fa-key"></i>Change Password
                                             </button>
-                                            <a className="nav-item nav-link" href="/logout">
+                                            <button
+                                                className="nav-item nav-link"
+                                                onClick={handleLogout}
+                                            >
                                                 <i className="fas fa-sign-out-alt"></i>Logout
-                                            </a>
+                                            </button>
                                         </div>
                                     </nav>
                                 </aside>
@@ -180,9 +221,7 @@ const UserProfilePage = () => {
                                     {activeTab === 'account-info' && (
                                         <div className="axil-dashboard-overview">
                                             <div className="welcome-text">
-                                                Hello <span>{fullName}</span>! (not{' '}
-                                                <span>{fullName}</span>? <a href="/logout">Logout</a>
-                                                )
+                                                Hello <span>{fullName}</span>!
                                             </div>
                                             <p>
                                                 View your account details here. To update
@@ -442,7 +481,7 @@ const UserProfilePage = () => {
                                                 uppercase, lowercase, numbers and special
                                                 characters.
                                             </div>
-                                            <form className="account-details-form">
+                                            <form className="account-details-form" onSubmit={handleChangePassword}>
                                                 <div className="row">
                                                     <div className="col-12">
                                                         <div className="form-group">
@@ -452,12 +491,35 @@ const UserProfilePage = () => {
                                                                     *
                                                                 </span>
                                                             </label>
-                                                            <input
-                                                                type="password"
-                                                                className="form-control"
-                                                                placeholder="Enter current password"
-                                                                required
-                                                            />
+                                                            <div className="position-relative">
+                                                                <input
+                                                                    type={showCurrentPassword ? "text" : "password"}
+                                                                    className="form-control"
+                                                                    name="currentPassword"
+                                                                    value={passwordData.currentPassword}
+                                                                    onChange={handlePasswordChange}
+                                                                    placeholder="Enter current password"
+                                                                    required
+                                                                />
+                                                                <button
+                                                                    type="button"
+                                                                    className="btn btn-link position-absolute"
+                                                                    style={{
+                                                                        right: "10px",
+                                                                        top: "50%",
+                                                                        transform: "translateY(-50%)",
+                                                                        padding: "0",
+                                                                        border: "none",
+                                                                        background: "none",
+                                                                        color: "#6c757d",
+                                                                        zIndex: 10
+                                                                    }}
+                                                                    onClick={() => setShowCurrentPassword(!showCurrentPassword)}
+                                                                    aria-label={showCurrentPassword ? "Hide password" : "Show password"}
+                                                                >
+                                                                    <i className={`fas ${showCurrentPassword ? "fa-eye-slash" : "fa-eye"}`}></i>
+                                                                </button>
+                                                            </div>
                                                         </div>
                                                     </div>
                                                     <div className="col-12">
@@ -468,12 +530,35 @@ const UserProfilePage = () => {
                                                                     *
                                                                 </span>
                                                             </label>
-                                                            <input
-                                                                type="password"
-                                                                className="form-control"
-                                                                placeholder="Enter new password"
-                                                                required
-                                                            />
+                                                            <div className="position-relative">
+                                                                <input
+                                                                    type={showNewPassword ? "text" : "password"}
+                                                                    className="form-control"
+                                                                    name="newPassword"
+                                                                    value={passwordData.newPassword}
+                                                                    onChange={handlePasswordChange}
+                                                                    placeholder="Enter new password"
+                                                                    required
+                                                                />
+                                                                <button
+                                                                    type="button"
+                                                                    className="btn btn-link position-absolute"
+                                                                    style={{
+                                                                        right: "10px",
+                                                                        top: "50%",
+                                                                        transform: "translateY(-50%)",
+                                                                        padding: "0",
+                                                                        border: "none",
+                                                                        background: "none",
+                                                                        color: "#6c757d",
+                                                                        zIndex: 10
+                                                                    }}
+                                                                    onClick={() => setShowNewPassword(!showNewPassword)}
+                                                                    aria-label={showNewPassword ? "Hide password" : "Show password"}
+                                                                >
+                                                                    <i className={`fas ${showNewPassword ? "fa-eye-slash" : "fa-eye"}`}></i>
+                                                                </button>
+                                                            </div>
                                                         </div>
                                                     </div>
                                                     <div className="col-12">
@@ -484,12 +569,35 @@ const UserProfilePage = () => {
                                                                     *
                                                                 </span>
                                                             </label>
-                                                            <input
-                                                                type="password"
-                                                                className="form-control"
-                                                                placeholder="Re-enter new password"
-                                                                required
-                                                            />
+                                                            <div className="position-relative">
+                                                                <input
+                                                                    type={showConfirmNewPassword ? "text" : "password"}
+                                                                    className="form-control"
+                                                                    name="confirmPassword"
+                                                                    value={passwordData.confirmPassword}
+                                                                    onChange={handlePasswordChange}
+                                                                    placeholder="Re-enter new password"
+                                                                    required
+                                                                />
+                                                                <button
+                                                                    type="button"
+                                                                    className="btn btn-link position-absolute"
+                                                                    style={{
+                                                                        right: "10px",
+                                                                        top: "50%",
+                                                                        transform: "translateY(-50%)",
+                                                                        padding: "0",
+                                                                        border: "none",
+                                                                        background: "none",
+                                                                        color: "#6c757d",
+                                                                        zIndex: 10
+                                                                    }}
+                                                                    onClick={() => setShowConfirmNewPassword(!showConfirmNewPassword)}
+                                                                    aria-label={showConfirmNewPassword ? "Hide password" : "Show password"}
+                                                                >
+                                                                    <i className={`fas ${showConfirmNewPassword ? "fa-eye-slash" : "fa-eye"}`}></i>
+                                                                </button>
+                                                            </div>
                                                         </div>
                                                     </div>
 
@@ -499,13 +607,34 @@ const UserProfilePage = () => {
                                                             <button
                                                                 type="submit"
                                                                 className="btn btn-warning profile-button"
+                                                                disabled={loading}
                                                             >
-                                                                <i className="fas fa-key me-2"></i>
-                                                                Change Password
+                                                                {loading ? (
+                                                                    <>
+                                                                        <span
+                                                                            className="spinner-border spinner-border-sm me-2"
+                                                                            role="status"
+                                                                            aria-hidden="true"
+                                                                        ></span>
+                                                                        Changing...
+                                                                    </>
+                                                                ) : (
+                                                                    <>
+                                                                        <i className="fas fa-key me-2"></i>
+                                                                        Change Password
+                                                                    </>
+                                                                )}
                                                             </button>
                                                             <button
-                                                                type="reset"
+                                                                type="button"
                                                                 className="btn btn-outline-secondary profile-button"
+                                                                onClick={() => {
+                                                                    setPasswordData({
+                                                                        currentPassword: '',
+                                                                        newPassword: '',
+                                                                        confirmPassword: '',
+                                                                    });
+                                                                }}
                                                             >
                                                                 <i className="fas fa-undo me-2"></i>
                                                                 Reset
@@ -527,4 +656,3 @@ const UserProfilePage = () => {
 };
 
 export default UserProfilePage;
-
