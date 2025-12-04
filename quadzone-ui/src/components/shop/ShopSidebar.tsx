@@ -13,12 +13,14 @@ interface ShopSidebarProps {
         categoryId?: number;
         subcategoryId?: number;
     }) => void;
+    onClearAll?: () => void;
 }
 
-const ShopSidebar: React.FC<ShopSidebarProps> = ({ isOpen, onClose, onApplyFilters }) => {
+const ShopSidebar: React.FC<ShopSidebarProps> = ({ isOpen, onClose, onApplyFilters, onClearAll }) => {
     const [categories, setCategories] = useState<PublicCategoryDTO[]>([]);
     const [brands, setBrands] = useState<PublicBrandDTO[]>([]);
     const [expandedCategories, setExpandedCategories] = useState<Record<number, boolean>>({});
+    const [resetTrigger, setResetTrigger] = useState<number>(0);
 
     // Local pending filters
     const [selectedBrands, setSelectedBrands] = useState<string[]>([]);
@@ -72,7 +74,8 @@ const ShopSidebar: React.FC<ShopSidebarProps> = ({ isOpen, onClose, onApplyFilte
         setPriceRange(null);
         setSelectedCategoryId(undefined);
         setSelectedSubcategoryId(undefined);
-        
+        setResetTrigger((prev) => prev + 1);
+
         // Also notify parent to clear filters
         onApplyFilters({
             brands: [],
@@ -80,6 +83,9 @@ const ShopSidebar: React.FC<ShopSidebarProps> = ({ isOpen, onClose, onApplyFilte
             categoryId: undefined,
             subcategoryId: undefined
         });
+
+        // Call onClearAll if provided to also clear search parameter
+        onClearAll?.();
     };
 
     const handlePriceFilter = (range: { min: number; max: number }) => {
@@ -107,6 +113,7 @@ const ShopSidebar: React.FC<ShopSidebarProps> = ({ isOpen, onClose, onApplyFilte
                     selectedSubcategoryId={selectedSubcategoryId}
                     onApply={handleApply}
                     onClear={handleClear}
+                    resetTrigger={resetTrigger}
                 />
             </div>
 
@@ -146,6 +153,7 @@ const ShopSidebar: React.FC<ShopSidebarProps> = ({ isOpen, onClose, onApplyFilte
                                 onClose();
                             }}
                             onClear={handleClear}
+                            resetTrigger={resetTrigger}
                         />
                     </div>
                 </div>
@@ -174,6 +182,7 @@ interface SidebarContentProps {
     selectedSubcategoryId?: number;
     onApply: () => void;
     onClear: () => void;
+    resetTrigger: number;
 }
 
 const SidebarContent: React.FC<SidebarContentProps> = ({
@@ -192,12 +201,13 @@ const SidebarContent: React.FC<SidebarContentProps> = ({
     selectedCategoryId,
     selectedSubcategoryId,
     onApply,
-    onClear
+    onClear,
+    resetTrigger
 }) => {
     return (
         <>
             {/* Categories */}
-            <div className="mb-6 border border-width-2 border-color-3 borders-radius-6">
+            <div className="mb-6 ">
                 <ul id="sidebarNav" className="list-unstyled mb-0 sidebar-navbar view-all">
                     <li>
                         <div className="dropdown-title">Browse Categories</div>
@@ -207,8 +217,10 @@ const SidebarContent: React.FC<SidebarContentProps> = ({
                         <li key={category.id}>
                             <button
                                 type="button"
-                                className={`dropdown-toggle dropdown-toggle-collapse btn-reset ${
-                                    selectedCategoryId === category.id && !selectedSubcategoryId ? 'text-primary font-weight-bold' : ''
+                                className={`dropdown-toggle dropdown-toggle-collapse btn-reset border-0 bg-transparent ${
+                                    selectedCategoryId === category.id && !selectedSubcategoryId
+                                        ? "text-primary font-weight-bold"
+                                        : ""
                                 }`}
                                 onClick={() => {
                                     toggleCategory(index);
@@ -229,7 +241,9 @@ const SidebarContent: React.FC<SidebarContentProps> = ({
                                                 <button
                                                     type="button"
                                                     className={`dropdown-item btn-reset ${
-                                                        selectedSubcategoryId === sub.id ? 'text-primary font-weight-bold' : ''
+                                                        selectedSubcategoryId === sub.id
+                                                            ? "text-primary font-weight-bold"
+                                                            : ""
                                                     }`}
                                                     onClick={() => onCategorySelect(category.id, sub.id)}>
                                                     {sub.name}
@@ -303,23 +317,24 @@ const SidebarContent: React.FC<SidebarContentProps> = ({
                             <span className="link__icon text-gray-27 bg-white">
                                 <span className="link__icon-inner">{showMoreBrands ? "-" : "+"}</span>
                             </span>
-                            <span className="link-collapse__default">Show more</span>
-                            <span className="link-collapse__active">Show less</span>
+
+                            <span className="ml-1">{showMoreBrands ? "Show less" : "Show more"}</span>
                         </a>
                     )}
                 </div>
 
                 {/* Price Range */}
-                <PriceRangeSlider min={0} max={5000} onFilter={onPriceFilter} />
+                <PriceRangeSlider min={0} max={5000} onFilter={onPriceFilter} resetTrigger={resetTrigger} />
 
                 {/* Apply & Clear Buttons */}
                 <div className="mt-5 d-flex gap-3">
-                    <button onClick={onApply} className="btn btn-primary btn-block transition-3d-hover height-60px">
-                        Apply Filters
+                    <button onClick={onApply} className="btn btn-primary transition-3d-hover height-60px flex-grow-1">
+                        Apply
                     </button>
+
                     <button
                         onClick={onClear}
-                        className="btn btn-soft-secondary btn-block transition-3d-hover height-60px">
+                        className="btn btn-soft-secondary transition-3d-hover height-60px flex-grow-1">
                         Clear All
                     </button>
                 </div>

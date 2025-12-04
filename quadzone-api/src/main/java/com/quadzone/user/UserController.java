@@ -1,10 +1,7 @@
 package com.quadzone.user;
 
 import com.quadzone.global.dto.PagedResponse;
-import com.quadzone.user.dto.CurrentUserResponse;
-import com.quadzone.user.dto.UserRegisterRequest;
-import com.quadzone.user.dto.UserResponse;
-import com.quadzone.user.dto.UserUpdateRequest;
+import com.quadzone.user.dto.*;
 import com.quadzone.utils.EntityMapper;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -64,7 +61,7 @@ public class UserController {
             @ApiResponse(responseCode = "404", description = "User not found with the provided ID"),
             @ApiResponse(responseCode = "400", description = "Invalid user ID format")
     })
-    public ResponseEntity<UserResponse> getUserForAdmin(
+    public ResponseEntity<UserAdminResponse> getUserForAdmin(
             @Parameter(description = "Unique identifier of the user", example = "1", required = true)
             @PathVariable Long id) {
         return ResponseEntity.ok(userService.findByIdForAdmin(id));

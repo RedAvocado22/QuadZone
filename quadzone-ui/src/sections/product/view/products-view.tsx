@@ -18,7 +18,7 @@ import { ProductSort } from '../product-sort';
 import { ProductFilters } from '../product-filters';
 
 import { Iconify } from 'src/components/iconify';
-import { PostSearch } from '../../blog/post-search';
+import { PostSearch } from '../../blog/blog-search';
 
 import type { FiltersProps } from '../product-filters';
 

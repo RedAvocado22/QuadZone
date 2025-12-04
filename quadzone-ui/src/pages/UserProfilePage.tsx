@@ -1,13 +1,20 @@
 import { useState, useRef, useEffect } from 'react';
 import { useProfile } from '../hooks/userProfile';
+import { useUser } from '../hooks/useUser';
 import { format } from 'date-fns';
 import '../UserProfilePage.css';
 
 const UserProfilePage = () => {
     const { profile, loading, isInitialLoading, updateProfile, uploadAvatar } = useProfile();
+    const { logout } = useUser();
     const [activeTab, setActiveTab] = useState('account-info');
     const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
+
+    const handleLogout = (e: React.MouseEvent) => {
+        e.preventDefault();
+        logout();
+    };
 
     const [formData, setFormData] = useState({
         firstName: '',
@@ -165,9 +172,12 @@ const UserProfilePage = () => {
                                             >
                                                 <i className="fas fa-key"></i>Change Password
                                             </button>
-                                            <a className="nav-item nav-link" href="/logout">
+                                            <button
+                                                className="nav-item nav-link"
+                                                onClick={handleLogout}
+                                            >
                                                 <i className="fas fa-sign-out-alt"></i>Logout
-                                            </a>
+                                            </button>
                                         </div>
                                     </nav>
                                 </aside>
@@ -181,7 +191,8 @@ const UserProfilePage = () => {
                                         <div className="axil-dashboard-overview">
                                             <div className="welcome-text">
                                                 Hello <span>{fullName}</span>! (not{' '}
-                                                <span>{fullName}</span>? <a href="/logout">Logout</a>
+                                                <span>{fullName}</span>?{' '}
+                                                <a href="#" onClick={handleLogout}>Logout</a>
                                                 )
                                             </div>
                                             <p>
