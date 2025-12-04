@@ -17,10 +17,10 @@ import TablePagination from '@mui/material/TablePagination';
 import CircularProgress from '@mui/material/CircularProgress';
 import MenuItem, { menuItemClasses } from '@mui/material/MenuItem';
 
-import { useCategories } from 'src/hooks/useCategories';
+import { useCoupons } from 'src/hooks/useCoupons';
 import { DashboardContent } from 'src/layouts/dashboard';
 import { useRouter } from 'src/routing/hooks';
-import { categoriesApi } from 'src/api/categories';
+import { couponsApi, type Coupon } from 'src/api/coupons';
 
 import { Label } from 'src/components/label';
 import { Iconify } from 'src/components/iconify';
@@ -34,94 +34,103 @@ import { emptyRows } from '../../user/utils';
 
 // ----------------------------------------------------------------------
 
-type CategoryRow = {
-  id: number;
-  name: string;
-  active: boolean;
-  productCount: number;
-  imageUrl: string | null;
-};
-
-export function CategoryView() {
+export function CouponView() {
   const router = useRouter();
   const [page, setPage] = useState(0);
-  const [orderBy, setOrderBy] = useState('name');
+  const [orderBy, setOrderBy] = useState('id');
   const [rowsPerPage, setRowsPerPage] = useState(5);
   const [selected, setSelected] = useState<string[]>([]);
-  const [order, setOrder] = useState<'asc' | 'desc'>('asc');
+  const [order, setOrder] = useState<'asc' | 'desc'>('desc');
   const [filterName, setFilterName] = useState('');
 
-  const { categories, loading, error, total, refetch } = useCategories({
+  const { coupons, loading, error, total, refetch } = useCoupons({
     page,
     pageSize: rowsPerPage,
     search: filterName,
-    // Remove sortBy and sortOrder from API call, we'll do client-side sorting
   });
 
   // Apply client-side sorting
-  const sortedCategories = useMemo(() => {
-    const sorted = [...categories].sort((a, b) => {
+  const sortedCoupons = useMemo(() => {
+    const sorted = [...coupons].sort((a, b) => {
       let aValue: any;
       let bValue: any;
 
-      // Map frontend field names to actual category properties
       switch (orderBy) {
-        case 'name':
-          aValue = a.name;
-          bValue = b.name;
+        case 'code':
+          aValue = a.code;
+          bValue = b.code;
           break;
-        case 'productCount':
-          aValue = a.productCount;
-          bValue = b.productCount;
+        case 'discountType':
+          aValue = a.discountType;
+          bValue = b.discountType;
+          break;
+        case 'couponValue':
+          aValue = a.couponValue;
+          bValue = b.couponValue;
+          break;
+        case 'usageCount':
+          aValue = a.usageCount;
+          bValue = b.usageCount;
           break;
         case 'active':
           aValue = a.active ? 1 : 0;
           bValue = b.active ? 1 : 0;
           break;
+        case 'endDate':
+          aValue = new Date(a.endDate).getTime();
+          bValue = new Date(b.endDate).getTime();
+          break;
+        case 'id':
         default:
-          return 0;
+          aValue = a.id;
+          bValue = b.id;
+          break;
       }
 
       if (aValue === undefined || bValue === undefined) return 0;
 
-      // Handle string and number comparisons
       if (typeof aValue === 'string' && typeof bValue === 'string') {
         const comparison = aValue.toLowerCase().localeCompare(bValue.toLowerCase());
         return order === 'asc' ? comparison : -comparison;
       }
 
-      // Handle number comparisons
       if (order === 'asc') {
         return (aValue as number) - (bValue as number);
       }
       return (bValue as number) - (aValue as number);
     });
     return sorted;
-  }, [categories, orderBy, order]);
+  }, [coupons, orderBy, order]);
 
-  const handleCreateCategory = useCallback(() => {
-    router.push('/admin/category/create');
+  const handleCreateCoupon = useCallback(() => {
+    router.push('/admin/coupon/create');
   }, [router]);
 
-  const handleViewCategory = useCallback((id: string | number) => {
-    router.push(`/admin/category/${id}`);
-  }, [router]);
+  const handleViewCoupon = useCallback(
+    (id: string | number) => {
+      router.push(`/admin/coupon/${id}`);
+    },
+    [router]
+  );
 
-  const handleEditCategory = useCallback((id: string | number) => {
-    router.push(`/admin/category/${id}/edit`);
-  }, [router]);
+  const handleEditCoupon = useCallback(
+    (id: string | number) => {
+      router.push(`/admin/coupon/${id}/edit`);
+    },
+    [router]
+  );
 
-  const handleDeleteCategory = useCallback(
+  const handleDeleteCoupon = useCallback(
     async (id: string | number) => {
-      if (!window.confirm('Are you sure you want to delete this category?')) {
+      if (!window.confirm('Are you sure you want to delete this coupon?')) {
         return;
       }
       try {
-        await categoriesApi.delete(id);
+        await couponsApi.delete(id);
         refetch();
       } catch (err) {
-        console.error('Failed to delete category:', err);
-        alert('Failed to delete category');
+        console.error('Failed to delete coupon:', err);
+        alert('Failed to delete coupon');
       }
     },
     [refetch]
@@ -138,11 +147,11 @@ export function CategoryView() {
 
   const onSelectAllRows = useCallback((checked: boolean) => {
     if (checked) {
-      setSelected(sortedCategories.map((cat) => cat.id.toString()));
+      setSelected(sortedCoupons.map((c) => c.id.toString()));
       return;
     }
     setSelected([]);
-  }, [sortedCategories]);
+  }, [sortedCoupons]);
 
   const onSelectRow = useCallback(
     (id: string) => {
@@ -154,16 +163,16 @@ export function CategoryView() {
     [selected]
   );
 
-  const notFound = !sortedCategories.length && !!filterName && !loading;
+  const notFound = !sortedCoupons.length && !!filterName && !loading;
 
   return (
     <DashboardContent>
       <Box sx={{ mb: 5, display: 'flex', alignItems: 'center' }}>
         <Typography variant="h4" sx={{ flexGrow: 1 }}>
-          Categories
+          Coupons
         </Typography>
-        <Button variant="contained" color="inherit" startIcon={<Iconify icon="mingcute:add-line" />} onClick={handleCreateCategory}>
-          New Category
+        <Button variant="contained" color="inherit" startIcon={<Iconify icon="mingcute:add-line" />} onClick={handleCreateCoupon}>
+          New Coupon
         </Button>
       </Box>
 
@@ -183,7 +192,7 @@ export function CategoryView() {
           </Box>
         ) : error ? (
           <Box sx={{ p: 3, textAlign: 'center' }}>
-            <Typography color="error">Error loading categories: {error.message}</Typography>
+            <Typography color="error">Error loading coupons: {error.message}</Typography>
             <Button onClick={refetch} sx={{ mt: 2 }}>Retry</Button>
           </Box>
         ) : (
@@ -194,41 +203,38 @@ export function CategoryView() {
                   <UserTableHead
                     order={order}
                     orderBy={orderBy}
-                    rowCount={sortedCategories.length}
+                    rowCount={sortedCoupons.length}
                     numSelected={selected.length}
                     onSort={onSort}
                     onSelectAllRows={onSelectAllRows}
                     headLabel={[
-                      { id: 'name', label: 'Name', align: 'center' },
-                      { id: 'productCount', label: 'Products', align: 'center' },
+                      { id: 'code', label: 'Code', align: 'center' },
+                      { id: 'discountType', label: 'Type', align: 'center' },
+                      { id: 'couponValue', label: 'Value', align: 'center' },
+                      { id: 'usageCount', label: 'Usage', align: 'center' },
                       { id: 'active', label: 'Status', align: 'center' },
+                      { id: 'endDate', label: 'Expires', align: 'center' },
                       { id: '', align: 'center' },
                     ]}
                   />
                   <TableBody>
-                    {sortedCategories.map((row) => (
-                      <CategoryTableRow
+                    {sortedCoupons.map((row) => (
+                      <CouponTableRow
                         key={row.id}
-                        row={{
-                          id: row.id,
-                          name: row.name,
-                          active: row.active,
-                          productCount: row.productCount,
-                          imageUrl: row.imageUrl,
-                        }}
+                        row={row}
                         selected={selected.includes(row.id.toString())}
                         onSelectRow={() => onSelectRow(row.id.toString())}
-                        onView={handleViewCategory}
-                        onEdit={handleEditCategory}
-                        onDelete={handleDeleteCategory}
+                        onView={handleViewCoupon}
+                        onEdit={handleEditCoupon}
+                        onDelete={handleDeleteCoupon}
                       />
                     ))}
 
                     {!notFound && (
                       <TableEmptyRows
                         height={68}
-                        emptyRows={emptyRows(page, rowsPerPage, sortedCategories.length)}
-                        colSpan={5}
+                        emptyRows={emptyRows(page, rowsPerPage, sortedCoupons.length)}
+                        colSpan={9}
                       />
                     )}
 
@@ -264,7 +270,7 @@ export function CategoryView() {
 
 // ----------------------------------------------------------------------
 
-function CategoryTableRow({
+function CouponTableRow({
   row,
   selected,
   onSelectRow,
@@ -272,7 +278,7 @@ function CategoryTableRow({
   onEdit,
   onDelete,
 }: {
-  row: CategoryRow;
+  row: Coupon;
   selected: boolean;
   onSelectRow: () => void;
   onView?: (id: string | number) => void;
@@ -310,16 +316,14 @@ function CategoryTableRow({
     }
   }, [onDelete, row.id, handleClosePopover]);
 
-  const getStatusColor = (status: string) => {
-    switch (status.toLowerCase()) {
-      case 'active':
-        return 'success';
-      case 'inactive':
-        return 'error';
-      default:
-        return 'default';
+  const formatValue = (type: string, value: number) => {
+    if (type === 'PERCENTAGE') {
+      return `${value}%`;
     }
+    return `$${value.toFixed(2)}`;
   };
+
+  const isExpired = new Date(row.endDate) < new Date();
 
   return (
     <>
@@ -339,18 +343,30 @@ function CategoryTableRow({
         </TableCell>
 
         <TableCell component="th" scope="row" align="center">
-          <Button variant="text" color="inherit" onClick={() => onView?.(row.id)} sx={{ p: 0, minWidth: 'auto' }}>
-            {row.name}
+          <Button variant="text" color="inherit" onClick={() => onView?.(row.id)} sx={{ p: 0, minWidth: 'auto', fontWeight: 'bold' }}>
+            {row.code}
           </Button>
         </TableCell>
 
-        <TableCell align="center">{row.productCount}</TableCell>
-
         <TableCell align="center">
-          <Label color={getStatusColor(row.active ? 'active' : 'inactive')}>
-            {row.active ? 'Active' : 'Inactive'}
+          <Label color={row.discountType === 'PERCENTAGE' ? 'info' : 'warning'}>
+            {row.discountType === 'PERCENTAGE' ? 'Percentage' : 'Fixed'}
           </Label>
         </TableCell>
+
+        <TableCell align="center">{formatValue(row.discountType, row.couponValue)}</TableCell>
+
+        <TableCell align="center">
+          {row.usageCount} / {row.maxUsage}
+        </TableCell>
+
+        <TableCell align="center">
+          <Label color={row.active && !isExpired ? 'success' : 'error'}>
+            {!row.active ? 'Inactive' : isExpired ? 'Expired' : 'Active'}
+          </Label>
+        </TableCell>
+
+        <TableCell align="center">{new Date(row.endDate).toLocaleDateString()}</TableCell>
 
         <TableCell align="center">
           <IconButton onClick={handleOpenPopover}>
@@ -401,3 +417,4 @@ function CategoryTableRow({
     </>
   );
 }
+

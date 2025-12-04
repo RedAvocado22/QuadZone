@@ -74,7 +74,7 @@ public class UploadService {
                 .map(UploadResponse::from)
                 .collect(Collectors.toList());
 
-        return new PagedResponse<>(
+        return PagedResponse.of(
                 uploads,
                 uploadPage.getTotalElements(),
                 uploadPage.getNumber(),

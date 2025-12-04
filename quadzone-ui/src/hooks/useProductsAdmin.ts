@@ -50,8 +50,8 @@ export function useProducts(options: UseProductsOptions = {}) {
           colors,
           rating,
         });
-        setProducts(response.data);
-        setTotal(response.total);
+        setProducts(response.content ?? []);
+        setTotal(response.page?.totalElements ?? 0);
       } catch (err) {
         setError(err instanceof Error ? err : new Error('Failed to fetch products'));
         // Fallback to empty array on error
@@ -79,8 +79,8 @@ export function useProducts(options: UseProductsOptions = {}) {
         colors,
         rating,
       });
-      setProducts(response.data);
-      setTotal(response.total);
+      setProducts(response.content ?? []);
+      setTotal(response.page?.totalElements ?? 0);
     } catch (err) {
       setError(err instanceof Error ? err : new Error('Failed to fetch products'));
     } finally {

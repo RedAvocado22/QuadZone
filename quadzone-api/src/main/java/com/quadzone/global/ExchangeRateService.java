@@ -21,7 +21,7 @@ public class ExchangeRateService {
     }
 
     public Double getUsdToVnd() {
-        String url = "https://v6.exchangerate-api.com/v6/f9e55ba0a5ee6c30ba9b75f0/latest/USD";
+        String url = "https://v6.exchangerate-api.com/v6/3cdce46c2eaa770628c768db/latest/USD";
 
         try {
             logger.info("Fetching exchange rate from: {}", url);

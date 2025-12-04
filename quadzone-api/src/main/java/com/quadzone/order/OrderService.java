@@ -42,14 +42,42 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
 
-import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import java.security.SecureRandom;
 import java.util.List;
 
 @Service
 @RequiredArgsConstructor
 @Transactional
 public class OrderService {
+
+    private static final SecureRandom RANDOM = new SecureRandom();
+    private static final String ORDER_NUMBER_CHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+
+    /**
+     * Generate a unique random order number
+     * Format: ORD-XXXXXXXX (8 alphanumeric characters)
+     */
+    private String generateUniqueOrderNumber() {
+        String orderNumber;
+        int maxAttempts = 10;
+        int attempts = 0;
+        
+        do {
+            StringBuilder sb = new StringBuilder("ORD-");
+            for (int i = 0; i < 8; i++) {
+                sb.append(ORDER_NUMBER_CHARS.charAt(RANDOM.nextInt(ORDER_NUMBER_CHARS.length())));
+            }
+            orderNumber = sb.toString();
+            attempts++;
+        } while (orderRepository.existsByOrderNumber(orderNumber) && attempts < maxAttempts);
+        
+        if (attempts >= maxAttempts) {
+            // Fallback: use timestamp-based order number
+            orderNumber = "ORD-" + System.currentTimeMillis();
+        }
+        
+        return orderNumber;
+    }
 
     private final OrderRepository orderRepository;
     private final UserRepository userRepository;
@@ -71,6 +99,7 @@ public class OrderService {
                 .orElseThrow(() -> new RuntimeException("User not found: " + request.userId()));
 
         Order order = OrderRegisterRequest.toOrder(request, user);
+        order.setOrderNumber(generateUniqueOrderNumber());
         Order savedOrder = orderRepository.save(order);
         OrderResponse orderResponse = OrderResponse.from(savedOrder);
         
@@ -149,7 +178,7 @@ public class OrderService {
                 .map(OrderResponse::from)
                 .toList();
 
-        return new PagedResponse<>(
+        return PagedResponse.of(
                 orders,
                 resultPage.getTotalElements(),
                 resultPage.getNumber(),
@@ -202,8 +231,9 @@ public class OrderService {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Total amount must be positive after discount");
         }
 
-        // Create order
+        // Create order with unique order number
         Order order = new Order();
+        order.setOrderNumber(generateUniqueOrderNumber());
         order.setOrderDate(LocalDateTime.now());
         order.setSubtotal(subtotal);
         order.setTaxAmount(taxAmount);
@@ -492,7 +522,7 @@ public class OrderService {
 
         // Notify assigned shipper
         try {
-            String orderNumber = "ORD-" + String.format("%05d", order.getId());
+            String orderNum = order.getOrderNumber() != null ? order.getOrderNumber() : "ORD-" + String.format("%05d", order.getId());
             String customerName = orderResponse.customerName() != null 
                     ? orderResponse.customerName() 
                     : "Customer";
@@ -501,7 +531,7 @@ public class OrderService {
                     "delivery_assigned",
                     "Order Assigned to You",
                     String.format("Order #%s from %s has been assigned to you for delivery. Address: %s", 
-                            orderNumber,
+                            orderNum,
                             customerName,
                             order.getAddress() != null && order.getAddress().length() > 50 
                                     ? order.getAddress().substring(0, 50) + "..." 
@@ -524,7 +554,7 @@ public class OrderService {
                     notifyStaffActivityToAdmin(currentUser, "Order Assigned to Shipper",
                             String.format("Staff %s assigned order #%s to shipper %s",
                                     currentUser.getFullName(),
-                                    "ORD-" + String.format("%05d", order.getId()),
+                                    order.getOrderNumber() != null ? order.getOrderNumber() : "ORD-" + order.getId(),
                                     shipper.getFullName()));
                 }
             }
@@ -599,7 +629,7 @@ public class OrderService {
                     "order_status",
                     "Order Status Updated",
                     String.format("Your order #%s status has been updated from %s to %s", 
-                            "ORD-" + String.format("%05d", order.getId()),
+                            order.getOrderNumber() != null ? order.getOrderNumber() : "ORD-" + order.getId(),
                             oldStatusDisplayName,
                             statusDisplayName),
                     null // avatarUrl
@@ -617,7 +647,7 @@ public class OrderService {
      */
     private void notifyOrderToShippers(Order order) {
         try {
-            String orderNumber = "ORD-" + String.format("%05d", order.getId());
+            String orderNum = order.getOrderNumber() != null ? order.getOrderNumber() : "ORD-" + order.getId();
             String customerName = order.getCustomerFirstName() != null && order.getCustomerLastName() != null
                     ? order.getCustomerFirstName() + " " + order.getCustomerLastName()
                     : "Customer";
@@ -626,7 +656,7 @@ public class OrderService {
                     "delivery",
                     "New Delivery Assignment",
                     String.format("Order #%s from %s is ready for delivery. Address: %s", 
-                            orderNumber,
+                            orderNum,
                             customerName,
                             order.getAddress() != null && order.getAddress().length() > 50 
                                     ? order.getAddress().substring(0, 50) + "..." 

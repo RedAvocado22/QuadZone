@@ -1,6 +1,7 @@
 package com.quadzone.user;
 
 import com.quadzone.upload.service.ImgbbService;
+import com.quadzone.user.dto.ChangePasswordRequest;
 import com.quadzone.user.dto.UserProfileDTO;
 import com.quadzone.user.dto.UserProfileRequest;
 import jakarta.validation.Valid;
@@ -43,15 +44,33 @@ public class UserProfileController {
             }
 
             ImgbbService.ImgbbUploadResponse imgbbResponse = imgbbService.uploadImage(fileData);
-            
+
             UserProfileDTO updatedProfile = userService.updateUserAvatar(user.getId(), imgbbResponse.getUrl());
-            
+
             return ResponseEntity.ok(updatedProfile);
-            
+
         } catch (Exception e) {
             return ResponseEntity.internalServerError()
                     .body(java.util.Map.of(
                         "message", "Failed to upload avatar: " + e.getMessage(),
+                        "timestamp", java.time.LocalDateTime.now()
+                    ));
+        }
+    }
+
+    @PostMapping("/change-password")
+    public ResponseEntity<?> changePassword(@AuthenticationPrincipal User user,
+                                           @Valid @RequestBody ChangePasswordRequest request) {
+        try {
+            userService.changePassword(user.getId(), request);
+            return ResponseEntity.ok(java.util.Map.of("message", "Password changed successfully"));
+        } catch (org.springframework.web.server.ResponseStatusException e) {
+            return ResponseEntity.status(e.getStatusCode())
+                    .body(java.util.Map.of("message", e.getReason()));
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError()
+                    .body(java.util.Map.of(
+                        "message", "Failed to change password: " + e.getMessage(),
                         "timestamp", java.time.LocalDateTime.now()
                     ));
         }

@@ -32,6 +32,10 @@ const OrderEditPage = lazy(() => import('src/pages/admin/order-edit'));
 const ChatPage = lazy(() => import('src/pages/admin/chat'));
 const OrderAssignShipperPage = lazy(() => import('src/pages/admin/order-assign-shipper'));
 const OrderAssignDeliveryPage = lazy(() => import('src/pages/admin/order-assign-delivery'));
+const CouponPage = lazy(() => import('src/pages/admin/coupon'));
+const CouponCreatePage = lazy(() => import('src/pages/admin/coupon-create'));
+const CouponDetailsPage = lazy(() => import('src/pages/admin/coupon-details'));
+const CouponEditPage = lazy(() => import('src/pages/admin/coupon-edit'));
 
 const renderFallback = () => (
     <Box
@@ -101,6 +105,11 @@ export default function AdminRoutes() {
                 {/* Chat management routes */}
                 <Route path="chat" element={<ChatPage />} />
                 <Route path="order/:id/assign-shipper" element={<OrderAssignShipperPage />} />
+                {/* Coupon management routes */}
+                <Route path="coupon" element={<CouponPage />} />
+                <Route path="coupon/create" element={<CouponCreatePage />} />
+                <Route path="coupon/:id" element={<CouponDetailsPage />} />
+                <Route path="coupon/:id/edit" element={<CouponEditPage />} />
             </Route>
         </Routes>
     );

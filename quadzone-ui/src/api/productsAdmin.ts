@@ -64,7 +64,8 @@ export const productsApi = {
       color: product.color || '',
       imageUrl: product.imageUrl || '',
       subCategory: product.subCategoryId ? { id: product.subCategoryId } : null,
-      category: product.categoryId ? { id:product.categoryId } : null
+      category: product.categoryId ? { id:product.categoryId } : null,
+        isActive: product.isActive ? 1 : 0,
     }; 
 
     const response = await API.post<ProductAdminResponse>('/products', requestBody);

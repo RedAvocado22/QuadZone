@@ -92,14 +92,14 @@ public class BlogService {
                 }
             }
 
-            return new PagedResponse<>(
+            return PagedResponse.of(
                     blogs.getContent().stream().map(BlogDetailResponse::from).toList(),
                     blogs.getTotalElements(),
                     blogs.getNumber(),
                     blogs.getSize());
         } catch (Exception e) {
             log.error("Error fetching blogs for admin", e);
-            return new PagedResponse<>(List.of(), 0, page, size);
+            return PagedResponse.of(List.of(), 0, page, size);
         }
     }
 
