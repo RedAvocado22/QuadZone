@@ -34,17 +34,16 @@ const Shop: React.FC = () => {
     const [selectedBrands, setSelectedBrands] = useState<string[]>([]); // Changed to array
     const [selectedCategory, setSelectedCategory] = useState<number | undefined>(undefined);
     const [selectedSubcategory, setSelectedSubcategory] = useState<number | undefined>(undefined);
+    const [clearFilterTrigger, setClearFilterTrigger] = useState<number>(0); // Trigger to clear sidebar
 
     // Data states
-    const [allProducts, setAllProducts] = useState<Product[]>([]); // Full filtered list from server
-    const [displayedProducts, setDisplayedProducts] = useState<Product[]>([]); // Sorted + paginated
-
-    // Total count for UI
-    const totalElements = allProducts.length;
-    const totalPages = Math.ceil(totalElements / itemsPerPage);
+    const [allProducts, setAllProducts] = useState<Product[]>([]); // Current page products from server
+    const [displayedProducts, setDisplayedProducts] = useState<Product[]>([]); // Products to display
+    const [totalElements, setTotalElements] = useState<number>(0); // Total count for pagination
+    const [totalPages, setTotalPages] = useState<number>(0); // Total pages from server
 
     // ──────────────────────────────
-    // 1. Fetch filtered products (only when filters change)
+    // 1. Fetch filtered & sorted products
     // ──────────────────────────────
     useEffect(() => {
         const fetchProducts = async () => {
@@ -52,22 +51,42 @@ const Shop: React.FC = () => {
             try {
                 setError(null);
 
+                // Map local sortBy to backend sortBy parameter
+                let backendSortBy: string | undefined = undefined;
+                switch (sortBy) {
+                    case "price-low":
+                        backendSortBy = "price:asc";
+                        break;
+                    case "price-high":
+                        backendSortBy = "price:desc";
+                        break;
+                    case "latest":
+                        backendSortBy = "createdAt:desc";
+                        break;
+    
+                    case "default":
+                    default:
+                        backendSortBy = undefined;
+                }
+
                 const response = await getProducts({
-                    page: 0,
-                    size: 9999, // Get as many as reasonable (adjust if needed)
+                    page: currentPage - 1, // Convert to 0-based
+                    size: itemsPerPage,
                     search: searchQuery || undefined,
                     brand: selectedBrands.length > 0 ? selectedBrands.join(",") : undefined,
                     categoryId: selectedCategory,
                     subcategoryId: selectedSubcategory,
                     minPrice,
-                    maxPrice
-                    // No sortBy → we sort locally
+                    maxPrice,
+                    sortBy: backendSortBy
                 });
 
                 const products = response.content || [];
                 console.log(`Products fetched: ${products.length} items`);
                 setAllProducts(products);
-                setCurrentPage(1); // Reset page on filter change
+                setDisplayedProducts(products);
+                setTotalElements(response.page?.totalElements || 0);
+                setTotalPages(response.page?.totalPages || 0);
             } catch (err) {
                 setError("Failed to load products. Please try again later.");
                 console.error("Error fetching products:", err);
@@ -77,45 +96,14 @@ const Shop: React.FC = () => {
         };
 
         fetchProducts();
-    }, [searchQuery, selectedBrands, selectedCategory, selectedSubcategory, minPrice, maxPrice]);
-
-    // ──────────────────────────────
-    // 2. Sort + paginate locally (instant!)
-    // ──────────────────────────────
-    useEffect(() => {
-        let sorted = [...allProducts];
-
-        switch (sortBy) {
-            case "popularity":
-                // If you have popularity field, use it; otherwise fallback
-                sorted.sort((a, b) => b.id - a.id); // or add popularity field later
-                break;
-            case "latest":
-                sorted.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
-                break;
-            case "price-low":
-                sorted.sort((a, b) => a.price - b.price);
-                break;
-            case "price-high":
-                sorted.sort((a, b) => b.price - a.price);
-                break;
-            case "default":
-            default:
-                // Keep original server order
-                break;
-        }
-
-        const start = (currentPage - 1) * itemsPerPage;
-        const end = start + itemsPerPage;
-        setDisplayedProducts(sorted.slice(start, end));
-    }, [allProducts, sortBy, currentPage, itemsPerPage]);
+    }, [searchQuery, selectedBrands, selectedCategory, selectedSubcategory, minPrice, maxPrice, sortBy, currentPage, itemsPerPage]);
 
     // ──────────────────────────────
     // Handlers
     // ──────────────────────────────
     const handleSortChange = (newSort: SortOption) => {
         setSortBy(newSort);
-        setCurrentPage(1);
+        // Don't reset page - let backend handle sorting on current page
     };
 
     const handleApplyFilters = ({ brands, priceRange, categoryId, subcategoryId }: {
@@ -129,7 +117,7 @@ const Shop: React.FC = () => {
         setMaxPrice(priceRange?.max);
         setSelectedCategory(categoryId);
         setSelectedSubcategory(subcategoryId);
-        setCurrentPage(1);
+        setCurrentPage(1); // Reset to page 1 when filters change
     };
 
     const handleRemoveBrand = (brand: string) => {
@@ -144,6 +132,7 @@ const Shop: React.FC = () => {
         setSelectedCategory(undefined);
         setSelectedSubcategory(undefined);
         setCurrentPage(1);
+        setClearFilterTrigger((prev) => prev + 1); // Trigger sidebar to clear its state
         // Clear the search parameter from URL
         navigate("/shop");
     };
@@ -182,6 +171,7 @@ const Shop: React.FC = () => {
                         onClose={() => setSidebarOpen(false)}
                         onApplyFilters={handleApplyFilters}
                         onClearAll={handleClearAllFilters}
+                        clearTrigger={clearFilterTrigger}
                     />
 
                     <div className="col-xl-9 col-wd-9gdot5">

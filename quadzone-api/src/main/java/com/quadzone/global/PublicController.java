@@ -96,17 +96,18 @@ private Sort buildSort(String sortBy) {
         return Sort.unsorted();
     }
     
-    String[] sortFields = sortBy.split(",");
-    List<Sort.Order> orders = new ArrayList<>();
-    for (String field : sortFields) {
-        String[] parts = field.trim().split(":");
-        String property = parts[0];
-        Sort.Direction direction = parts.length > 1 && "desc".equalsIgnoreCase(parts[1]) 
-            ? Sort.Direction.DESC 
-            : Sort.Direction.ASC;
-        orders.add(new Sort.Order(direction, property));
+    // Format: "property:direction" e.g. "price:asc" or "createdAt:desc"
+    String[] parts = sortBy.trim().split(":");
+    if (parts.length < 1) {
+        return Sort.unsorted();
     }
-    return Sort.by(orders);
+    
+    String property = parts[0].trim();
+    Sort.Direction direction = parts.length > 1 && "desc".equalsIgnoreCase(parts[1].trim())
+        ? Sort.Direction.DESC
+        : Sort.Direction.ASC;
+    
+    return Sort.by(direction, property);
 }
 
     @GetMapping("/products/{id}")
