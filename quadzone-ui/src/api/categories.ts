@@ -1,6 +1,7 @@
 import API from "./base";
 import type { CategoryAdminResponse, PagedResponse, SubCategoryResponse } from "./types";
 
+
 // Re-export for convenience
 export type { CategoryAdminResponse as Category } from "./types";
 export type { CategoryResponse } from "./types";

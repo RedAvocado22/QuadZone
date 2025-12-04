@@ -1,2 +1,2 @@
-export * from './post-create-form';
-export * from './post-edit-form';
+export * from './blog-create-form';
+export * from './blog-edit-form';

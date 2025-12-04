@@ -1,6 +1,6 @@
 import { CONFIG } from 'src/config-global';
 import { useRouter } from 'src/routing/hooks';
-import { PostCreateForm } from 'src/sections/blog/form';
+import { BlogCreateForm } from 'src/sections/blog/form';
 
 // ----------------------------------------------------------------------
 
@@ -18,7 +18,7 @@ export default function Page() {
   return (
     <>
       <title>{`Create Post - ${CONFIG.appName}`}</title>
-      <PostCreateForm onSuccess={handleSuccess} onCancel={handleCancel} />
+      <BlogCreateForm onSuccess={handleSuccess} onCancel={handleCancel} />
     </>
   );
 }
