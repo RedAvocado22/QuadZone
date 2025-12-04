@@ -13,6 +13,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
@@ -29,6 +30,8 @@ public class UserService {
 
     private final EntityMapper objectMapper;
 
+    private final PasswordEncoder passwordEncoder;
+
     public List<User> getAllUsers() {
         return userRepository.findAll();
     }
@@ -36,7 +39,7 @@ public class UserService {
     public User getUserById(Long id) {
         return userRepository.getUsersById(id);
     }
-    
+
     public UserProfileDTO getUserProfile(Long userId){
         User user = userRepository.findById(userId).orElseThrow(() -> new RuntimeException("User not found"));
         return mapToDTO(user);
@@ -65,6 +68,26 @@ public class UserService {
 
         User updatedUser = userRepository.save(user);
         return mapToDTO(updatedUser);
+    }
+
+    @Transactional
+    public void changePassword(Long userId, com.quadzone.user.dto.ChangePasswordRequest request) {
+        User user = userRepository.findById(userId).orElseThrow(() -> new RuntimeException("User not found"));
+
+        // Verify current password
+        if (!passwordEncoder.matches(request.currentPassword(), user.getPassword())) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Current password is incorrect");
+        }
+
+        // Verify new password matches confirm password
+        if (!request.newPassword().equals(request.confirmPassword())) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "New password and confirm password do not match");
+        }
+
+        // Update password
+        user.setPassword(passwordEncoder.encode(request.newPassword()));
+        user.setUpdatedAt(LocalDateTime.now());
+        userRepository.save(user);
     }
     private UserProfileDTO mapToDTO(User user) {
         return UserProfileDTO.builder()
@@ -166,4 +189,3 @@ public class UserService {
                 .toList();
     }
 }
-
