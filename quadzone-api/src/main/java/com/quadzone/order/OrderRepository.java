@@ -22,6 +22,22 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
                         """)
         Page<Order> search(@Param("keyword") String keyword, Pageable pageable);
 
+        /**
+         * Find orders by status
+         */
+        default Optional<Order> findByOrderNumber(String orderNumber) {
+            try {
+                // Remove "ORD-" prefix and parse the number
+                if (orderNumber != null && orderNumber.startsWith("ORD-")) {
+                    String idStr = orderNumber.substring(4).trim();
+                    Long id = Long.parseLong(idStr);
+                    return findById(id);
+                }
+                return Optional.empty();
+            } catch (NumberFormatException e) {
+                return Optional.empty();
+            }
+        }
 
         /**
          * Find orders by user ID with pagination
@@ -57,16 +73,5 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
                         """)
         Page<Order> searchByQueryAndStatus(@Param("keyword") String keyword, @Param("status") OrderStatus status, Pageable pageable);
 
-        /**
-         * Find order by order number
-         */
-        Optional<Order> findByOrderNumber(String orderNumber);
-
-        /**
-         * Check if order number exists
-         */
-        boolean existsByOrderNumber(String orderNumber);
-
-        @Query("SELECT YEAR(o.orderDate), MONTH(o.orderDate), COUNT(o) FROM Order o WHERE o.orderDate BETWEEN :from AND :to GROUP BY YEAR(o.orderDate), MONTH(o.orderDate) ORDER BY YEAR(o.orderDate), MONTH(o.orderDate)")
-        java.util.List<Object[]> aggregateMonthlyOrders(@Param("from") LocalDateTime from, @Param("to") LocalDateTime to);
+        
 }
