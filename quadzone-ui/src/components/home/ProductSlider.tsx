@@ -2,7 +2,7 @@ import Slider from "react-slick";
 import ProductCard from "../shared/ProductCard";
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
-import type { PublicProductDTO } from "../../api/types";
+import type { PublicProductDTO, Product } from "../../api/types";
 
 interface ProductSliderProps {
     title?: string;
@@ -60,11 +60,24 @@ const ProductSlider: React.FC<ProductSliderProps> = ({ title, products }) => {
                 </div>
             )}
             <Slider {...settings}>
-                {products.map((product) => (
-                    <div key={product.id} className="px-2">
-                        <ProductCard product={product} />
-                    </div>
-                ))}
+                {products.map((product) => {
+                    const mapped: Product = {
+                        id: product.id,
+                        name: product.name,
+                        brand: product.brand ?? null,
+                        price: product.price,
+                        imageUrl: product.imageUrl ?? null,
+                        quantity: product.quantity,
+                        subCategory: { id: product.subCategoryId ?? 0, name: product.subCategoryName ?? "Unknown" },
+                        category: { id: 0, name: "Unknown" },
+                        createdAt: product.createdAt
+                    };
+                    return (
+                        <div key={product.id} className="px-2">
+                            <ProductCard product={mapped} />
+                        </div>
+                    );
+                })}
             </Slider>
         </div>
     );

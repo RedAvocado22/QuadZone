@@ -19,7 +19,7 @@ const Logo = ({ className = "" }) => {
                 <text x="7" y="32" fill="#333E48" fontSize="28" fontFamily="Arial, sans-serif" fontWeight="bold">
                     QuadZone
                 </text>
-                <circle cx="145" cy="30" r="5" fill="#FFC107" />
+                <circle cx="145" cy="30" r="5" fill="#667eea" />
             </svg>
         </Link>
     );

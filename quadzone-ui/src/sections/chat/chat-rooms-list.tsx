@@ -28,7 +28,7 @@ export function ChatRoomsList({ selectedRoomId, onRoomSelect, onRefresh }: ChatR
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<'ALL' | 'ACTIVE' | 'CLOSED'>('ALL');
-  const [page, setPage] = useState(0);
+  const [page] = useState(0);
 
   const loadRooms = useCallback(async () => {
     setLoading(true);

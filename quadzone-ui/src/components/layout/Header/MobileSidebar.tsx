@@ -29,7 +29,7 @@ const MobileSidebar = () => {
                                         <a
                                             className="u-header-collapse__nav-link u-header-collapse__nav-pointer"
                                             href="/">
-                                            Home 
+                                            Home
                                         </a>
                                     </li>
 
@@ -55,8 +55,32 @@ const MobileSidebar = () => {
                                     <li className="u-has-submenu u-header-collapse__submenu">
                                         <a
                                             className="u-header-collapse__nav-link u-header-collapse__nav-pointer"
-                                            href="/blogs">
-                                            Blog Pages
+                                            href="/blog">
+                                            Blog
+                                        </a>
+                                    </li>
+                                    {/* FAQ */}
+                                    <li className="u-has-submenu u-header-collapse__submenu">
+                                        <a
+                                            className="u-header-collapse__nav-link u-header-collapse__nav-pointer"
+                                            href="/faq">
+                                            FAQs
+                                        </a>
+                                    </li>
+                                    {/* About Us */}
+                                    <li className="u-has-submenu u-header-collapse__submenu">
+                                        <a
+                                            className="u-header-collapse__nav-link u-header-collapse__nav-pointer"
+                                            href="/about-us">
+                                            About Us
+                                        </a>
+                                    </li>
+                                    {/* Contact */}
+                                    <li className="u-has-submenu u-header-collapse__submenu">
+                                        <a
+                                            className="u-header-collapse__nav-link u-header-collapse__nav-pointer"
+                                            href="/contact">
+                                            Contact Us
                                         </a>
                                     </li>
                                 </ul>

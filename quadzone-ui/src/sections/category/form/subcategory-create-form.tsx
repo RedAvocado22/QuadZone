@@ -17,7 +17,7 @@ interface SubCategoryCreateFormProps {
   onCancel?: () => void;
 }
 
-export function SubCategoryCreateView(props: SubCategoryCreateFormProps) {
+export function SubCategoryCreateView({}: SubCategoryCreateFormProps) {
   const router = useRouter();
 
   const [name, setName] = useState('');

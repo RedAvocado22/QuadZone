@@ -1,10 +1,37 @@
+import { useState } from "react";
 import SearchBar from "../../shared/SearchBar";
 import CartIcon from "../../shared/CartIcon";
 
 const VerticalMenu = () => {
+    const [isMenuOpen, setIsMenuOpen] = useState(false);
 
     return (
-        <div className="d-none d-xl-block bg-primary">
+        <>
+            <style>{`
+                .vertical-menu.v1 .u-header__nav-item.hs-mega-menu-opened .u-header__sub-menu,
+                .vertical-menu.v1 .u-header__nav-item.hs-sub-menu-opened .u-header__sub-menu,
+                .u-header .vertical-menu.v1 .u-header__nav-item.hs-mega-menu-opened .u-header__sub-menu,
+                .u-header .vertical-menu.v1 .u-header__nav-item.hs-sub-menu-opened .u-header__sub-menu,
+                .u-header + main .vertical-menu.v1 .u-header__nav-item.hs-mega-menu-opened .u-header__sub-menu,
+                .u-header + main .vertical-menu.v1 .u-header__nav-item.hs-sub-menu-opened .u-header__sub-menu {
+                    border-bottom: 2px solid #667eea !important;
+                    border-right: 2px solid #667eea !important;
+                }
+                #basicsHeadingOne.card-collapse,
+                #basicsHeadingOne.card-collapse:hover,
+                #basicsHeadingOne.card-collapse:active,
+                #basicsHeadingOne.card-collapse:focus {
+                    background-color: #667eea !important;
+                }
+                #basicsHeadingOne .card-btn,
+                #basicsHeadingOne .card-btn:hover,
+                #basicsHeadingOne .card-btn:active,
+                #basicsHeadingOne .card-btn:focus {
+                    background-color: #667eea !important;
+                    color: #fff !important;
+                }
+            `}</style>
+            <div className="d-none d-xl-block" style={{ background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)" }}>
             <div className="container">
                 <div className="row align-items-stretch min-height-50">
                     {/* Vertical Menu */}
@@ -13,14 +40,21 @@ const VerticalMenu = () => {
                             <div id="basicsAccordion">
                                 <div className="card border-0 rounded-0">
                                     <div
-                                        className="card-header bg-primary rounded-0 card-collapse border-0"
+                                        className="card-header rounded-0 card-collapse border-0"
+                                        style={{ backgroundColor: "#667eea" }}
                                         id="basicsHeadingOne">
                                         <button
                                             type="button"
-                                            className="btn-link btn-remove-focus btn-block d-flex card-btn py-3 text-lh-1 px-4 shadow-none btn-primary rounded-top-lg border-0 font-weight-bold text-gray-90"
+                                            className="btn-link btn-remove-focus btn-block d-flex align-items-center justify-content-between card-btn py-3 text-lh-1 px-4 shadow-none rounded-top-lg border-0 font-weight-bold text-white"
+                                            style={{ backgroundColor: "#667eea" }}
                                             onClick={() => setIsMenuOpen(!isMenuOpen)}>
-                                            
-                                            
+                                            <span className="text-white font-size-16">
+                                                <i className="ec ec-menu mr-2"></i>
+                                                All Categories
+                                            </span>
+                                            <span className="text-white">
+                                                <span className="ec ec-arrow-down-search"></span>
+                                            </span>
                                         </button>
                                     </div>
 
@@ -29,7 +63,7 @@ const VerticalMenu = () => {
                                             <div className="card-body p-0">
                                                 <nav className="js-mega-menu navbar navbar-expand-xl u-header__navbar u-header__navbar--no-space">
                                                     <div className="collapse navbar-collapse u-header__navbar-collapse">
-                                                        <ul className="navbar-nav u-header__navbar-nav border-primary border-top-0">
+                                                        <ul className="navbar-nav u-header__navbar-nav border-top-0" style={{ borderLeft: "3px solid #667eea" }}>
                                                             <li className="nav-item u-header__nav-item">
                                                                 <a
                                                                     href="#"
@@ -119,6 +153,7 @@ const VerticalMenu = () => {
                 </div>
             </div>
         </div>
+        </>
     );
 };
 

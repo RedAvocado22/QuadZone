@@ -246,4 +246,51 @@ public class OrderController {
         OrderResponse assignedOrder = orderService.assignOrderToShipper(orderId, request);
         return ResponseEntity.ok(assignedOrder);
     }
+
+    // Shipper endpoints
+    @GetMapping("/shipper/my-orders")
+    @Operation(
+            summary = "Get assigned orders (Shipper)",
+            description = "Retrieve a paginated list of orders assigned to the current authenticated shipper. " +
+                    "Returns orders that have been assigned to the shipper for delivery."
+    )
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Successfully retrieved assigned orders list"),
+            @ApiResponse(responseCode = "401", description = "Unauthorized - not authenticated as a shipper"),
+            @ApiResponse(responseCode = "403", description = "Forbidden - user is not a shipper"),
+            @ApiResponse(responseCode = "500", description = "Internal server error")
+    })
+    public ResponseEntity<PagedResponse<OrderResponse>> getMyAssignedOrders(
+            @Parameter(description = "Page number (0-indexed)", example = "0")
+            @RequestParam(defaultValue = "0") int page,
+            @Parameter(description = "Number of items per page", example = "10")
+            @RequestParam(defaultValue = "10") int size,
+            @Parameter(description = "Search query to filter orders by ID, customer name, or status", example = "pending")
+            @RequestParam(defaultValue = "") String search
+    ) {
+        return ResponseEntity.ok(orderService.findOrdersByShipper(page, size, search));
+    }
+
+    @PutMapping("/shipper/{id}/status")
+    @Operation(
+            summary = "Update order status (Shipper)",
+            description = "Update the status of an order assigned to the current authenticated shipper. " +
+                    "Shippers can update order status to track delivery progress. " +
+                    "Only orders assigned to the current shipper can be updated."
+    )
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Order status updated successfully"),
+            @ApiResponse(responseCode = "400", description = "Invalid input data or invalid status transition"),
+            @ApiResponse(responseCode = "403", description = "Forbidden - order is not assigned to this shipper"),
+            @ApiResponse(responseCode = "404", description = "Order not found"),
+            @ApiResponse(responseCode = "500", description = "Internal server error")
+    })
+    public ResponseEntity<OrderResponse> updateOrderStatus(
+            @Parameter(description = "Unique identifier of the order to update", example = "1", required = true)
+            @PathVariable Long id,
+            @Parameter(description = "Order update request with status to update", required = true)
+            @Valid @RequestBody OrderUpdateRequest orderUpdateRequest) {
+        OrderResponse updatedOrder = orderService.updateOrderStatusByShipper(id, orderUpdateRequest);
+        return ResponseEntity.ok(updatedOrder);
+    }
 }

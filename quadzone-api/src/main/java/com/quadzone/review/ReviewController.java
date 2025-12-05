@@ -74,6 +74,9 @@ public class ReviewController {
             @Valid @RequestBody CreateReviewRequest request
     ) {
         ReviewResponse created = reviewService.createReview(request);
+        return ResponseEntity.status(HttpStatus.CREATED).body(created);
+    }
+
     @GetMapping("/product/{productId}")
     public ResponseEntity<Page<ReviewResponse>> getReviewsByProduct(
             @PathVariable Long productId,
@@ -82,17 +85,6 @@ public class ReviewController {
         Pageable pageable = PageRequest.of(page, size);
         Page<ReviewResponse> reviews = reviewService.getReviewsByProduct(productId, pageable);
         return ResponseEntity.ok(reviews);
-    }
-
-    @PostMapping("/product/{productId}")
-    public ResponseEntity<ReviewResponse> createReview(@PathVariable Long productId,
-                                                       @Valid @RequestBody ReviewResponse reviewResponse,
-                                                       @AuthenticationPrincipal User user) {
-        if (user == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-        }
-        ReviewResponse created = reviewService.createReview(productId, reviewResponse, user);
-        return ResponseEntity.status(HttpStatus.CREATED).body(created);
     }
 
     @PutMapping("/{reviewId}")

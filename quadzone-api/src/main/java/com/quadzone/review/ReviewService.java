@@ -70,9 +70,9 @@ public class ReviewService {
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Product not found"));
 
         Review review = new Review();
-        review.setRating(reviewResponse.rating());
-        review.setTitle(reviewResponse.title());
-        review.setContent(reviewResponse.content());
+        review.setRating(request.rating());
+        review.setTitle(request.title());
+        review.setContent(request.text());
         review.setProduct(product);
         review.setUser(user);
 
@@ -102,7 +102,7 @@ public class ReviewService {
             review.setTitle(request.title());
         }
         if (request.text() != null) {
-            review.setText(request.text());
+            review.setContent(request.text());
         }
 
         Review saved = reviewRepository.save(review);

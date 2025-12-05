@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useUser } from "../hooks/useUser";
 import { forgotPassword } from "../api/auth";
@@ -6,7 +6,6 @@ import { toast } from "react-toastify";
 import { useFormik } from "formik";
 import * as yup from "yup";
 import { yupEmail } from "../utils/Validation";
-import Swal from "sweetalert2";
 
 const loginSchema = yup
     .object({
@@ -21,10 +20,24 @@ const forgotPasswordSchema = yup
     .required();
 
 export default function LoginPage() {
-    const { login } = useUser();
+    const { login, user, loading } = useUser();
     const [loginView, setLoginView] = useState<"login" | "forgot">("login");
     const [showPassword, setShowPassword] = useState(false);
     const navigate = useNavigate();
+
+    // Redirect if already logged in
+    useEffect(() => {
+        if (!loading && user) {
+            const role = user.role;
+            if (role === 'ADMIN' || role === 'STAFF') {
+                navigate("/admin", { replace: true });
+            } else if (role === 'SHIPPER') {
+                navigate("/shipper", { replace: true });
+            } else {
+                navigate("/", { replace: true });
+            }
+        }
+    }, [user, loading, navigate]);
 
     const loginFormik = useFormik({
         initialValues: {
@@ -34,14 +47,23 @@ export default function LoginPage() {
         },
         validationSchema: loginSchema,
         onSubmit: async (values, { resetForm }) => {
-            const success = await login({
+            const loggedInUser = await login({
                 email: values.email,
                 password: values.password
             });
 
-            if (success) {
+            if (loggedInUser) {
                 resetForm();
-                navigate("/");
+                // Navigate based on user role
+                const role = loggedInUser.role;
+                if (role === 'ADMIN' || role === 'STAFF') {
+                    navigate("/admin", { replace: true });
+                } else if (role === 'SHIPPER') {
+                    navigate("/shipper", { replace: true });
+                } else {
+                    // CUSTOMER or other roles go to home
+                    navigate("/", { replace: true });
+                }
             }
         }
     });

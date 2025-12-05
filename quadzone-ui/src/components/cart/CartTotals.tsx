@@ -1,4 +1,3 @@
-import { useState } from "react";
 import { useCart } from "../../contexts/CartContext";
 import { useCurrency } from "../../contexts/CurrencyContext";
 import { fCurrency } from "../../utils/formatters";
@@ -6,7 +5,6 @@ import { fCurrency } from "../../utils/formatters";
 const CartTotals = () => {
     const { totalPrice } = useCart();
     const { currency, convertPrice } = useCurrency();
-    const [showShipping, setShowShipping] = useState(false);
     const shippingCost = 300.0;
     const grandTotal = totalPrice + shippingCost;
 

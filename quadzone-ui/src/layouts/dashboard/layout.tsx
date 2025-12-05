@@ -11,7 +11,7 @@ import { NavMobile, NavDesktop } from './nav';
 import { layoutClasses } from '../core/classes';
 import { _account } from '../nav-config-account';
 import { dashboardLayoutVars } from './css-vars';
-import { navData } from '../nav-config-dashboard';
+import { navData as adminNavData } from '../nav-config-dashboard';
 import { MainSection } from "src/layouts/core";
 import { Searchbar } from '../components/searchbar';
 import { MenuButton } from '../components/menu-button';
@@ -23,6 +23,7 @@ import { NotificationsPopover } from '../components/notifications-popover';
 import type { MainSectionProps } from "src/layouts/core";
 import type { HeaderSectionProps } from "src/layouts/core";
 import type { LayoutSectionProps } from "src/layouts/core";
+import type { NavItem } from '../nav-config-dashboard';
 
 // ----------------------------------------------------------------------
 
@@ -30,6 +31,7 @@ type LayoutBaseProps = Pick<LayoutSectionProps, 'sx' | 'children' | 'cssVars'>;
 
 export type DashboardLayoutProps = LayoutBaseProps & {
   layoutQuery?: Breakpoint;
+  navData?: NavItem[];
   slotProps?: {
     header?: HeaderSectionProps;
     main?: MainSectionProps;
@@ -42,6 +44,7 @@ export function DashboardLayout({
   children,
   slotProps,
   layoutQuery = 'lg',
+  navData = adminNavData,
 }: DashboardLayoutProps) {
   const theme = useTheme();
 

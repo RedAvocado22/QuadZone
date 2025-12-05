@@ -19,7 +19,6 @@ const ChatWindow: React.FC = () => {
     } = useChat();
     
     const [inputMessage, setInputMessage] = useState('');
-    const [isTyping, setIsTyping] = useState(false);
     const messagesContainerRef = useRef<HTMLDivElement>(null);
     const messagesEndRef = useRef<HTMLDivElement>(null);
     const inputRef = useRef<HTMLInputElement>(null);
@@ -61,7 +60,7 @@ const ChatWindow: React.FC = () => {
         if (inputMessage.trim() && isConnected) {
             sendMessage(inputMessage.trim());
             setInputMessage('');
-            setIsTyping(false);
+            
         }
     };
     
@@ -69,14 +68,7 @@ const ChatWindow: React.FC = () => {
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         setInputMessage(e.target.value);
         
-        // TODO: Implement typing indicator
-        // if (!isTyping && e.target.value.length > 0) {
-        //     setIsTyping(true);
-        //     // Send typing indicator via WebSocket
-        // } else if (isTyping && e.target.value.length === 0) {
-        //     setIsTyping(false);
-        //     // Send stop typing indicator
-        // }
+        
     };
     
     if (!isOpen || !user) {

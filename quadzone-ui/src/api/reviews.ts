@@ -57,46 +57,42 @@ export const reviewsApi = {
     delete: async (reviewId: number): Promise<void> => {
         await API.delete(`/reviews/${reviewId}`);
     },
+};
 
 /**
  * Fetch reviews for a specific product
- * @param productId - The ID of the product
- * @param params - Pagination parameters (page, size)
- * @returns Promise with paginated review responses
+ * Maps backend ReviewResponse (content) to frontend Review (text)
  */
 export const getProductReviews = async (
     productId: number,
     params: ReviewFilterParams = {}
 ): Promise<PagedResponse<Review>> => {
-    try {
-        const requestParams = {
-            page: params.page ?? 0,
-            size: params.size ?? 10,
-        };
+    const requestParams = {
+        page: params.page ?? 0,
+        size: params.size ?? 10,
+    };
 
-        const response = await API.get(`/public/products/${productId}/reviews`, { params: requestParams });
-        return response.data;
-    } catch (error) {
-        console.error(`Error fetching reviews for product ${productId}:`, error);
-        throw error;
-    }
-};
+    const { data }: { data: any } = await API.get(`/public/products/${productId}/reviews`, { params: requestParams });
 
-/**
- * Create a review for a product
- * @param productId - The ID of the product
- * @param review - Review data (rating, title, content)
- * @returns Promise with the created review
- */
-export const createProductReview = async (
-    productId: number,
-    review: Omit<Review, "id" | "createdAt" | "userName" | "userId">
-): Promise<Review> => {
-    try {
-        const response = await API.post(`/public/products/${productId}/reviews`, review);
-        return response.data;
-    } catch (error) {
-        console.error(`Error creating review for product ${productId}:`, error);
-        throw error;
-    }
+    const content: Review[] = Array.isArray(data?.content)
+        ? data.content.map((r: any) => ({
+              id: r.id,
+              rating: r.rating,
+              title: r.title ?? null,
+              text: r.content ?? "",
+              createdAt: r.createdAt,
+              userName: r.userName,
+              userId: r.userId,
+          }))
+        : [];
+
+    return {
+        content,
+        page: {
+            size: typeof data?.size === "number" ? data.size : requestParams.size,
+            number: typeof data?.number === "number" ? data.number : requestParams.page,
+            totalElements: typeof data?.totalElements === "number" ? data.totalElements : content.length,
+            totalPages: typeof data?.totalPages === "number" ? data.totalPages : 1,
+        },
+    };
 };

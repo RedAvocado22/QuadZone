@@ -35810,7 +35810,7 @@ blockquote:not(.blockquote) p {
 }
 
 .product-item__footer {
-    display: none;
+    display: block;
 }
 
 @media (min-width: 1200px) {

@@ -17,9 +17,9 @@ interface UserContextType {
     user: CurrentUser | null;
     loading: boolean;
     error: Error | null;
-    login: (payload: LoginRequest) => Promise<boolean>;
+    login: (payload: LoginRequest) => Promise<CurrentUser | null>;
     logout: () => void;
-    refreshUser: () => Promise<void>;
+    refreshUser: () => Promise<CurrentUser | null>;
     // Role checking helpers
     hasRole: (role: UserRole | UserRole[]) => boolean;
     isAdmin: boolean;
@@ -42,29 +42,31 @@ const UserProvider = ({ children }: UserProviderProps) => {
     const [ready, setReady] = useState(false);
     const navigate = useNavigate();
 
-    const fetchCurrentUser = useCallback(async () => {
+    const fetchCurrentUser = useCallback(async (): Promise<CurrentUser | null> => {
         try {
             setLoading(true);
             setError(null);
             const resp = await API.get<CurrentUser>("/users/me");
             setUser(resp.data);
+            return resp.data;
         } catch (err) {
             const error = err instanceof Error ? err : new Error('Failed to fetch current user');
             setError(error);
             setUser(null);
+            return null;
         } finally {
             setLoading(false);
         }
     }, []);
 
-    const login = async (payload: LoginRequest): Promise<boolean> => {
+    const login = async (payload: LoginRequest): Promise<CurrentUser | null> => {
         try {
             const resp = await API.post("/auth/authenticate", payload);
             const { access_token, refresh_token } = resp.data;
 
             if (!access_token) {
                 toast.error("Login failed. No token received.");
-                return false;
+                return null;
             }
 
             localStorage.setItem("access_token", access_token);
@@ -73,17 +75,18 @@ const UserProvider = ({ children }: UserProviderProps) => {
                 localStorage.setItem("refresh_token", refresh_token);
             }
 
-            await fetchCurrentUser();
+            const loggedInUser = await fetchCurrentUser();
 
             toast.success("Login successful!");
-            return true;
+            // Return the current user after fetching
+            return loggedInUser;
         } catch (err: any) {
             let msg = "Please check your email and password.";
-            
+
             // Priority 1: Use message from backend response if available
             if (err.response?.data?.message) {
                 msg = err.response.data.message;
-            } 
+            }
             // Priority 2: Use status-based messages if no backend message
             else if (err.response?.status) {
                 switch (err.response.status) {
@@ -104,9 +107,9 @@ const UserProvider = ({ children }: UserProviderProps) => {
             else if (err.message) {
                 msg = err.message;
             }
-            
+
             toast.error(msg);
-            return false;
+            return null;
         }
     };
 

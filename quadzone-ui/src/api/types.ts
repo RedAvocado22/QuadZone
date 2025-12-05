@@ -452,3 +452,18 @@ export interface PublicProductDTO {
     subCategoryName?: string;
     createdAt: string;
 }
+
+// ============== ADMIN ANALYTICS TYPES ==============
+export interface MonthlyMetric {
+    year: number;
+    month: number;
+    label: string;
+    value: number;
+}
+
+export interface AdminDashboardAnalyticsResponse {
+    sales: MonthlyMetric[];
+    users: MonthlyMetric[];
+    orders: MonthlyMetric[];
+    messages: MonthlyMetric[];
+}

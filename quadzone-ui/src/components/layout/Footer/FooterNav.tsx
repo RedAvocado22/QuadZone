@@ -13,7 +13,7 @@ const FooterNav = () => {
                         <div className="mb-4">
                             <div className="row no-gutters">
                                 <div className="col-auto">
-                                    <i className="ec ec-support text-primary font-size-56"></i>
+                                    <i className="ec ec-support font-size-56" style={{ color: "#667eea" }}></i>
                                 </div>
                                 <div className="col pl-3">
                                     <div className="font-size-13 font-weight-light">Got questions? Call us 24/7!</div>

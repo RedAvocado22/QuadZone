@@ -1,5 +1,7 @@
 import type { Product } from "../../api/types";
 import { Link } from "react-router-dom";
+import CompareButton from "../compare/CompareButton";
+import WishlistButton from "./WishListButton";
 
 interface ListProductCardProps {
     product: Product;
@@ -63,11 +65,18 @@ const ListProductCard: React.FC<ListProductCardProps> = ({ product, addToCart })
                             <div className="prodcut-add-cart">
                                 <button
                                     type="button"
-                                    className="btn-add-cart btn-primary transition-3d-hover"
+                                    className="btn-add-cart transition-3d-hover text-white"
+                                    style={{ backgroundColor: "#667eea", borderColor: "#667eea" }}
                                     onClick={() => addToCart(product)}
+                                    onMouseEnter={(e) => e.currentTarget.style.backgroundColor = "#5568d3"}
+                                    onMouseLeave={(e) => e.currentTarget.style.backgroundColor = "#667eea"}
                                 >
                                     <i className="ec ec-add-to-cart"></i>
                                 </button>
+                            </div>
+                            <div className="border-top pt-2 d-flex align-items-center">
+                                <CompareButton productId={product.id} className="btn-sm mr-2" />
+                                <WishlistButton productId={product.id} className="btn-sm" />
                             </div>
                         </div>
                     </div>

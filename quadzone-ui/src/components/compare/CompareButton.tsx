@@ -36,9 +36,10 @@ const CompareButton: React.FC<CompareButtonProps> = ({ productId, className = ""
     return (
         <button
             onClick={handleClick}
-            className={`btn btn-icon ${inCompare ? "btn-primary" : "btn-outline-primary"} ${className}`}
+            className={`btn btn-icon ${inCompare ? "btn-primary" : "btn-primary"} ${className}`}
+            aria-label={inCompare ? "Remove from compare" : "Add to compare"}
         >
-            <i className="ec ec-compare"></i>
+            <i className={`ec ec-compare ${inCompare ? "text-dark" : "text-dark"}`}></i>
         </button>
     );
 };

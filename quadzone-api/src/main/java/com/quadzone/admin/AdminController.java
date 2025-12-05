@@ -2,6 +2,7 @@ package com.quadzone.admin;
 
 import com.quadzone.admin.dto.CategoryAdminResponse;
 import com.quadzone.admin.dto.ProductAdminResponse;
+import com.quadzone.admin.dto.AdminDashboardAnalyticsResponse;
 import com.quadzone.global.dto.PagedResponse;
 import com.quadzone.product.ProductService;
 import com.quadzone.product.category.CategoryService;
@@ -44,6 +45,7 @@ public class AdminController {
         private final CategoryService categoryService;
         private final SubCategoryService subCategoryService;
         private final UploadService uploadService;
+        private final AdminAnalyticsService adminAnalyticsService;
 
     @GetMapping("/products")
     @Operation(
@@ -68,6 +70,23 @@ public class AdminController {
             @RequestParam(required = false) String sortBy
     ) {
         return ResponseEntity.ok(productService.findProductsForAdmin(page, size, search, sortBy));
+    }
+
+    @GetMapping("/dashboard/analytics")
+    @Operation(
+            summary = "Get monthly analytics (Admin)",
+            description = "Retrieve monthly aggregated analytics for sales, users, orders, and messages for the last N months."
+    )
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Successfully retrieved dashboard analytics"),
+            @ApiResponse(responseCode = "400", description = "Invalid parameters"),
+            @ApiResponse(responseCode = "500", description = "Internal server error")
+    })
+    public ResponseEntity<AdminDashboardAnalyticsResponse> getDashboardAnalytics(
+            @Parameter(description = "Number of months to include", example = "12")
+            @RequestParam(defaultValue = "12") int months
+    ) {
+        return ResponseEntity.ok(adminAnalyticsService.getDashboardAnalytics(months));
     }
 
         @GetMapping("/products/{id}")

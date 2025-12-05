@@ -224,7 +224,7 @@ public class CategoryService {
                 .map(SubCategoryAdminResponse::from)
                 .toList();
 
-        return new PagedResponse<>(
+        return PagedResponse.of(
                 subCategories,
                 resultPage.getTotalElements(),
                 resultPage.getNumber(),
