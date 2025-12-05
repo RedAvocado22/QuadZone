@@ -23,23 +23,6 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
         Page<Order> search(@Param("keyword") String keyword, Pageable pageable);
 
         /**
-         * Find orders by status
-         */
-        default Optional<Order> findByOrderNumber(String orderNumber) {
-            try {
-                // Remove "ORD-" prefix and parse the number
-                if (orderNumber != null && orderNumber.startsWith("ORD-")) {
-                    String idStr = orderNumber.substring(4).trim();
-                    Long id = Long.parseLong(idStr);
-                    return findById(id);
-                }
-                return Optional.empty();
-            } catch (NumberFormatException e) {
-                return Optional.empty();
-            }
-        }
-
-        /**
          * Find orders by user ID with pagination
          */
         @Query("SELECT o FROM Order o WHERE o.user.id = :userId ORDER BY o.orderDate DESC")

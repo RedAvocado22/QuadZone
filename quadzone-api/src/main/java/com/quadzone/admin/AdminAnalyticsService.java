@@ -32,7 +32,7 @@ public class AdminAnalyticsService {
         LocalDate startMonth = LocalDate.now().minusMonths(m - 1).withDayOfMonth(1);
         LocalDate endMonth = LocalDate.now().withDayOfMonth(1);
         LocalDateTime from = startMonth.atStartOfDay();
-        LocalDateTime to = endMonth.plusMonths(1).minusSeconds(1).atStartOfDay();
+        LocalDateTime to = endMonth.plusMonths(1).atStartOfDay().minusSeconds(1);
 
         List<Object[]> salesAgg = paymentRepository.aggregateMonthlySales(PaymentStatus.COMPLETED, from, to);
         List<Object[]> usersAgg = userRepository.aggregateMonthlyUsers(from, to);

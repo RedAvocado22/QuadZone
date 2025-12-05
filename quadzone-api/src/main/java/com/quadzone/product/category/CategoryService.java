@@ -99,12 +99,6 @@ public class CategoryService {
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Category not found: " + id));
     }
 
-    public List<CategoryResponse> findAll() {
-        return categoryRepository.findAll()
-                .stream()
-                .map(CategoryResponse::from)
-                .toList();
-    }
 
     // Admin methods with admin DTOs
     @Transactional(readOnly = true)
