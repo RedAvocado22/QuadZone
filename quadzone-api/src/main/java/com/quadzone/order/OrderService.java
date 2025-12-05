@@ -159,6 +159,88 @@ public class OrderService {
     }
 
     @Transactional(readOnly = true)
+    public com.quadzone.order.dto.OrderTimelineResponse getOrderTimeline(Long orderId) {
+        Order order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Order not found: " + orderId));
+
+        java.util.List<com.quadzone.order.dto.OrderTimelineEvent> events = new java.util.ArrayList<>();
+
+        // Created
+        if (order.getOrderDate() != null) {
+            events.add(new com.quadzone.order.dto.OrderTimelineEvent(
+                    "order_created",
+                    "Order Created",
+                    "Order was created",
+                    order.getOrderDate()
+            ));
+        }
+
+        // Payment
+        paymentRepository.findByOrder(order).ifPresent(payment -> {
+            if (payment.getPaymentStatus() != null && payment.getPaymentDate() != null) {
+                String title = switch (payment.getPaymentStatus()) {
+                    case COMPLETED -> "Payment Completed";
+                    case FAILED -> "Payment Failed";
+                    case REFUNDED -> "Payment Refunded";
+                    case PARTIALLY_REFUNDED -> "Payment Partially Refunded";
+                    default -> "Payment Updated";
+                };
+                String desc = "Status: " + payment.getPaymentStatus().name();
+                events.add(new com.quadzone.order.dto.OrderTimelineEvent(
+                        "payment",
+                        title,
+                        desc,
+                        payment.getPaymentDate()
+                ));
+            }
+        });
+
+        // Order confirmation/cancellation (best-effort timestamps)
+        if (order.getOrderStatus() != null) {
+            switch (order.getOrderStatus()) {
+                case CONFIRMED -> {
+                    java.time.LocalDateTime confirmedAt = paymentRepository.findByOrder(order)
+                            .map(com.quadzone.payment.Payment::getPaymentDate)
+                            .orElse(order.getOrderDate());
+                    events.add(new com.quadzone.order.dto.OrderTimelineEvent(
+                            "order_status",
+                            "Order Confirmed",
+                            "Order confirmed",
+                            confirmedAt
+                    ));
+                }
+                case CANCELLED -> {
+                    java.time.LocalDateTime cancelledAt = order.getOrderDate();
+                    events.add(new com.quadzone.order.dto.OrderTimelineEvent(
+                            "order_status",
+                            "Order Cancelled",
+                            "Order cancelled",
+                            cancelledAt
+                    ));
+                }
+                default -> {}
+            }
+        }
+
+        // Delivery
+        deliveryRepository.findByOrder(order).ifPresent(delivery -> {
+            java.time.LocalDateTime when = delivery.getUpdatedAt() != null ? delivery.getUpdatedAt() : delivery.getCreatedAt();
+            events.add(new com.quadzone.order.dto.OrderTimelineEvent(
+                    "delivery",
+                    "Delivery Status",
+                    "Status: " + (delivery.getDeliveryStatus() != null ? delivery.getDeliveryStatus().name() : "UNKNOWN"),
+                    when
+            ));
+        });
+
+        // Sort by timestamp
+        events.sort((a, b) -> b.timestamp().compareTo(a.timestamp()));
+
+        String orderNum = order.getOrderNumber() != null ? order.getOrderNumber() : ("ORD-" + String.format("%05d", order.getId()));
+        return new com.quadzone.order.dto.OrderTimelineResponse(order.getId(), orderNum, events);
+    }
+
+    @Transactional(readOnly = true)
     public PagedResponse<OrderResponse> getMyOrders(int page, int size) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if (authentication == null || !authentication.isAuthenticated() || "anonymousUser".equals(authentication.getName())) {

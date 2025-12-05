@@ -467,3 +467,27 @@ export interface AdminDashboardAnalyticsResponse {
     orders: MonthlyMetric[];
     messages: MonthlyMetric[];
 }
+
+// ============== ADMIN NEWS ==============
+export interface NewsItem {
+    type: string;
+    title: string;
+    description: string;
+    timestamp: string;
+    refType: string;
+    refId: number;
+}
+
+// ============== ORDER TIMELINE ==============
+export interface OrderTimelineEvent {
+    type: string;
+    title: string;
+    description: string;
+    timestamp: string;
+}
+
+export interface OrderTimelineResponseDTO {
+    orderId: number;
+    orderNumber: string;
+    events: OrderTimelineEvent[];
+}

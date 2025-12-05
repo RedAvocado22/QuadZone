@@ -1,9 +1,9 @@
 package com.quadzone.product.category;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.quadzone.admin.dto.CategoryAdminResponse;
 import com.quadzone.exception.category.CategoryNotFoundException;
 import com.quadzone.global.dto.PagedResponse;
-import com.quadzone.admin.dto.CategoryAdminResponse;
 import com.quadzone.product.category.dto.CategoryRegisterRequest;
 import com.quadzone.product.category.dto.CategoryResponse;
 import com.quadzone.product.category.dto.CategoryUpdateRequest;
@@ -34,13 +34,6 @@ public class CategoryService {
 
     private final CategoryRepository categoryRepository;
     private final ObjectMapper objectMapper;
-
-    public List<CategoryResponse> findAll() {
-        return categoryRepository.findAll()
-                .stream()
-                .map(CategoryResponse::from)
-                .toList();
-    }
 
     public CategoryResponse getCategory(Long id) {
         Category category = categoryRepository.findById(id)
