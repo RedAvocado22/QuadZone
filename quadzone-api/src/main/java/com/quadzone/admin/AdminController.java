@@ -2,6 +2,12 @@ package com.quadzone.admin;
 
 import com.quadzone.admin.dto.CategoryAdminResponse;
 import com.quadzone.admin.dto.ProductAdminResponse;
+import com.quadzone.blog.BlogService;
+import com.quadzone.blog.dto.AddBlogRequest;
+import com.quadzone.blog.dto.BlogDetailResponse;
+import com.quadzone.blog.dto.BlogStatusUpdateRequest;
+import com.quadzone.blog.dto.UpdateBlogRequest;
+import com.quadzone.admin.dto.AdminDashboardAnalyticsResponse;
 import com.quadzone.global.dto.PagedResponse;
 import com.quadzone.product.ProductService;
 import com.quadzone.product.category.CategoryService;
@@ -21,6 +27,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -44,31 +51,39 @@ public class AdminController {
         private final CategoryService categoryService;
         private final SubCategoryService subCategoryService;
         private final UploadService uploadService;
+        private final AdminAnalyticsService adminAnalyticsService;
+        private final BlogService blogService;
 
-    @GetMapping("/products")
-    @Operation(
-            summary = "Get all products (Admin)",
-            description = "Retrieve a paginated list of all products with optional search functionality. " +
-                    "Supports pagination with configurable page size and search by product name, brand, or description. " +
-                    "Returns a PagedResponse containing the product list, total count, and pagination metadata."
-    )
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Successfully retrieved products list"),
-            @ApiResponse(responseCode = "400", description = "Invalid pagination parameters"),
-            @ApiResponse(responseCode = "500", description = "Internal server error")
-    })
-    public ResponseEntity<PagedResponse<ProductAdminResponse>> getProducts(
-            @Parameter(description = "Page number (0-indexed)", example = "0")
-            @RequestParam(defaultValue = "0") int page,
-            @Parameter(description = "Number of items per page", example = "10")
-            @RequestParam(defaultValue = "10") int size,
-            @Parameter(description = "Search query to filter products by name, brand, or description", example = "laptop")
-            @RequestParam(defaultValue = "") String search,
-            @Parameter(description = "Sort by field and direction (e.g., 'price:asc', 'createdAt:desc')", example = "createdAt:desc")
-            @RequestParam(required = false) String sortBy
-    ) {
-        return ResponseEntity.ok(productService.findProductsForAdmin(page, size, search, sortBy));
-    }
+        @GetMapping("/products")
+        @Operation(summary = "Get all products (Admin)", description = "Retrieve a paginated list of all products with optional search functionality. "
+                        +
+                        "Supports pagination with configurable page size and search by product name, brand, or description. "
+                        +
+                        "Returns a PagedResponse containing the product list, total count, and pagination metadata.")
+        @ApiResponses(value = {
+                        @ApiResponse(responseCode = "200", description = "Successfully retrieved products list"),
+                        @ApiResponse(responseCode = "400", description = "Invalid pagination parameters"),
+                        @ApiResponse(responseCode = "500", description = "Internal server error")
+        })
+        public ResponseEntity<PagedResponse<ProductAdminResponse>> getProducts(
+                        @Parameter(description = "Page number (0-indexed)", example = "0") @RequestParam(defaultValue = "0") int page,
+                        @Parameter(description = "Number of items per page", example = "10") @RequestParam(defaultValue = "10") int size,
+                        @Parameter(description = "Search query to filter products by name, brand, or description", example = "laptop") @RequestParam(defaultValue = "") String search,
+                        @Parameter(description = "Sort by field and direction (e.g., 'price:asc', 'createdAt:desc')", example = "createdAt:desc") @RequestParam(required = false) String sortBy) {
+                return ResponseEntity.ok(productService.findProductsForAdmin(page, size, search, sortBy));
+        }
+
+        @GetMapping("/dashboard/analytics")
+        @Operation(summary = "Get monthly analytics (Admin)", description = "Retrieve monthly aggregated analytics for sales, users, orders, and messages for the last N months.")
+        @ApiResponses(value = {
+                        @ApiResponse(responseCode = "200", description = "Successfully retrieved dashboard analytics"),
+                        @ApiResponse(responseCode = "400", description = "Invalid parameters"),
+                        @ApiResponse(responseCode = "500", description = "Internal server error")
+        })
+        public ResponseEntity<AdminDashboardAnalyticsResponse> getDashboardAnalytics(
+                        @Parameter(description = "Number of months to include", example = "12") @RequestParam(defaultValue = "12") int months) {
+                return ResponseEntity.ok(adminAnalyticsService.getDashboardAnalytics(months));
+        }
 
         @GetMapping("/products/{id}")
         @Operation(summary = "Get product by ID (Admin)", description = "Retrieve detailed information about a specific product by its unique identifier. "
@@ -401,5 +416,120 @@ public class AdminController {
                         @Parameter(description = "Unique identifier of the subcategory to delete", example = "1", required = true) @PathVariable Long id) {
                 subCategoryService.deleteSubCategory(id);
                 return ResponseEntity.noContent().build();
+        }
+
+        @GetMapping("/blogs")
+        @Operation(summary = "Get all blogs (Admin)", description = "Retrieve a paginated list of all blog posts with optional search and status filtering. "
+                        +
+                        "Only accessible to ADMIN users. Supports pagination with configurable page size, search, and status filter. "
+                        +
+                        "Returns a PagedResponse containing the blog list, total count, and pagination metadata.")
+        @ApiResponses(value = {
+                        @ApiResponse(responseCode = "200", description = "Successfully retrieved blogs list"),
+                        @ApiResponse(responseCode = "400", description = "Invalid pagination parameters"),
+                        @ApiResponse(responseCode = "401", description = "Unauthorized - ADMIN role required"),
+                        @ApiResponse(responseCode = "500", description = "Internal server error")
+        })
+        @SecurityRequirement(name = "bearerAuth")
+        public ResponseEntity<PagedResponse<BlogDetailResponse>> getBlogs(
+                        @Parameter(description = "Page number (0-indexed)", example = "0") @RequestParam(defaultValue = "0") int page,
+                        @Parameter(description = "Number of items per page", example = "10") @RequestParam(defaultValue = "10") int size,
+                        @Parameter(description = "Search query to filter blogs by title or content", example = "React") @RequestParam(defaultValue = "") String search,
+                        @Parameter(description = "Filter blogs by status (DRAFT, PUBLISHED, ARCHIVED)", example = "PUBLISHED") @RequestParam(required = false) String status) {
+                return ResponseEntity.ok(blogService.findBlogsForAdmin(page, size, search, status));
+        }
+
+        @GetMapping("/blogs/{id}")
+        @Operation(summary = "Get blog by ID (Admin)", description = "Retrieve detailed information about a specific blog by its unique identifier. "
+                        +
+                        "Only accessible to ADMIN users. Returns complete blog details including content, comments, and status.")
+        @ApiResponses(value = {
+                        @ApiResponse(responseCode = "200", description = "Blog found and returned successfully"),
+                        @ApiResponse(responseCode = "404", description = "Blog not found with the provided ID"),
+                        @ApiResponse(responseCode = "400", description = "Invalid blog ID format"),
+                        @ApiResponse(responseCode = "401", description = "Unauthorized - ADMIN role required")
+        })
+        @SecurityRequirement(name = "bearerAuth")
+        public ResponseEntity<BlogDetailResponse> getBlogById(
+                        @Parameter(description = "Unique identifier of the blog", example = "1", required = true) @PathVariable Long id) {
+                return ResponseEntity.ok(blogService.getBlogById(id));
+        }
+
+        @PostMapping("/blogs")
+        @Operation(summary = "Create new blog post", description = "Create a new blog post with rich content. Only accessible to ADMIN users. "
+                        + "Automatically generates SEO-friendly slug from title and sets initial status to DRAFT.")
+        @ApiResponses(value = {
+                        @ApiResponse(responseCode = "201", description = "Blog post created successfully with assigned ID"),
+                        @ApiResponse(responseCode = "400", description = "Invalid input data or validation failed"),
+                        @ApiResponse(responseCode = "409", description = "Blog title or slug already exists"),
+                        @ApiResponse(responseCode = "401", description = "Unauthorized - ADMIN role required")
+        })
+        @SecurityRequirement(name = "bearerAuth")
+        public ResponseEntity<BlogDetailResponse> createBlog(
+                        @Parameter(description = "Blog creation request with title, content, thumbnail URL, and author ID", required = true) @Valid @RequestBody AddBlogRequest request) {
+                BlogDetailResponse created = blogService.createBlog(request);
+                return ResponseEntity.status(HttpStatus.CREATED).body(created);
+        }
+
+        @PutMapping("/blogs/{id}")
+        @Operation(summary = "Update existing blog post", description = "Update an existing blog post. Only accessible to ADMIN users. "
+                        + "Supports partial updates - only provided fields will be modified. Validates slug uniqueness if changed.")
+        @ApiResponses(value = {
+                        @ApiResponse(responseCode = "200", description = "Blog post updated successfully"),
+                        @ApiResponse(responseCode = "404", description = "Blog post not found with provided ID"),
+                        @ApiResponse(responseCode = "400", description = "Invalid input data or validation failed"),
+                        @ApiResponse(responseCode = "409", description = "New slug already exists for another blog"),
+                        @ApiResponse(responseCode = "401", description = "Unauthorized - ADMIN role required")
+        })
+        @SecurityRequirement(name = "bearerAuth")
+        public ResponseEntity<BlogDetailResponse> updateBlog(
+                        @Parameter(description = "Unique identifier of the blog post to update", example = "1", required = true) @PathVariable Long id,
+                        @Parameter(description = "Blog update request with fields to modify (all fields optional)", required = true) @Valid @RequestBody UpdateBlogRequest request) {
+                try {
+                        BlogDetailResponse updated = blogService.updateBlog(id, request);
+                        return ResponseEntity.ok(updated);
+                } catch (RuntimeException e) {
+                        return ResponseEntity.notFound().build();
+                }
+        }
+
+        @PatchMapping("/blogs/{id}/status")
+        @Operation(summary = "Change blog status", description = "Change the status of a blog post (DRAFT, PUBLISHED, ARCHIVED). "
+                        + "Only accessible to ADMIN users. Validates workflow rules (e.g., cannot publish without featured image).")
+        @ApiResponses(value = {
+                        @ApiResponse(responseCode = "200", description = "Blog status updated successfully"),
+                        @ApiResponse(responseCode = "404", description = "Blog post not found with provided ID"),
+                        @ApiResponse(responseCode = "400", description = "Invalid status or validation failed"),
+                        @ApiResponse(responseCode = "401", description = "Unauthorized - ADMIN role required")
+        })
+        @SecurityRequirement(name = "bearerAuth")
+        public ResponseEntity<BlogDetailResponse> updateBlogStatus(
+                        @Parameter(description = "Unique identifier of the blog post", example = "1", required = true) @PathVariable Long id,
+                        @Parameter(description = "New status for the blog (DRAFT, PUBLISHED, ARCHIVED)", required = true) @Valid @RequestBody BlogStatusUpdateRequest request) {
+                try {
+                        BlogDetailResponse updated = blogService.updateBlogStatus(id, request.status());
+                        return ResponseEntity.ok(updated);
+                } catch (RuntimeException e) {
+                        return ResponseEntity.badRequest().build();
+                }
+        }
+
+        @DeleteMapping("/blogs/{id}")
+        @Operation(summary = "Delete blog post", description = "Permanently delete a blog post. Only accessible to ADMIN users. "
+                        + "This operation is irreversible.")
+        @ApiResponses(value = {
+                        @ApiResponse(responseCode = "204", description = "Blog post deleted successfully"),
+                        @ApiResponse(responseCode = "404", description = "Blog post not found with provided ID"),
+                        @ApiResponse(responseCode = "401", description = "Unauthorized - ADMIN role required")
+        })
+        @SecurityRequirement(name = "bearerAuth")
+        public ResponseEntity<Void> deleteBlog(
+                        @Parameter(description = "Unique identifier of the blog post to delete", example = "1", required = true) @PathVariable Long id) {
+                try {
+                        blogService.deleteBlog(id);
+                        return ResponseEntity.noContent().build();
+                } catch (RuntimeException e) {
+                        return ResponseEntity.notFound().build();
+                }
         }
 }

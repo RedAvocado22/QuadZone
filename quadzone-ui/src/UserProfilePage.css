@@ -35,7 +35,7 @@
     width: 32px;
     height: 32px;
     border-radius: 50%;
-    background: var(--primary, #fed700);
+    background: var(--primary, #667eea);
     border: 2px solid #fff;
     display: flex;
     align-items: center;
@@ -91,11 +91,11 @@
 
 .axil-dashboard-nav .nav-link:hover {
     background: #e9ecef;
-    color: var(--primary, #fed700);
+    color: var(--primary, #667eea);
 }
 
 .axil-dashboard-nav .nav-link.active {
-    background: var(--primary, #fed700);
+    background: var(--primary, #667eea);
     color: #333;
 }
 
@@ -116,7 +116,7 @@
 }
 
 .welcome-text span {
-    color: var(--primary, #fed700);
+    color: var(--primary, #667eea);
     font-weight: 600;
 }
 
@@ -139,7 +139,7 @@
 }
 
 .card-title i {
-    color: var(--primary, #fed700);
+    color: var(--primary, #667eea);
     margin-right: 8px;
 }
 
@@ -177,8 +177,8 @@
 }
 
 .account-details-form .form-control:focus {
-    border-color: var(--primary, #fed700);
-    box-shadow: 0 0 0 0.2rem rgba(254, 215, 0, 0.25);
+    border-color: var(--primary, #667eea);
+    box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
 }
 
 .account-details-form .form-control:disabled {
@@ -195,15 +195,15 @@
 }
 
 .btn-primary {
-    background-color: var(--primary, #fed700);
-    border-color: var(--primary, #fed700);
-    color: #333;
+    background-color: var(--primary, #667eea);
+    border-color: var(--primary, #667eea);
+    color: #fff;
 }
 
 .btn-primary:hover {
-    background-color: #e5c200;
-    border-color: #e5c200;
-    color: #333;
+    background-color: #5568d3;
+    border-color: #5568d3;
+    color: #fff;
 }
 
 .btn-primary:disabled {
@@ -233,8 +233,8 @@
 }
 
 .btn-warning {
-    background-color: #ffc107;
-    border-color: #ffc107;
+    background-color: #667eea;
+    border-color: #667eea;
     color: #333;
 }
 
@@ -272,7 +272,7 @@
 }
 
 .bg-warning {
-    background-color: #ffc107 !important;
+    background-color: #667eea !important;
     color: #333 !important;
 }
 
@@ -512,4 +512,3 @@
     white-space: nowrap !important;
     border-width: 0 !important;
 }
-

@@ -51,8 +51,11 @@ const ListSmallProductCard: React.FC<ListSmallProductCardProps> = ({ product, ad
                             <div className="prodcut-add-cart">
                                 <button
                                     type="button"
-                                    className="btn-add-cart btn-primary transition-3d-hover"
+                                    className="btn-add-cart transition-3d-hover text-white"
+                                    style={{ backgroundColor: "#667eea", borderColor: "#667eea" }}
                                     onClick={() => addToCart(product)}
+                                    onMouseEnter={(e) => e.currentTarget.style.backgroundColor = "#5568d3"}
+                                    onMouseLeave={(e) => e.currentTarget.style.backgroundColor = "#667eea"}
                                 >
                                     <i className="ec ec-add-to-cart"></i>
                                 </button>

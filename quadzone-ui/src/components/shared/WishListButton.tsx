@@ -69,8 +69,8 @@ const WishlistButton: React.FC<WishlistButtonProps> = ({
 
   const buttonBaseClass =
     variant === 'icon'
-      ? 'btn btn-icon btn-soft-secondary'
-      : 'btn btn-soft-secondary';
+      ? `btn btn-icon ${inWishlist ? 'btn-danger' : 'btn-outline-danger'}`
+      : `${inWishlist ? 'btn btn-danger' : 'btn btn-outline-danger'}`;
 
   return (
     <button
@@ -84,7 +84,7 @@ const WishlistButton: React.FC<WishlistButtonProps> = ({
     >
       <i
         className={`ec ${
-          inWishlist ? 'ec-favorites text-danger' : 'ec-favorites'
+          inWishlist ? 'ec-favorites text-white' : 'ec-favorites text-danger'
         } ${sizeClasses[size]}`}
       ></i>
 

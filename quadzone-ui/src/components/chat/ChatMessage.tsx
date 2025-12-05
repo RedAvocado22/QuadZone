@@ -13,8 +13,6 @@ const ChatMessage: React.FC<ChatMessageProps> = ({ message, isOwn }) => {
             return message.senderAvatar;
         }
         
-        // Use first letter of sender name as fallback
-        const initial = message.senderName ? message.senderName[0].toUpperCase() : '?';
         return null;
     };
     

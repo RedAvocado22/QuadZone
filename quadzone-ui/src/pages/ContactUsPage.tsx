@@ -116,8 +116,11 @@ const ContactUsPage: React.FC = () => {
                                         <div className="text-center">
                                             <button
                                                 type="submit"
-                                                className="btn btn-primary btn-lg px-5"
+                                                className="btn btn-lg px-5 text-white"
+                                                style={{ backgroundColor: "#667eea", borderColor: "#667eea" }}
                                                 disabled={!isValid || isSubmitting}
+                                                onMouseEnter={(e) => e.currentTarget.style.backgroundColor = "#5568d3"}
+                                                onMouseLeave={(e) => e.currentTarget.style.backgroundColor = "#667eea"}
                                             >
                                                 {isSubmitting ? 'Sending...' : 'Send Message'}
                                             </button>
@@ -131,7 +134,7 @@ const ContactUsPage: React.FC = () => {
                     <div className="row mt-5">
                         <div className="col-md-4 text-center">
                             <div className="mb-3">
-                                <i className="ec ec-support font-size-40 text-primary"></i>
+                                <i className="ec ec-support font-size-40" style={{ color: "#667eea" }}></i>
                             </div>
                             <h5>Support</h5>
                             <p className="text-muted small">
@@ -140,7 +143,7 @@ const ContactUsPage: React.FC = () => {
                         </div>
                         <div className="col-md-4 text-center">
                             <div className="mb-3">
-                                <i className="ec ec-envelope font-size-40 text-primary"></i>
+                                <i className="ec ec-envelope font-size-40" style={{ color: "#667eea" }}></i>
                             </div>
                             <h5>Email</h5>
                             <p className="text-muted small">
@@ -149,7 +152,7 @@ const ContactUsPage: React.FC = () => {
                         </div>
                         <div className="col-md-4 text-center">
                             <div className="mb-3">
-                                <i className="ec ec-map-marker font-size-40 text-primary"></i>
+                                <i className="ec ec-map-marker font-size-40" style={{ color: "#667eea" }}></i>
                             </div>
                             <h5>Address</h5>
                             <p className="text-muted small">

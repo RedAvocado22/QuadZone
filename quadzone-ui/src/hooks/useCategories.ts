@@ -28,8 +28,8 @@ export function useCategories(options: UseCategoriesOptions = {}) {
             setError(null);
             try {
                 const response = await categoriesApi.getAll({ page, pageSize, search, sortBy, sortOrder });
-                setCategories(response.data);
-                setTotal(response.total);
+                setCategories(response.content);
+                setTotal(response.page.totalElements);
             } catch (err) {
                 setError(err instanceof Error ? err : new Error("Failed to fetch categories"));
                 setCategories([]);
@@ -47,8 +47,8 @@ export function useCategories(options: UseCategoriesOptions = {}) {
         setError(null);
         try {
             const response = await categoriesApi.getAll({ page, pageSize, search, sortBy, sortOrder });
-            setCategories(response.data);
-            setTotal(response.total);
+            setCategories(response.content);
+            setTotal(response.page.totalElements);
         } catch (err) {
             setError(err instanceof Error ? err : new Error("Failed to fetch categories"));
         } finally {

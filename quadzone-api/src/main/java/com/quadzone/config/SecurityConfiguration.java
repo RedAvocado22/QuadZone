@@ -63,6 +63,7 @@ public class SecurityConfiguration {
                         .requestMatchers("/api/v*/chat/room/*/assign").hasAuthority(UserRole.ADMIN.name())
                         .requestMatchers("/api/v*/chat/**").authenticated()
                         .requestMatchers("/api/v*/admin/**").hasAnyAuthority(UserRole.ADMIN.name(), UserRole.STAFF.name())
+                        .requestMatchers("/api/v*/orders/shipper/**").hasAuthority(UserRole.SHIPPER.name())
                         .anyRequest().authenticated()
                 )
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))

@@ -213,28 +213,4 @@ public class PublicController {
         return ResponseEntity.ok(reviews);
     }
 
-    /**
-     * Create a new review for a product
-     */
-    @PostMapping("/products/{productId}/reviews")
-    @Operation(summary = "Create a review for a product", description = "Add a new review to a product (requires authentication)")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "201", description = "Review created successfully"),
-            @ApiResponse(responseCode = "401", description = "Unauthorized - authentication required"),
-            @ApiResponse(responseCode = "404", description = "Product or user not found"),
-            @ApiResponse(responseCode = "400", description = "Invalid review data")
-    })
-    @SecurityRequirement(name = "bearerAuth")
-    public ResponseEntity<ReviewResponse> createProductReview(
-            @Parameter(description = "Product ID", example = "1", required = true)
-            @PathVariable Long productId,
-            @Valid @RequestBody ReviewResponse reviewResponse,
-            @AuthenticationPrincipal User user) {
-        if (user == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-        }
-        ReviewResponse created = reviewService.createReview(productId, reviewResponse, user);
-        return ResponseEntity.status(HttpStatus.CREATED).body(created);
-    }
-
 }

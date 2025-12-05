@@ -7,7 +7,7 @@ const SearchBar = ({ className = "" }) => {
 
     const handleSearch = (e: React.FormEvent) => {
         e.preventDefault();
-        
+
         // Only navigate if search query is not empty
         if (searchQuery.trim()) {
             // Navigate to shop page with search query parameter
@@ -33,8 +33,14 @@ const SearchBar = ({ className = "" }) => {
                     onChange={(e) => setSearchQuery(e.target.value)}
                 />
                 <div className="input-group-append">
-                    
-                    <button className="btn btn-dark height-40 py-2 px-3 rounded-right-pill" type="submit">
+
+                    <button
+                        className="btn height-40 py-2 px-3 rounded-right-pill text-white"
+                        type="submit"
+                        style={{ backgroundColor: "#667eea", borderColor: "#667eea" }}
+                        onMouseEnter={(e) => e.currentTarget.style.backgroundColor = "#5568d3"}
+                        onMouseLeave={(e) => e.currentTarget.style.backgroundColor = "#667eea"}
+                    >
                         <span className="ec ec-search font-size-24"></span>
                     </button>
                 </div>

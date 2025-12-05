@@ -23,7 +23,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
     return (
         <div className="product-item">
             <div className="product-item__outer h-100">
-                <div className="product-item__inner px-wd-4 p-2 p-md-3">
+                <div className="product-item__inner remove-prodcut-hover px-wd-4 p-2 p-md-3">
                     <div className="product-item__body pb-xl-2">
                         <div className="mb-2">
                             <Link to={`/subCategory/${product.subCategory.id || 0}`} className="font-size-12 text-gray-5">
@@ -56,8 +56,11 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
                             <div className="d-none d-xl-block prodcut-add-cart">
                                 <button
                                     type="button"
-                                    className="btn-add-cart btn-primary transition-3d-hover"
+                                    className="btn-add-cart transition-3d-hover text-white"
+                                    style={{ backgroundColor: "#667eea", borderColor: "#667eea" }}
                                     onClick={handleAddToCart}
+                                    onMouseEnter={(e) => e.currentTarget.style.backgroundColor = "#5568d3"}
+                                    onMouseLeave={(e) => e.currentTarget.style.backgroundColor = "#667eea"}
                                     aria-label="Add to cart">
                                     <i className="ec ec-add-to-cart"></i>
                                 </button>

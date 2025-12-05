@@ -11,7 +11,7 @@ import Drawer, { drawerClasses } from "@mui/material/Drawer";
 import { usePathname } from 'src/routing/hooks';
 import { RouterLink } from 'src/routing/components';
 
-import { Logo } from "src/components/logo";
+import Logo from "src/components/shared/Logo";
 import { Scrollbar } from "src/components/scrollbar";
 
 import type { NavItem } from "../nav-config-dashboard";
@@ -43,8 +43,8 @@ export function NavDesktop({ sx, data, slots, layoutQuery }: NavContentProps & {
                 flexDirection: "column",
                 zIndex: "var(--layout-nav-zIndex)",
                 width: "var(--layout-nav-vertical-width)",
-                backgroundColor: theme.vars?.palette.grey[900] || theme.palette.grey[900] || "#121212",
-                borderRight: "none",
+                backgroundColor: theme.vars?.palette.common.white || theme.palette.common.white || "#FFFFFF",
+                borderRight: `1px solid ${theme.vars?.palette.grey[300] || theme.palette.grey[300] || "#DFE3E8"}`,
                 [theme.breakpoints.up(layoutQuery)]: {
                     display: "flex"
                 },
@@ -85,7 +85,7 @@ export function NavMobile({
                     px: 2.5,
                     overflow: "unset",
                     width: "var(--layout-nav-mobile-width)",
-                    backgroundColor: theme.vars?.palette.grey[900] || theme.palette.grey[900],
+                    backgroundColor: theme.vars?.palette.common.white || theme.palette.common.white || "#FFFFFF",
                     ...sx
                 }
             }}>
@@ -101,7 +101,9 @@ export function NavContent({ data, slots, sx }: NavContentProps) {
 
     return (
         <>
-            <Logo />
+            <Box sx={{ mb: 2, px: 1 }}>
+                <Logo />
+            </Box>
 
             {slots?.topArea}
 
@@ -139,10 +141,10 @@ export function NavContent({ data, slots, sx }: NavContentProps) {
                                         href={item.path}
                                         sx={[
                                             (theme) => {
-                                                const whiteColor =
-                                                    theme.vars?.palette.common.white || theme.palette.common.white || "#FFFFFF";
-                                                const activeBgColor = "#42A5F5"; // Light blue solid background for active state - lighter shade
-                                                const hoverBgColor = "rgba(66, 165, 245, 0.3)"; // Lighter blue with opacity for hover state
+                                                const textColor =
+                                                    theme.vars?.palette.text.primary || theme.palette.text.primary || "#1C252E";
+                                                const activeBgColor = "#667eea"; // Soft purple background for active state
+                                                const hoverBgColor = "rgba(102, 126, 234, 0.15)"; // Light purple with opacity for hover state
 
                                                 return {
                                                     pl: 2,
@@ -152,21 +154,21 @@ export function NavContent({ data, slots, sx }: NavContentProps) {
                                                     borderRadius: 1,
                                                     typography: "body2",
                                                     fontWeight: "fontWeightMedium",
-                                                    color: whiteColor,
+                                                    color: textColor,
                                                     minHeight: 44,
                                                     ...(isActived && {
                                                         fontWeight: "fontWeightSemiBold",
-                                                        color: whiteColor,
+                                                        color: textColor,
                                                         bgcolor: activeBgColor,
                                                         "&:hover": {
                                                             bgcolor: activeBgColor,
-                                                            color: whiteColor
+                                                            color: textColor
                                                         }
                                                     }),
                                                     ...(!isActived && {
                                                         "&:hover": {
                                                             bgcolor: hoverBgColor,
-                                                            color: whiteColor
+                                                            color: textColor
                                                         }
                                                     })
                                                 };

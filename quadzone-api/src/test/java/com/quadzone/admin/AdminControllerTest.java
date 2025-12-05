@@ -100,7 +100,8 @@ public class AdminControllerTest {
                         "color",
                         "imageUrl",
                         null,
-                        null
+                        null,
+                        true
                 );
 
         ProductAdminResponse res =

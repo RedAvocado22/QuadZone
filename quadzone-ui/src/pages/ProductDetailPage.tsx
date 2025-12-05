@@ -106,11 +106,15 @@ const ProductDetailPage = () => {
                         </div>
                         <div className="d-flex gap-3">
                             <button
-                                className="btn btn-primary flex-fill"
+                                className="btn flex-fill text-white"
+                                style={{ backgroundColor: "#667eea", borderColor: "#667eea" }}
                                 onClick={() => {
                                     addToCart(product, 1);
                                 }}
-                                disabled={product.quantity === 0}>
+                                disabled={product.quantity === 0}
+                                onMouseEnter={(e) => !e.currentTarget.disabled && (e.currentTarget.style.backgroundColor = "#5568d3")}
+                                onMouseLeave={(e) => !e.currentTarget.disabled && (e.currentTarget.style.backgroundColor = "#667eea")}
+                            >
                                 <i className="fa fa-shopping-cart me-2"></i>Add to Cart
                             </button>
                             <button

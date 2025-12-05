@@ -25,7 +25,7 @@ import { Iconify } from "src/components/iconify";
 import { DashboardContent } from "src/layouts/dashboard";
 import { usersApi, type User } from "src/api/users";
 import { uploadApi } from "src/api/upload";
-import { yupEmail, yupFirstName, yupLastName, yupName, yupUrl } from "src/utils/Validation";
+import { yupEmail, yupFirstName, yupLastName, yupUrl } from "src/utils/Validation";
 
 // ----------------------------------------------------------------------
 

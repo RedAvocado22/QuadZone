@@ -31,6 +31,11 @@ import WishlistPage from "./pages/WishListPage";
 import { WishlistProvider } from "./contexts/WishListContext";
 import BlogListPage from "./pages/BlogListPage";
 import BlogDetailPage from "./pages/BlogDetailPage";
+import FAQPage from "./pages/FAQPage";
+import ShipperPage from "./pages/ShipperPage";
+import { ProtectedRoute } from "./guards/ProtectedRoute";
+import { DashboardLayout } from "./layouts/dashboard";
+import { navData as shipperNavData } from "./layouts/nav-config-shipper";
 
 const AdminRoutes = lazy(() => import("./routing/AdminRoutes"));
 
@@ -69,6 +74,18 @@ function App() {
                                             }
                                         />
 
+                                        {/* Shipper Routes */}
+                                        <Route
+                                            path="/shipper"
+                                            element={
+                                                <ProtectedRoute allowedRoles="SHIPPER">
+                                                    <DashboardLayout navData={shipperNavData}>
+                                                        <ShipperPage />
+                                                    </DashboardLayout>
+                                                </ProtectedRoute>
+                                            }
+                                        />
+
                                         {/* Customer Routes with SiteLayout */}
                                         <Route element={<SiteLayout />}>
                                             <Route index element={<HomePage />} />
@@ -89,6 +106,9 @@ function App() {
 
                                             {/* Pages */}
                                             <Route path="about-us" element={<AboutUsPage />} />
+                                            <Route path="blog" element={<BlogListPage />} />
+                                            <Route path="blog/:slug" element={<BlogDetailPage />} />
+                                            <Route path="faq" element={<FAQPage />} />
                                             <Route path="contact" element={<ContactUsPage />} />
                                             <Route path="blogs" element={<BlogListPage />} />
                                             <Route path="blogs/:id" element={<BlogDetailPage />} />

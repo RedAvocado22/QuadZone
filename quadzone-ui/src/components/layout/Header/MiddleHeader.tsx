@@ -7,7 +7,7 @@ const MiddleHeader = () => {
     const { totalItems, totalPrice } = useCart();
     const { currency, convertPrice } = useCurrency();
     return (
-        <div className="py-2 py-xl-4 bg-primary-down-lg">
+        <div className="py-2 py-xl-4" style={{ backgroundColor: "transparent" }}>
             <div className="container my-0dot5 my-xl-0">
                 <div className="row align-items-center">
                     {/* Logo */}
@@ -53,6 +53,16 @@ const MiddleHeader = () => {
                                         </a>
                                     </li>
                                     <li className="nav-item u-header__nav-item">
+                                        <a className="nav-link u-header__nav-link" href="/blog">
+                                            Blog
+                                        </a>
+                                    </li>
+                                    <li className="nav-item u-header__nav-item">
+                                        <a className="nav-link u-header__nav-link" href="/faq">
+                                            FAQs
+                                        </a>
+                                    </li>
+                                    <li className="nav-item u-header__nav-item">
                                         <a className="nav-link u-header__nav-link" href="/contact">
                                             Contact Us
                                         </a>
@@ -65,12 +75,12 @@ const MiddleHeader = () => {
                     {/* Customer Care */}
                     <div className="d-none d-xl-block col-md-auto">
                         <div className="d-flex">
-                            <i className="ec ec-support font-size-50 text-primary"></i>
+                            <i className="ec ec-support font-size-50" style={{ color: "#667eea" }}></i>
                             <div className="ml-2">
                                 <div className="phone">
                                     <strong>Support</strong>{" "}
-                                    <a href="tel:0123456789" className="text-gray-90">
-                                        (+84) 123 456 789
+                                    <a href="tel:800856800604" className="text-gray-90">
+                                        (+800) 856 800 604
                                     </a>
                                 </div>
                                 <div className="email">

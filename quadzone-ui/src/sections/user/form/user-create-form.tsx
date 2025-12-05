@@ -25,7 +25,7 @@ import { Iconify } from "src/components/iconify";
 import { DashboardContent } from "src/layouts/dashboard";
 import { usersApi, type User } from "src/api/users";
 import { uploadApi } from "src/api/upload";
-import { yupEmail, yupFirstName, yupLastName, yupName, yupPassword, yupUrl } from "src/utils/Validation";
+import { yupEmail, yupFirstName, yupLastName, yupPassword, yupUrl } from "src/utils/Validation";
 
 // ----------------------------------------------------------------------
 
@@ -76,7 +76,7 @@ export function UserCreateForm({ onSuccess, onCancel }: UserCreateFormProps) {
         validationSchema: userCreateSchema,
         onSubmit: async (values, { setSubmitting, setFieldError, resetForm }) => {
             try {
-                const userData: Omit<User, "id"> = {
+                const userData: Omit<User, "id" | "createdAt"> = {
                     firstName: values.firstName,
                     lastName: values.lastName,
                     password: values.password,
