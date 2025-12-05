@@ -41,6 +41,12 @@ public class CategoryService {
         return CategoryResponse.from(category);
     }
 
+    public List<CategoryResponse> findAll() {
+        return categoryRepository.findAll().stream()
+                .map(category -> new CategoryResponse(category.getId(), category.getName(), null))
+                .toList();
+    }
+
     public CategoryResponse createCategory(CategoryRegisterRequest request) {
         Category category = CategoryRegisterRequest.toCategory(request);
         return CategoryResponse.from(categoryRepository.save(category));

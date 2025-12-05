@@ -172,29 +172,6 @@ VALUES
      '["10.9-inch WQXGA Display","Exynos 1380 Chipset","8GB RAM","256GB Storage","IP68 Water Resistance","Dolby Atmos Speakers","S-Pen Included"]',
      599.00, 380.00, 0.5, 40, '/src/assets/img/212X200/img30.jpg', DATE_SUB(NOW(), INTERVAL 14 DAY), true, 7);
 
-    (25, 'Sony WH-1000XM6', 'Sony', 'WH1000XM6', 'Black',
-     '["Adaptive Noise Cancelling","Bluetooth 5.4","40-hour Battery","Multi-Device Pairing","High-Resolution Audio","USB-C Fast Charging"]',
-     449.00, 260.00, 0.28, 70, '/src/assets/img/212X200/img25.jpg', DATE_SUB(NOW(), INTERVAL 13 DAY), true, 3),
-
-    (26, 'LG UltraGear 32GN600', 'LG', '32GN600', 'Black',
-     '["32-inch QHD Display","165Hz Refresh Rate","1ms MBR","AMD FreeSync Premium","HDR10 Support","sRGB 95% Color"]',
-     399.99, 270.00, 4.5, 35, '/src/assets/img/212X200/img26.jpg', DATE_SUB(NOW(), INTERVAL 18 DAY), true, 5),
-
-    (27, 'Razer BlackWidow V4 Pro', 'Razer', 'BW-V4-PRO', 'Black',
-     '["Mechanical Green Switch","Magnetic Wrist Rest","Per-Key RGB","Dedicated Macro Keys","Aluminum Top Plate","Programmable Dial"]',
-     269.00, 150.00, 1.4, 60, '/src/assets/img/212X200/img27.jpg', DATE_SUB(NOW(), INTERVAL 8 DAY), true, 5),
-
-    (28, 'Nintendo Switch 2', 'Nintendo', 'SWITCH-2', 'White',
-     '["8-inch OLED Display","DLSS Upscaling","1080p Docked Mode","Backward Compatible","Improved Battery","Bluetooth 5.2","HD Rumble 2.0"]',
-     499.00, 320.00, 0.42, 90, '/src/assets/img/212X200/img28.jpg', DATE_SUB(NOW(), INTERVAL 9 DAY), true, 6),
-
-    (29, 'Canon EOS R9', 'Canon', 'EOS-R9', 'Black',
-     '["32MP Full-Frame Sensor","8K60 Video","Dual Pixel AF II","5-Axis IBIS","Dual Card Slots","Weather Sealed Body"]',
-     1899.00, 1300.00, 1.2, 18, '/src/assets/img/212X200/img29.jpg', DATE_SUB(NOW(), INTERVAL 20 DAY), true, 4),
-
-    (30, 'Samsung Galaxy Tab S9 FE', 'Samsung', 'TAB-S9-FE', 'Mint',
-     '["10.9-inch WQXGA Display","Exynos 1380 Chipset","8GB RAM","256GB Storage","IP68 Water Resistance","Dolby Atmos Speakers","S-Pen Included"]',
-     599.00, 380.00, 0.5, 40, '/src/assets/img/212X200/img30.jpg', DATE_SUB(NOW(), INTERVAL 14 DAY), true, 7);
 INSERT INTO cart (id, customer_id, created_at, updated_at)
 VALUES
     (1, 1, DATE_SUB(NOW(), INTERVAL 1 DAY), NOW()),

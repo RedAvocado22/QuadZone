@@ -265,31 +265,7 @@ public class OrderService {
         return new com.quadzone.order.dto.OrderTimelineResponse(order.getId(), orderNum, events);
     }
 
-    @Transactional(readOnly = true)
-    public PagedResponse<OrderResponse> getMyOrders(int page, int size) {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        if (authentication == null || !authentication.isAuthenticated() || "anonymousUser".equals(authentication.getName())) {
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "User not authenticated");
-        }
-
-        User currentUser = userRepository.findByEmail(authentication.getName())
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
-
-        Pageable pageable = PageRequest.of(Math.max(page, 0), Math.max(size, 1), Sort.by(Sort.Direction.DESC, "orderDate"));
-
-        Page<Order> resultPage = orderRepository.findByUserId(currentUser.getId(), pageable);
-
-        var orders = resultPage.stream()
-                .map(OrderResponse::from)
-                .toList();
-
-        return PagedResponse.of(
-                orders,
-                resultPage.getTotalElements(),
-                resultPage.getNumber(),
-                resultPage.getSize()
-        );
-    }
+    
 
     @Transactional(readOnly = true)
     public PagedResponse<OrderResponse> findOrders(int page, int size, String search, String status) {
