@@ -46,7 +46,7 @@ public class PublicController {
         Page<ProductResponse> bestSellers = productService.getBestSellers(PageRequest.of(0, 8));
         Page<ProductResponse> newArrivals = productService.getArrivals(PageRequest.of(0, 8));
 
-        List<CategoryResponse> categories = categoryService.findAll();
+        List<CategoryResponse> categories = categoryService.getAllCategories();
 
         return ResponseEntity.ok(new HomeResponse(categories, featured, bestSellers, newArrivals));
     }
@@ -121,7 +121,7 @@ public class PublicController {
     @GetMapping("/categories/names")
     public ResponseEntity<List<CategoryResponse>> viewCategoriesName() {
         try {
-            List<CategoryResponse> categories = categoryService.findAll();
+            List<CategoryResponse> categories = categoryService.getAllCategories();
             return ResponseEntity.ok(categories);
         } catch (RuntimeException e) {
             return ResponseEntity.notFound().build();

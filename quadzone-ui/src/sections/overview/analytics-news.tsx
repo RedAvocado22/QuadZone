@@ -34,11 +34,15 @@ export function AnalyticsNews({ title, subheader, list, sx, ...other }: Props) {
       <CardHeader title={title} subheader={subheader} sx={{ mb: 1 }} />
 
       <Scrollbar sx={{ minHeight: 405 }}>
-        <Box sx={{ minWidth: 640 }}>
-          {list.map((item) => (
-            <Item key={item.id} item={item} />
-          ))}
-        </Box>
+        {list.length === 0 ? (
+          <Box sx={{ p: 3, color: 'text.secondary' }}>No recent updates</Box>
+        ) : (
+          <Box sx={{ minWidth: 640 }}>
+            {list.map((item) => (
+              <Item key={item.id} item={item} />
+            ))}
+          </Box>
+        )}
       </Scrollbar>
 
       <Box sx={{ p: 2, textAlign: 'right' }}>

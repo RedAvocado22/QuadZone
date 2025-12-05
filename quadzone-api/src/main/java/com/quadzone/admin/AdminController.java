@@ -8,12 +8,22 @@ import com.quadzone.blog.dto.BlogDetailResponse;
 import com.quadzone.blog.dto.BlogStatusUpdateRequest;
 import com.quadzone.blog.dto.UpdateBlogRequest;
 import com.quadzone.admin.dto.AdminDashboardAnalyticsResponse;
+import com.quadzone.admin.dto.CategoryAdminResponse;
+import com.quadzone.admin.dto.NewsItemResponse;
+import com.quadzone.admin.dto.ProductAdminResponse;
 import com.quadzone.blog.BlogService;
+import com.quadzone.blog.comment.Comment;
+import com.quadzone.blog.comment.CommentRepository;
 import com.quadzone.blog.dto.AddBlogRequest;
 import com.quadzone.blog.dto.BlogDetailResponse;
 import com.quadzone.blog.dto.BlogStatusUpdateRequest;
 import com.quadzone.blog.dto.UpdateBlogRequest;
 import com.quadzone.global.dto.PagedResponse;
+import com.quadzone.order.Order;
+import com.quadzone.order.OrderRepository;
+import com.quadzone.payment.Payment;
+import com.quadzone.payment.PaymentRepository;
+import com.quadzone.payment.PaymentStatus;
 import com.quadzone.product.ProductService;
 import com.quadzone.product.category.CategoryService;
 import com.quadzone.product.category.dto.CategoryRegisterRequest;
@@ -25,21 +35,10 @@ import com.quadzone.product.category.sub_category.dto.SubCategoryRegisterRequest
 import com.quadzone.product.category.sub_category.dto.SubCategoryUpdateRequest;
 import com.quadzone.product.dto.ProductRegisterRequest;
 import com.quadzone.product.dto.ProductUpdateRequest;
-import com.quadzone.upload.dto.UploadResponse;
-import com.quadzone.blog.comment.Comment;
-import com.quadzone.blog.comment.CommentRepository;
-import com.quadzone.admin.dto.NewsItemResponse;
-import com.quadzone.order.Order;
-import com.quadzone.order.OrderRepository;
-import com.quadzone.payment.Payment;
-import com.quadzone.payment.PaymentRepository;
-import com.quadzone.payment.PaymentStatus;
 import com.quadzone.shipping.Delivery;
 import com.quadzone.shipping.DeliveryRepository;
 import com.quadzone.shipping.DeliveryStatus;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
+import com.quadzone.upload.dto.UploadResponse;
 import com.quadzone.upload.dto.UploadUpdateRequest;
 import com.quadzone.upload.service.UploadService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -50,15 +49,16 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-
-import java.util.List;
-
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-import org.springframework.beans.factory.annotation.Autowired;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1/admin")
@@ -72,11 +72,10 @@ public class AdminController {
     private final SubCategoryService subCategoryService;
     private final UploadService uploadService;
     private final BlogService blogService;
-    private AdminAnalyticsService adminAnalyticsService;
-    private CommentRepository commentRepository;
-    private OrderRepository orderRepository;
-    private PaymentRepository paymentRepository;
-    private DeliveryRepository deliveryRepository;
+    private final CommentRepository commentRepository;
+    private final OrderRepository orderRepository;
+    private final PaymentRepository paymentRepository;
+    private final DeliveryRepository deliveryRepository;
 
         @GetMapping("/products")
         @Operation(summary = "Get all products (Admin)", description = "Retrieve a paginated list of all products with optional search functionality. "
@@ -114,7 +113,20 @@ public class AdminController {
         return ResponseEntity.ok(adminAnalyticsService.getDashboardAnalytics(months));
     }
 
-  
+    @GetMapping("/products/{id}")
+    @Operation(summary = "Get product by ID (Admin)", description = "Retrieve detailed information about a specific product by its unique identifier. "
+            +
+            "Returns complete product details including name, brand, price, stock, images, and category information.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Product found and returned successfully"),
+            @ApiResponse(responseCode = "404", description = "Product not found with the provided ID"),
+            @ApiResponse(responseCode = "400", description = "Invalid product ID format")
+    })
+    public ResponseEntity<ProductAdminResponse> getProduct(
+            @Parameter(description = "Unique identifier of the product", example = "1", required = true) @PathVariable Long id) {
+        return ResponseEntity.ok(productService.findByIdForAdminWithDetails(id));
+    }
+
     @GetMapping("/news")
     @Operation(
             summary = "Get recent admin news",
@@ -199,20 +211,6 @@ public class AdminController {
         List<NewsItemResponse> result = items.size() > size ? items.subList(0, size) : items;
         return ResponseEntity.ok(result);
     }
-
-        @GetMapping("/products/{id}")
-        @Operation(summary = "Get product by ID (Admin)", description = "Retrieve detailed information about a specific product by its unique identifier. "
-                        +
-                        "Returns complete product details including name, brand, price, stock, images, and category information.")
-        @ApiResponses(value = {
-                        @ApiResponse(responseCode = "200", description = "Product found and returned successfully"),
-                        @ApiResponse(responseCode = "404", description = "Product not found with the provided ID"),
-                        @ApiResponse(responseCode = "400", description = "Invalid product ID format")
-        })
-        public ResponseEntity<ProductAdminResponse> getProduct(
-                        @Parameter(description = "Unique identifier of the product", example = "1", required = true) @PathVariable Long id) {
-                return ResponseEntity.ok(productService.findByIdForAdminWithDetails(id));
-        }
 
     @PostMapping("/products")
     @Operation(summary = "Create new product (Admin)", description = "Create a new product in the system. Requires product details including name, brand, price, "

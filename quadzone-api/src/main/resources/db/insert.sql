@@ -263,7 +263,7 @@ VALUES
     (17, 21, 144.99, 'BANK_TRANSFER', 'COMPLETED', 'txn_mysql_9001006', DATE_SUB(NOW(), INTERVAL 9 HOUR), DATE_SUB(NOW(), INTERVAL 9 HOUR)),
     (18, 22, 435.00, 'CASH_ON_DELIVERY', 'PENDING', 'txn_mysql_9001007', DATE_SUB(NOW(), INTERVAL 2 HOUR), DATE_SUB(NOW(), INTERVAL 2 HOUR));
 
-INSERT INTO deliveries (id, tracking_number, carrier, delivery_status, estimated_delivery_date, actual_delivery_date, delivery_notes, signature_required, order_id, staff_id, created_at)
+INSERT INTO deliveries (id, tracking_number, carrier, delivery_status, estimated_delivery_date, actual_delivery_date, delivery_notes, signature_required, order_id, shipper_id, created_at)
 VALUES
     (1, '1Z999ABC1234567890', 'QuadZone Express', 'DELIVERED', DATE_SUB(NOW(), INTERVAL 9 DAY), DATE_SUB(NOW(), INTERVAL 9 DAY), 'Delivered.', true, 1, 3, DATE_SUB(NOW(), INTERVAL 10 DAY)),
     (2, '1Z999ABC1234567891', 'GHTK', 'DELIVERED', DATE_SUB(NOW(), INTERVAL 7 DAY), DATE_SUB(NOW(), INTERVAL 7 DAY), 'Delivered.', false, 2, 3, DATE_SUB(NOW(), INTERVAL 8 DAY)),

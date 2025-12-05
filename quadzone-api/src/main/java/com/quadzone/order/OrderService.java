@@ -1,8 +1,11 @@
 package com.quadzone.order;
 
+import com.quadzone.discount.Coupon;
+import com.quadzone.discount.CouponService;
 import com.quadzone.exception.order.OrderNotFoundException;
 import com.quadzone.global.dto.PagedResponse;
-import com.quadzone.order.OrderStatus;
+import com.quadzone.notification.NotificationService;
+import com.quadzone.notification.dto.NotificationRequest;
 import com.quadzone.order.dto.*;
 import com.quadzone.payment.Payment;
 import com.quadzone.payment.PaymentMethod;
@@ -10,22 +13,14 @@ import com.quadzone.payment.PaymentRepository;
 import com.quadzone.payment.PaymentStatus;
 import com.quadzone.product.Product;
 import com.quadzone.product.ProductRepository;
-import com.quadzone.notification.NotificationService;
-import com.quadzone.notification.dto.NotificationRequest;
 import com.quadzone.shipping.Delivery;
 import com.quadzone.shipping.DeliveryRepository;
 import com.quadzone.shipping.DeliveryStatus;
 import com.quadzone.user.User;
-import com.quadzone.user.UserRole;
 import com.quadzone.user.UserRepository;
+import com.quadzone.user.UserRole;
 import com.quadzone.utils.email.EmailSenderService;
-import com.quadzone.discount.Coupon;
-import com.quadzone.discount.CouponService;
 import lombok.RequiredArgsConstructor;
-
-import java.math.BigDecimal;
-import java.time.LocalDateTime;
-
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -38,8 +33,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
-
+import java.math.BigDecimal;
 import java.security.SecureRandom;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
@@ -243,7 +239,8 @@ public class OrderService {
                             cancelledAt
                     ));
                 }
-                default -> {}
+                default -> {
+                }
             }
         }
 
@@ -318,6 +315,7 @@ public class OrderService {
 
     /**
      * Checkout method that supports both guest and authenticated users
+     *
      * @param request Checkout request containing customer info and order items
      * @return OrderResponse with created order
      */
@@ -505,24 +503,58 @@ public class OrderService {
 
     /**
      * Get order status by order number (public endpoint for tracking)
+     *
      * @param orderNumber Order number in format ORD-00001
      * @return OrderStatusResponse with order information
      */
     @Transactional(readOnly = true)
     public OrderStatusResponse getOrderStatusByOrderNumber(String orderNumber) {
-        return orderRepository.findByOrderNumber(orderNumber)
-                .map(OrderResponse::from)
-                .map(OrderStatusResponse::from)
-                .orElse(OrderStatusResponse.notFound(orderNumber));
+        String input = orderNumber != null ? orderNumber.trim() : "";
+        java.util.Optional<Order> byNumber = orderRepository.findByOrderNumber(input);
+        if (byNumber.isPresent()) {
+            return OrderStatusResponse.from(OrderResponse.from(byNumber.get()));
+        }
+
+        Long id = parseIdFromOrderNumber(input);
+        if (id != null) {
+            java.util.Optional<Order> byId = orderRepository.findById(id);
+            if (byId.isPresent()) {
+                return OrderStatusResponse.from(OrderResponse.from(byId.get()));
+            }
+        }
+
+        return OrderStatusResponse.notFound(orderNumber);
+    }
+
+    private Long parseIdFromOrderNumber(String value) {
+        if (value == null) {
+            return null;
+        }
+        String v = value.trim();
+        java.util.regex.Matcher m = java.util.regex.Pattern.compile("^ORD-(\\d+)$", java.util.regex.Pattern.CASE_INSENSITIVE).matcher(v);
+        if (m.matches()) {
+            try {
+                return Long.parseLong(m.group(1));
+            } catch (NumberFormatException ignored) {
+            }
+        }
+        m = java.util.regex.Pattern.compile("^(\\d+)$").matcher(v);
+        if (m.matches()) {
+            try {
+                return Long.parseLong(m.group(1));
+            } catch (NumberFormatException ignored) {
+            }
+        }
+        return null;
     }
 
     /**
      * Xử lý khi payment thành công (được gọi từ payment gateway callback)
      * Cập nhật order status và payment status
      *
-     * @param orderNumber Order number (format: ORD-00001)
+     * @param orderNumber   Order number (format: ORD-00001)
      * @param transactionId Transaction ID từ payment gateway
-     * @param paymentDate Payment date từ payment gateway (format: yyyyMMddHHmmss)
+     * @param paymentDate   Payment date từ payment gateway (format: yyyyMMddHHmmss)
      * @return OrderResponse với order đã được cập nhật
      */
     public OrderResponse confirmPayment(String orderNumber, String transactionId, String paymentDate) {
@@ -844,11 +876,11 @@ public class OrderService {
     }
 
 
-/**
+    /**
      * Find orders assigned to the current authenticated shipper
      *
-     * @param page Page number (0-indexed)
-     * @param size Page size
+     * @param page   Page number (0-indexed)
+     * @param size   Page size
      * @param search Search query
      * @return PagedResponse with orders assigned to the shipper
      */
@@ -884,7 +916,7 @@ public class OrderService {
                     String searchLower = search.toLowerCase();
                     String orderNumber = "ORD-" + String.format("%05d", order.getId());
                     String customerName = (order.getCustomerFirstName() != null ? order.getCustomerFirstName() : "") +
-                                         " " + (order.getCustomerLastName() != null ? order.getCustomerLastName() : "");
+                            " " + (order.getCustomerLastName() != null ? order.getCustomerLastName() : "");
                     return orderNumber.toLowerCase().contains(searchLower)
                             || customerName.toLowerCase().contains(searchLower)
                             || (order.getOrderStatus() != null && order.getOrderStatus().name().toLowerCase().contains(searchLower));
@@ -958,15 +990,15 @@ public class OrderService {
                         "Invalid status transition from PENDING");
             }
             if (oldStatus == OrderStatus.CONFIRMED &&
-                request.orderStatus() != OrderStatus.PROCESSING &&
-                request.orderStatus() != OrderStatus.CANCELLED) {
+                    request.orderStatus() != OrderStatus.PROCESSING &&
+                    request.orderStatus() != OrderStatus.CANCELLED) {
                 throw new ResponseStatusException(
                         HttpStatus.BAD_REQUEST,
                         "Invalid status transition from CONFIRMED");
             }
             if (oldStatus == OrderStatus.PROCESSING &&
-                request.orderStatus() != OrderStatus.COMPLETED &&
-                request.orderStatus() != OrderStatus.CANCELLED) {
+                    request.orderStatus() != OrderStatus.COMPLETED &&
+                    request.orderStatus() != OrderStatus.CANCELLED) {
                 throw new ResponseStatusException(
                         HttpStatus.BAD_REQUEST,
                         "Invalid status transition from PROCESSING");
@@ -1002,8 +1034,10 @@ public class OrderService {
 
         return orderResponse;
     }
+
     /**
      * Get orders for the currently authenticated user
+     *
      * @param page Page number (0-indexed)
      * @param size Page size
      * @return PagedResponse with user's orders
@@ -1033,15 +1067,17 @@ public class OrderService {
                 .map(OrderResponse::from)
                 .toList();
 
-        return  PagedResponse.of(
+        return PagedResponse.of(
                 orders,
                 ordersPage.getTotalElements(),
                 ordersPage.getNumber(),
                 ordersPage.getSize()
         );
     }
+
     /**
      * Get order details for the currently authenticated user
+     *
      * @param orderId Order ID
      * @return OrderDetailsResponse with order items
      */
