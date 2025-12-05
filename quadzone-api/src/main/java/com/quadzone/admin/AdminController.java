@@ -21,6 +21,20 @@ import com.quadzone.product.category.sub_category.dto.SubCategoryUpdateRequest;
 import com.quadzone.product.dto.ProductRegisterRequest;
 import com.quadzone.product.dto.ProductUpdateRequest;
 import com.quadzone.upload.dto.UploadResponse;
+import com.quadzone.blog.comment.Comment;
+import com.quadzone.blog.comment.CommentRepository;
+import com.quadzone.admin.dto.NewsItemResponse;
+import com.quadzone.order.Order;
+import com.quadzone.order.OrderRepository;
+import com.quadzone.payment.Payment;
+import com.quadzone.payment.PaymentRepository;
+import com.quadzone.payment.PaymentStatus;
+import com.quadzone.shipping.Delivery;
+import com.quadzone.shipping.DeliveryRepository;
+import com.quadzone.shipping.DeliveryStatus;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import com.quadzone.upload.dto.UploadUpdateRequest;
 import com.quadzone.upload.service.UploadService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -39,6 +53,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.beans.factory.annotation.Autowired;
 
 @RestController
 @RequestMapping("/api/v1/admin")
@@ -53,6 +68,11 @@ public class AdminController {
     private final UploadService uploadService;
     private final AdminAnalyticsService adminAnalyticsService;
     private final BlogService blogService;
+    private AdminAnalyticsService adminAnalyticsService;
+    private CommentRepository commentRepository;
+    private OrderRepository orderRepository;
+    private PaymentRepository paymentRepository;
+    private DeliveryRepository deliveryRepository;
 
     @GetMapping("/products")
     @Operation(
@@ -109,6 +129,105 @@ public class AdminController {
             @Parameter(description = "Unique identifier of the product", example = "1", required = true) @PathVariable Long id) {
         return ResponseEntity.ok(productService.findByIdForAdminWithDetails(id));
     }
+  
+    @GetMapping("/news")
+    @Operation(
+            summary = "Get recent admin news",
+            description = "Aggregated recent events for admin dashboard, including new comments, new orders, and order status changes."
+    )
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Successfully retrieved admin news")
+    })
+    public ResponseEntity<List<NewsItemResponse>> getAdminNews(
+            @Parameter(description = "Max number of items to return", example = "20")
+            @RequestParam(defaultValue = "20") int size
+    ) {
+        int perSource = Math.max(1, Math.min(size, 20));
+
+        Pageable latestCommentsPage = PageRequest.of(0, perSource, Sort.by(Sort.Direction.DESC, "createdAt"));
+        Pageable latestOrdersPage = PageRequest.of(0, perSource, Sort.by(Sort.Direction.DESC, "orderDate"));
+        Pageable latestPaymentsPage = PageRequest.of(0, perSource, Sort.by(Sort.Direction.DESC, "paymentDate"));
+        Pageable latestDeliveryPage = PageRequest.of(0, perSource, Sort.by(Sort.Direction.DESC, "updatedAt"));
+
+        final List<NewsItemResponse> items = new java.util.ArrayList<>();
+
+        // New comments
+        commentRepository.findAll(latestCommentsPage).forEach((Comment c) -> {
+            String blogTitle = c.getBlog() != null ? c.getBlog().getTitle() : "Blog";
+            items.add(new NewsItemResponse(
+                    "comment_added",
+                    "New blog comment",
+                    c.getAuthorName() + " commented on \"" + blogTitle + "\"",
+                    c.getCreatedAt(),
+                    "blog_comment",
+                    c.getId()
+            ));
+        });
+
+        // New orders
+        orderRepository.findAll(latestOrdersPage).forEach((Order o) -> {
+            String orderNum = o.getOrderNumber() != null ? o.getOrderNumber() : ("ORD-" + String.format("%05d", o.getId()));
+            String customerName = o.getCustomerFirstName() != null && o.getCustomerLastName() != null
+                    ? o.getCustomerFirstName() + " " + o.getCustomerLastName()
+                    : (o.getUser() != null ? o.getUser().getFullName() : "Guest");
+            items.add(new NewsItemResponse(
+                    "order_created",
+                    "New order",
+                    "Order #" + orderNum + " by " + customerName,
+                    o.getOrderDate(),
+                    "order",
+                    o.getId()
+            ));
+        });
+
+        // Order confirmed via payment
+        paymentRepository.findByPaymentStatus(PaymentStatus.COMPLETED, latestPaymentsPage)
+                .forEach((Payment p) -> {
+                    Order o = p.getOrder();
+                    String orderNum = o.getOrderNumber() != null ? o.getOrderNumber() : ("ORD-" + String.format("%05d", o.getId()));
+                    items.add(new NewsItemResponse(
+                            "order_status",
+                            "Order Confirmed",
+                            "Order #" + orderNum + " payment completed",
+                            p.getPaymentDate(),
+                            "order",
+                            o.getId()
+                    ));
+                });
+
+        // Delivery status changes
+        deliveryRepository.findAll(latestDeliveryPage).forEach((Delivery d) -> {
+            Order o = d.getOrder();
+            String orderNum = o.getOrderNumber() != null ? o.getOrderNumber() : ("ORD-" + String.format("%05d", o.getId()));
+            DeliveryStatus status = d.getDeliveryStatus();
+            items.add(new NewsItemResponse(
+                    "order_status",
+                    "Delivery Updated",
+                    "Order #" + orderNum + " delivery status: " + (status != null ? status.name() : "UNKNOWN"),
+                    d.getUpdatedAt() != null ? d.getUpdatedAt() : d.getCreatedAt(),
+                    "delivery",
+                    d.getId()
+            ));
+        });
+
+        items.sort((a, b) -> b.timestamp().compareTo(a.timestamp()));
+        List<NewsItemResponse> result = items.size() > size ? items.subList(0, size) : items;
+        return ResponseEntity.ok(result);
+    }
+
+        @GetMapping("/products/{id}")
+        @Operation(summary = "Get product by ID (Admin)", description = "Retrieve detailed information about a specific product by its unique identifier. "
+                        +
+                        "Returns complete product details including name, brand, price, stock, images, and category information.")
+        @ApiResponses(value = {
+                        @ApiResponse(responseCode = "200", description = "Product found and returned successfully"),
+                        @ApiResponse(responseCode = "404", description = "Product not found with the provided ID"),
+                        @ApiResponse(responseCode = "400", description = "Invalid product ID format")
+        })
+        public ResponseEntity<ProductAdminResponse> getProduct(
+                        @Parameter(description = "Unique identifier of the product", example = "1", required = true) @PathVariable Long id) {
+                return ResponseEntity.ok(productService.findByIdForAdminWithDetails(id));
+        }
 
     @PostMapping("/products")
     @Operation(summary = "Create new product (Admin)", description = "Create a new product in the system. Requires product details including name, brand, price, "

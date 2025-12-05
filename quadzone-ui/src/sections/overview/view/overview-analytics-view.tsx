@@ -5,7 +5,8 @@ import CircularProgress from "@mui/material/CircularProgress";
 
 import { DashboardContent } from "src/layouts/dashboard";
 import { API } from "src/api/base";
-import type { AdminDashboardAnalyticsResponse, MonthlyMetric } from "src/api/types";
+import { notificationsApi, ordersApi } from "src/api";
+import type { AdminDashboardAnalyticsResponse, MonthlyMetric, NewsItem, OrderTimelineResponseDTO } from "src/api/types";
 
 import { AnalyticsNews } from "../analytics-news";
 import { AnalyticsOrderTimeline } from "../analytics-order-timeline";
@@ -17,6 +18,8 @@ export function OverviewAnalyticsView() {
     const [data, setData] = useState<AdminDashboardAnalyticsResponse | null>(null);
     const [loading, setLoading] = useState<boolean>(true);
     const [error, setError] = useState<string | null>(null);
+    const [news, setNews] = useState<NewsItem[]>([]);
+    const [timeline, setTimeline] = useState<OrderTimelineResponseDTO | null>(null);
 
     useEffect(() => {
         let mounted = true;
@@ -35,6 +38,38 @@ export function OverviewAnalyticsView() {
             });
         return () => {
             mounted = false;
+        };
+    }, []);
+
+    useEffect(() => {
+        let active = true;
+        (async () => {
+            try {
+                const [newsItems, ordersPage] = await Promise.all([
+                    notificationsApi.getAdminNews(20),
+                    ordersApi.getAll({ page: 0, pageSize: 1 })
+                ]);
+
+                if (!active) return;
+                setNews(newsItems || []);
+
+                const latestOrder = ordersPage.content?.[0];
+                if (latestOrder?.id) {
+                    try {
+                        const tl = await ordersApi.getTimeline(latestOrder.id);
+                        if (active) setTimeline(tl);
+                    } catch (e) {
+                        // ignore timeline errors, keep UI functional
+                    }
+                }
+            } catch (e) {
+                if (active) {
+                    // Do not override main analytics error; keep silent for side widgets
+                }
+            }
+        })();
+        return () => {
+            active = false;
         };
     }, []);
 
@@ -115,11 +150,41 @@ export function OverviewAnalyticsView() {
                     </Grid>
 
                     <Grid size={{ xs: 12, md: 6, lg: 8 }}>
-                        <AnalyticsNews title="News" list={[]} />
+                        <AnalyticsNews
+                            title="News"
+                            list={(news || []).map((n, idx) => ({
+                                id: String(n.refId ?? idx),
+                                title: n.title,
+                                coverUrl:
+                                    n.refType === "order"
+                                        ? "/assets/icons/glass/ic-glass-buy.svg"
+                                        : n.refType === "delivery"
+                                          ? "/assets/icons/glass/ic-glass-delivery.svg"
+                                          : "/assets/icons/glass/ic-glass-message.svg",
+                                description: n.description,
+                                postedAt: n.timestamp
+                            }))}
+                        />
                     </Grid>
 
                     <Grid size={{ xs: 12, md: 6, lg: 4 }}>
-                        <AnalyticsOrderTimeline title="Order timeline" list={[]} />
+                        <AnalyticsOrderTimeline
+                            title="Order timeline"
+                            subheader={timeline ? `#${timeline.orderNumber}` : undefined}
+                            list={(timeline?.events || []).map((e, i) => ({
+                                id: `${timeline?.orderId}-${i}`,
+                                type:
+                                    e.type === "order"
+                                        ? "order1"
+                                        : e.type === "payment"
+                                          ? "order2"
+                                          : e.type === "delivery"
+                                            ? "order3"
+                                            : "order4",
+                                title: e.title || e.description,
+                                time: e.timestamp
+                            }))}
+                        />
                     </Grid>
                 </Grid>
             )}

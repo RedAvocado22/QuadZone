@@ -12,60 +12,61 @@ import java.util.Optional;
 
 public interface OrderRepository extends JpaRepository<Order, Long> {
 
-        @Query("""
-                        SELECT o
-                        FROM Order o
-                        WHERE LOWER(COALESCE(o.user.firstName, '') || ' ' || COALESCE(o.user.lastName, ''))
-                                LIKE LOWER(CONCAT('%', :keyword, '%'))
-                           OR LOWER(COALESCE(o.user.email, '')) LIKE LOWER(CONCAT('%', :keyword, '%'))
-                           OR LOWER(COALESCE(o.orderNumber, '')) LIKE LOWER(CONCAT('%', :keyword, '%'))
-                        """)
-        Page<Order> search(@Param("keyword") String keyword, Pageable pageable);
+    @Query("""
+            SELECT o
+            FROM Order o
+            WHERE LOWER(COALESCE(o.user.firstName, '') || ' ' || COALESCE(o.user.lastName, ''))
+                    LIKE LOWER(CONCAT('%', :keyword, '%'))
+               OR LOWER(COALESCE(o.user.email, '')) LIKE LOWER(CONCAT('%', :keyword, '%'))
+               OR LOWER(COALESCE(o.orderNumber, '')) LIKE LOWER(CONCAT('%', :keyword, '%'))
+            """)
+    Page<Order> search(@Param("keyword") String keyword, Pageable pageable);
 
-        /**
-         * Find orders by user ID with pagination
-         */
-        @Query("SELECT o FROM Order o WHERE o.user.id = :userId ORDER BY o.orderDate DESC")
-        Page<Order> findByUserId(@Param("userId") Long userId, Pageable pageable);
+    /**
+     * Find orders by user ID with pagination
+     */
+    @Query("SELECT o FROM Order o WHERE o.user.id = :userId ORDER BY o.orderDate DESC")
+    Page<Order> findByUserId(@Param("userId") Long userId, Pageable pageable);
 
-        /**
-         * Find orders by user email (for guest users who register later)
-         */
-        @Query("SELECT o FROM Order o WHERE o.customerEmail = :email ORDER BY o.orderDate DESC")
-        Page<Order> findByCustomerEmail(@Param("email") String email, Pageable pageable);
+    /**
+     * Find orders by user email (for guest users who register later)
+     */
+    @Query("SELECT o FROM Order o WHERE o.customerEmail = :email ORDER BY o.orderDate DESC")
+    Page<Order> findByCustomerEmail(@Param("email") String email, Pageable pageable);
 
-        /**
-         * Find orders by user ID and order status
-         */
-        @Query("SELECT o FROM Order o WHERE o.user.id = :userId AND o.orderStatus = :status")
-        List<Order> findByUserIdAndOrderStatus(@Param("userId") Long userId, @Param("status") OrderStatus status);
-        Page<Order> findByOrderStatus(OrderStatus status, Pageable pageable);
+    /**
+     * Find orders by user ID and order status
+     */
+    @Query("SELECT o FROM Order o WHERE o.user.id = :userId AND o.orderStatus = :status")
+    List<Order> findByUserIdAndOrderStatus(@Param("userId") Long userId, @Param("status") OrderStatus status);
+
+    Page<Order> findByOrderStatus(OrderStatus status, Pageable pageable);
 
 
-        /**
-         * Search orders with status filter
-         */
-        @Query("""
-                        SELECT o
-                        FROM Order o
-                        WHERE o.orderStatus = :status
-                          AND (LOWER(COALESCE(o.user.firstName, '') || ' ' || COALESCE(o.user.lastName, ''))
-                                LIKE LOWER(CONCAT('%', :keyword, '%'))
-                           OR LOWER(COALESCE(o.user.email, '')) LIKE LOWER(CONCAT('%', :keyword, '%'))
-                           OR LOWER(COALESCE(o.orderNumber, '')) LIKE LOWER(CONCAT('%', :keyword, '%')))
-                        """)
-        Page<Order> searchByQueryAndStatus(@Param("keyword") String keyword, @Param("status") OrderStatus status, Pageable pageable);
+    /**
+     * Search orders with status filter
+     */
+    @Query("""
+            SELECT o
+            FROM Order o
+            WHERE o.orderStatus = :status
+              AND (LOWER(COALESCE(o.user.firstName, '') || ' ' || COALESCE(o.user.lastName, ''))
+                    LIKE LOWER(CONCAT('%', :keyword, '%'))
+               OR LOWER(COALESCE(o.user.email, '')) LIKE LOWER(CONCAT('%', :keyword, '%'))
+               OR LOWER(COALESCE(o.orderNumber, '')) LIKE LOWER(CONCAT('%', :keyword, '%')))
+            """)
+    Page<Order> searchByQueryAndStatus(@Param("keyword") String keyword, @Param("status") OrderStatus status, Pageable pageable);
 
-        /**
-         * Find order by order number
-         */
-        Optional<Order> findByOrderNumber(String orderNumber);
+    /**
+     * Find order by order number
+     */
+    Optional<Order> findByOrderNumber(String orderNumber);
 
-        /**
-         * Check if order number exists
-         */
-        boolean existsByOrderNumber(String orderNumber);
+    /**
+     * Check if order number exists
+     */
+    boolean existsByOrderNumber(String orderNumber);
 
-        @Query("SELECT YEAR(o.orderDate), MONTH(o.orderDate), COUNT(o) FROM Order o WHERE o.orderDate BETWEEN :from AND :to GROUP BY YEAR(o.orderDate), MONTH(o.orderDate) ORDER BY YEAR(o.orderDate), MONTH(o.orderDate)")
-        java.util.List<Object[]> aggregateMonthlyOrders(@Param("from") LocalDateTime from, @Param("to") LocalDateTime to);
+    @Query("SELECT YEAR(o.orderDate), MONTH(o.orderDate), COUNT(o) FROM Order o WHERE o.orderDate BETWEEN :from AND :to GROUP BY YEAR(o.orderDate), MONTH(o.orderDate) ORDER BY YEAR(o.orderDate), MONTH(o.orderDate)")
+    java.util.List<Object[]> aggregateMonthlyOrders(@Param("from") LocalDateTime from, @Param("to") LocalDateTime to);
 }

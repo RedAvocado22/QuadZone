@@ -6,6 +6,7 @@ import LinearProgress, { linearProgressClasses } from '@mui/material/LinearProgr
 import { varAlpha } from 'minimal-shared/utils';
 
 import { DashboardLayout } from 'src/layouts/dashboard';
+import NotFound from 'src/pages/NotFound';
 
 // ----------------------------------------------------------------------
 
@@ -114,6 +115,7 @@ export default function AdminRoutes() {
                 <Route path="coupon/create" element={<CouponCreatePage />} />
                 <Route path="coupon/:id" element={<CouponDetailsPage />} />
                 <Route path="coupon/:id/edit" element={<CouponEditPage />} />
+                <Route path="*" element={<NotFound />} />
             </Route>
         </Routes>
     );

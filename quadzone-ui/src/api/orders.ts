@@ -5,7 +5,8 @@ import type {
     OrderUpdateRequest,
     PagedResponse,
     SimplePagedResponse,
-    OrderDetailsResponse
+    OrderDetailsResponse,
+    OrderTimelineResponseDTO
 } from "./types";
 
 // Re-export for convenience
@@ -151,6 +152,12 @@ export const ordersApi = {
     // Get order details with items for current user
     getMyOrderDetails: async (orderId: number): Promise<OrderDetailsResponse> => {
         const response = await API.get<OrderDetailsResponse>(`/orders/my-orders/${orderId}`);
+        return response.data;
+    },
+
+    // Get order timeline (Admin)
+    getTimeline: async (orderId: number): Promise<OrderTimelineResponseDTO> => {
+        const response = await API.get<OrderTimelineResponseDTO>(`/orders/admin/${orderId}/timeline`);
         return response.data;
     }
 };

@@ -47,25 +47,7 @@ export function ProtectedRoute({
   // If roles are specified, check if user has required role
   if (allowedRoles) {
     if (!hasRole(allowedRoles)) {
-      return (
-        <Box
-          sx={{
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            justifyContent: 'center',
-            minHeight: '100vh',
-            gap: 2,
-          }}
-        >
-          <Typography variant="h5" color="error">
-            Access Denied
-          </Typography>
-          <Typography variant="body2" color="text.secondary">
-            You don't have permission to access this page.
-          </Typography>
-        </Box>
-      );
+      return <Navigate to="/401" replace />;
     }
   }
 
