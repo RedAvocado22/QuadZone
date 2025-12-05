@@ -79,8 +79,8 @@ const MiddleHeader = () => {
                             <div className="ml-2">
                                 <div className="phone">
                                     <strong>Support</strong>{" "}
-                                    <a href="tel:800856800604" className="text-gray-90">
-                                        (+800) 856 800 604
+                                    <a href="tel:84123456789" className="text-gray-90">
+                                        (+84) 123 456 789
                                     </a>
                                 </div>
                                 <div className="email">
