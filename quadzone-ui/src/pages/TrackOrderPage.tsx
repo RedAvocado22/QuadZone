@@ -108,7 +108,7 @@ const TrackOrderPage = () => {
                                             type="text"
                                             className="form-control form-control-lg"
                                             id="orderNumber"
-                                            placeholder="e.g., ORD-00001"
+                                        placeholder="e.g., ORD-00012 or ORD-AB12CD34"
                                             value={orderNumber}
                                             onChange={(e) => setOrderNumber(e.target.value.toUpperCase())}
                                             required

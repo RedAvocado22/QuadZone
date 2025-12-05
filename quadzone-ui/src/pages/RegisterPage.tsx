@@ -196,8 +196,7 @@ export default function RegisterPage() {
                                                     zIndex: 10
                                                 }}
                                                 onClick={() => setShowPassword(!showPassword)}
-                                                aria-label={showPassword ? "Hide password" : "Show password"}
-                                            >
+                                                aria-label={showPassword ? "Hide password" : "Show password"}>
                                                 <i className={`fas ${showPassword ? "fa-eye-slash" : "fa-eye"}`}></i>
                                             </button>
                                         </div>
@@ -233,9 +232,9 @@ export default function RegisterPage() {
                                                     zIndex: 10
                                                 }}
                                                 onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                                                aria-label={showConfirmPassword ? "Hide password" : "Show password"}
-                                            >
-                                                <i className={`fas ${showConfirmPassword ? "fa-eye-slash" : "fa-eye"}`}></i>
+                                                aria-label={showConfirmPassword ? "Hide password" : "Show password"}>
+                                                <i
+                                                    className={`fas ${showConfirmPassword ? "fa-eye-slash" : "fa-eye"}`}></i>
                                             </button>
                                         </div>
                                         {registerFormik.touched.confirmPassword &&

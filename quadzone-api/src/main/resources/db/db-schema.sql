@@ -178,7 +178,7 @@ create table deliveries
     id                      bigint auto_increment
         primary key,
     order_id                bigint                                                                                          not null,
-    staff_id                bigint                                                                                          null,
+    shipper_id              bigint                                                                                          null,
     updated_at              datetime(6)                                                                                     null,
     carrier                 varchar(255)                                                                                    null,
     delivery_notes          text                                                                                            null,
@@ -191,7 +191,7 @@ create table deliveries
     constraint FK7isx0rnbgqr1dcofd5putl6jw
         foreign key (order_id) references orders (id),
     constraint FKjwhg1adbycjfves2pj9mpbhga
-        foreign key (staff_id) references _user (id)
+        foreign key (shipper_id) references _user (id)
 );
 
 create table payment

@@ -170,11 +170,11 @@ export function OverviewAnalyticsView() {
                     <Grid size={{ xs: 12, md: 6, lg: 4 }}>
                         <AnalyticsOrderTimeline
                             title="Order timeline"
-                            subheader={timeline ? `#${timeline.orderNumber}` : undefined}
+                            subheader={timeline ? `#${timeline.orderNumber}` : "No recent orders"}
                             list={(timeline?.events || []).map((e, i) => ({
                                 id: `${timeline?.orderId}-${i}`,
                                 type:
-                                    e.type === "order"
+                                    e.type === "order_created" || e.type === "order_status"
                                         ? "order1"
                                         : e.type === "payment"
                                           ? "order2"
