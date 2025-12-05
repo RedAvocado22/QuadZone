@@ -172,6 +172,29 @@ VALUES
      '["10.9-inch WQXGA Display","Exynos 1380 Chipset","8GB RAM","256GB Storage","IP68 Water Resistance","Dolby Atmos Speakers","S-Pen Included"]',
      599.00, 380.00, 0.5, 40, '/src/assets/img/212X200/img30.jpg', DATE_SUB(NOW(), INTERVAL 14 DAY), true, 7);
 
+    (25, 'Sony WH-1000XM6', 'Sony', 'WH1000XM6', 'Black',
+     '["Adaptive Noise Cancelling","Bluetooth 5.4","40-hour Battery","Multi-Device Pairing","High-Resolution Audio","USB-C Fast Charging"]',
+     449.00, 260.00, 0.28, 70, '/src/assets/img/212X200/img25.jpg', DATE_SUB(NOW(), INTERVAL 13 DAY), true, 3),
+
+    (26, 'LG UltraGear 32GN600', 'LG', '32GN600', 'Black',
+     '["32-inch QHD Display","165Hz Refresh Rate","1ms MBR","AMD FreeSync Premium","HDR10 Support","sRGB 95% Color"]',
+     399.99, 270.00, 4.5, 35, '/src/assets/img/212X200/img26.jpg', DATE_SUB(NOW(), INTERVAL 18 DAY), true, 5),
+
+    (27, 'Razer BlackWidow V4 Pro', 'Razer', 'BW-V4-PRO', 'Black',
+     '["Mechanical Green Switch","Magnetic Wrist Rest","Per-Key RGB","Dedicated Macro Keys","Aluminum Top Plate","Programmable Dial"]',
+     269.00, 150.00, 1.4, 60, '/src/assets/img/212X200/img27.jpg', DATE_SUB(NOW(), INTERVAL 8 DAY), true, 5),
+
+    (28, 'Nintendo Switch 2', 'Nintendo', 'SWITCH-2', 'White',
+     '["8-inch OLED Display","DLSS Upscaling","1080p Docked Mode","Backward Compatible","Improved Battery","Bluetooth 5.2","HD Rumble 2.0"]',
+     499.00, 320.00, 0.42, 90, '/src/assets/img/212X200/img28.jpg', DATE_SUB(NOW(), INTERVAL 9 DAY), true, 6),
+
+    (29, 'Canon EOS R9', 'Canon', 'EOS-R9', 'Black',
+     '["32MP Full-Frame Sensor","8K60 Video","Dual Pixel AF II","5-Axis IBIS","Dual Card Slots","Weather Sealed Body"]',
+     1899.00, 1300.00, 1.2, 18, '/src/assets/img/212X200/img29.jpg', DATE_SUB(NOW(), INTERVAL 20 DAY), true, 4),
+
+    (30, 'Samsung Galaxy Tab S9 FE', 'Samsung', 'TAB-S9-FE', 'Mint',
+     '["10.9-inch WQXGA Display","Exynos 1380 Chipset","8GB RAM","256GB Storage","IP68 Water Resistance","Dolby Atmos Speakers","S-Pen Included"]',
+     599.00, 380.00, 0.5, 40, '/src/assets/img/212X200/img30.jpg', DATE_SUB(NOW(), INTERVAL 14 DAY), true, 7);
 INSERT INTO cart (id, customer_id, created_at, updated_at)
 VALUES
     (1, 1, DATE_SUB(NOW(), INTERVAL 1 DAY), NOW()),
@@ -636,5 +659,120 @@ INSERT INTO comments (author_name, author_email, content, blog_id, created_at) V
 
 -- Comments for Blog 8 (5G)
 INSERT INTO comments (author_name, author_email, content, blog_id, created_at) VALUES
-                                                                                   ('Sophie Turner', 'sophie.t@email.com', 'Finally understand what 5G actually means! The real-world applications section was eye-opening.', 8, '2024-03-29 10:15:00'),
-                                                                                   ('Daniel White', 'daniel.white@email.com', 'Great article! Would love to see coverage maps and carrier comparisons in a future post.', 8, '2024-03-30 13:45:00');
+('Sophie Turner', 'sophie.t@email.com', 'Finally understand what 5G actually means! The real-world applications section was eye-opening.', 8, '2024-03-29 10:15:00'),
+('Daniel White', 'daniel.white@email.com', 'Great article! Would love to see coverage maps and carrier comparisons in a future post.', 8, '2024-03-30 13:45:00');
+
+
+INSERT INTO wishlist (id, user_id) VALUES
+                                       (1, 1),
+                                       (2, 5),
+                                       (3, 6),
+                                       (4, 7),
+                                       (5, 8);
+
+INSERT INTO wishlist_products (wishlist_id, product_id) VALUES
+                                                            (1, 1), (1, 3), (1, 4),
+                                                            (2, 9), (2, 10),
+                                                            (3, 16), (3, 17),
+                                                            (4, 1), (4, 15),
+                                                            (5, 7);
+
+INSERT INTO coupons (code, coupon_value, discount_type, min_order_amount, max_discount_amount, is_active, start_date, end_date, usage_count, max_usage)
+VALUES
+    ('WELCOME10', 10, 'PERCENTAGE', 100, 50, true, NOW(), DATE_ADD(NOW(), INTERVAL 30 DAY), 0, 999),
+    ('FLASH50', 50, 'FIXED_AMOUNT', 200, 50, true, NOW(), DATE_ADD(NOW(), INTERVAL 10 DAY), 0, 200),
+    ('FREESHIP', 15, 'FIXED_AMOUNT', 50, 15, true, NOW(), DATE_ADD(NOW(), INTERVAL 90 DAY), 0, 1000);
+
+INSERT INTO notifications (user_id, title, description, avatar_url, type, posted_at, is_unread)
+VALUES
+    (1, 'Your Order Has Been Delivered', 'Order #1 has been successfully delivered.', '/img/system/delivery.png', 'ORDER', NOW(), true),
+    (2, 'A New Message from Customer', 'Customer has sent a new message.', '/img/system/message.png', 'CHAT', NOW(), true),
+    (5, 'New Discount Available', 'FLASH50 voucher is now active.', '/img/system/discount.png', 'PROMO', NOW(), true),
+    (6, 'Order Processing', 'Your order #3 is now being processed.', '/img/system/order.png', 'ORDER', NOW(), false),
+    (7, 'Review Approved', 'Your review on Tablet Pro is now visible.', '/img/system/review.png', 'SYSTEM', NOW(), false);
+
+INSERT INTO chat_room (id, customer_id, staff_id, status, created_at, last_message_at)
+VALUES
+    (1, 1, 3, 'ACTIVE', DATE_SUB(NOW(), INTERVAL 1 DAY), NOW()),
+    (2, 7, 3, 'CLOSED', DATE_SUB(NOW(), INTERVAL 3 DAY), DATE_SUB(NOW(), INTERVAL 1 DAY));
+
+INSERT INTO chat_message (chat_room_id, sender_id, content, message_type, sent_at, is_read)
+VALUES
+    (1, 1, 'Hi, I need help with my recent order.', 'TEXT', DATE_SUB(NOW(), INTERVAL 23 HOUR), true),
+    (1, 3, 'Sure! Could you please provide your order number?', 'TEXT', DATE_SUB(NOW(), INTERVAL 22 HOUR), true),
+    (1, 1, 'It''s order #1.', 'TEXT', DATE_SUB(NOW(), INTERVAL 21 HOUR), false),
+
+    (2, 7, 'My tablet has an issue with the battery.', 'TEXT', DATE_SUB(NOW(), INTERVAL 2 DAY), true),
+    (2, 3, 'Please bring it to our service center.', 'TEXT', DATE_SUB(NOW(), INTERVAL 2 DAY), true);
+
+INSERT INTO contacts (name, email, subject, message, created_at) VALUES
+                                                                     ('Laura Nguyen', 'laura@email.com', 'Order inquiry', 'When will my order arrive?', NOW()),
+                                                                     ('Peter Do', 'peter@email.com', 'Warranty question', 'Does the laptop have an international warranty?', NOW());
+
+INSERT INTO orders (id, order_date, subtotal, tax_amount, shipping_cost, discount_amount, total_amount,
+                    order_status, notes, address, user_id)
+VALUES
+-- Order 13
+(23, DATE_SUB(NOW(), INTERVAL 3 DAY),
+ 129.99, 10.40, 15.00, 0.00, 155.39,
+ 'CONFIRMED', 'Customer confirmed via email.', '123 Main St, HCMC', 1),
+
+-- Order 14
+(24, DATE_SUB(NOW(), INTERVAL 2 DAY),
+ 349.50, 27.96, 15.00, 20.00, 372.46,
+ 'CONFIRMED', 'Applied FLASH20 discount.', '456 Oak Ave, Hanoi', 5),
+
+-- Order 15
+(25, DATE_SUB(NOW(), INTERVAL 4 DAY),
+ 429.00, 34.32, 15.00, 0.00, 478.32,
+ 'CONFIRMED', 'Customer requested fast delivery.', '789 Pine Blvd, Da Nang', 6),
+
+-- Order 16
+(26, DATE_SUB(NOW(), INTERVAL 1 DAY),
+ 179.99, 14.40, 15.00, 5.00, 204.39,
+ 'CONFIRMED', 'Confirmed. Small voucher applied.', '101 Maple Rd, Hanoi', 7),
+
+-- Order 17
+(27, DATE_SUB(NOW(), INTERVAL 5 DAY),
+ 699.00, 55.92, 15.00, 0.00, 769.92,
+ 'CONFIRMED', 'Confirmed by customer.', '202 Birch Ln, HCMC', 8),
+
+-- Order 18
+(28, DATE_SUB(NOW(), INTERVAL 2 DAY),
+ 249.99, 20.00, 15.00, 10.00, 274.99,
+ 'CONFIRMED', 'Promotion applied successfully.', '123 Main St, HCMC', 1),
+
+-- Order 19
+(29, DATE_SUB(NOW(), INTERVAL 6 DAY),
+ 299.00, 23.92, 15.00, 0.00, 337.92,
+ 'CONFIRMED', 'Customer confirmed on phone.', '456 Oak Ave, Hanoi', 5),
+
+-- Order 20
+(30, DATE_SUB(NOW(), INTERVAL 8 DAY),
+ 99.99, 8.00, 15.00, 0.00, 122.99,
+ 'CONFIRMED', 'Awaiting packing.', '789 Pine Blvd, Da Nang', 6),
+
+-- Order 21
+(31, DATE_SUB(NOW(), INTERVAL 12 HOUR),
+ 159.50, 12.76, 15.00, 5.00, 182.26,
+ 'CONFIRMED', 'Confirmed after stock check.', '101 Maple Rd, Hanoi', 7),
+
+-- Order 22
+(32, DATE_SUB(NOW(), INTERVAL 10 HOUR),
+ 49.00, 3.92, 15.00, 0.00, 67.92,
+ 'CONFIRMED', 'Low-value order confirmed.', '202 Birch Ln, HCMC', 8);
+
+INSERT INTO _user (created_at, email, first_name, last_name, password, role, status)
+VALUES (NOW(), 'ship01@example.com', 'Nguyễn', 'Văn Hùng',
+        '$2y$10$TyY0L134mVANXy0zQqTnrumSCgHtK4ShKvI3eg1mik/VK2XMCqC0i',
+        'SHIPPER', 'ACTIVE');
+
+INSERT INTO _user (created_at, email, first_name, last_name, password, role, status)
+VALUES (NOW(), 'ship02@example.com', 'Trần', 'Anh Quân',
+        '$2y$10$TyY0L134mVANXy0zQqTnrumSCgHtK4ShKvI3eg1mik/VK2XMCqC0i',
+        'SHIPPER', 'ACTIVE');
+
+INSERT INTO _user (created_at, email, first_name, last_name, password, role, status)
+VALUES (NOW(), 'ship03@example.com', 'Phạm', 'Minh Tú',
+        '$2y$10$TyY0L134mVANXy0zQqTnrumSCgHtK4ShKvI3eg1mik/VK2XMCqC0i',
+        'SHIPPER', 'ACTIVE');
