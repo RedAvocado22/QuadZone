@@ -50,8 +50,8 @@ public class Delivery {
     private Order order;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "shipper_id")
-    private User user; // The shipper assigned to this delivery
+    @JoinColumn(name = "staff_id")
+    private User user;
 
     @PreUpdate
     public void onUpdate() {

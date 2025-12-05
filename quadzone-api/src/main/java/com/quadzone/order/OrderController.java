@@ -72,6 +72,22 @@ public class OrderController {
         return ResponseEntity.ok(orderService.findById(id));
     }
 
+    @GetMapping("/admin/{id}/timeline")
+    @Operation(
+            summary = "Get order timeline (Admin)",
+            description = "Retrieve chronological events for an order including creation, payment updates, status changes, and delivery updates."
+    )
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Successfully retrieved order timeline"),
+            @ApiResponse(responseCode = "404", description = "Order not found")
+    })
+    public ResponseEntity<com.quadzone.order.dto.OrderTimelineResponse> getOrderTimeline(
+            @Parameter(description = "Unique identifier of the order", example = "1", required = true)
+            @PathVariable Long id
+    ) {
+        return ResponseEntity.ok(orderService.getOrderTimeline(id));
+    }
+
     @PostMapping("/admin")
     @Operation(
             summary = "Create order (Admin)",
@@ -293,4 +309,5 @@ public class OrderController {
         OrderResponse updatedOrder = orderService.updateOrderStatusByShipper(id, orderUpdateRequest);
         return ResponseEntity.ok(updatedOrder);
     }
+
 }

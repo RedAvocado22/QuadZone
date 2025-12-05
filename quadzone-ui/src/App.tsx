@@ -36,6 +36,8 @@ import ShipperPage from "./pages/ShipperPage";
 import { ProtectedRoute } from "./guards/ProtectedRoute";
 import { DashboardLayout } from "./layouts/dashboard";
 import { navData as shipperNavData } from "./layouts/nav-config-shipper";
+import NotFound from "./pages/NotFound";
+import Error401 from "./pages/Error401";
 
 const AdminRoutes = lazy(() => import("./routing/AdminRoutes"));
 
@@ -69,7 +71,9 @@ function App() {
                                             path="/admin/*"
                                             element={
                                                 <Suspense fallback={<div>Loading admin...</div>}>
-                                                    <AdminRoutes />
+                                                    <ProtectedRoute allowedRoles={["ADMIN", "STAFF"]}>
+                                                        <AdminRoutes />
+                                                    </ProtectedRoute>
                                                 </Suspense>
                                             }
                                         />
@@ -126,8 +130,9 @@ function App() {
                                             {/* Blog */}
                                             <Route path="/blogs" element={<BlogListPage/>}/>
                                             <Route path="/blogs/:slug" element={<BlogDetailPage/>}/>
+                                            <Route path="401" element={<Error401 />} />
                                             {/* 404 */}
-                                            {/* <Route path="*" element={<NotFound />} /> */}
+                                            <Route path="*" element={<NotFound />} />
                                         </Route>
                                     </Routes>
 

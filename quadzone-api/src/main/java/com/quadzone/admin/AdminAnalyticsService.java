@@ -2,11 +2,11 @@ package com.quadzone.admin;
 
 import com.quadzone.admin.dto.AdminDashboardAnalyticsResponse;
 import com.quadzone.admin.dto.MonthlyMetric;
+import com.quadzone.chat.repository.ChatMessageRepository;
+import com.quadzone.order.OrderRepository;
 import com.quadzone.payment.PaymentRepository;
 import com.quadzone.payment.PaymentStatus;
 import com.quadzone.user.UserRepository;
-import com.quadzone.order.OrderRepository;
-import com.quadzone.chat.repository.ChatMessageRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -32,7 +32,7 @@ public class AdminAnalyticsService {
         LocalDate startMonth = LocalDate.now().minusMonths(m - 1).withDayOfMonth(1);
         LocalDate endMonth = LocalDate.now().withDayOfMonth(1);
         LocalDateTime from = startMonth.atStartOfDay();
-        LocalDateTime to = endMonth.plusMonths(1).minusSeconds(1).atStartOfDay();
+        LocalDateTime to = endMonth.plusMonths(1).atStartOfDay().minusSeconds(1);
 
         List<Object[]> salesAgg = paymentRepository.aggregateMonthlySales(PaymentStatus.COMPLETED, from, to);
         List<Object[]> usersAgg = userRepository.aggregateMonthlyUsers(from, to);

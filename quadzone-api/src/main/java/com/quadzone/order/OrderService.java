@@ -2,11 +2,8 @@ package com.quadzone.order;
 
 import com.quadzone.exception.order.OrderNotFoundException;
 import com.quadzone.global.dto.PagedResponse;
-import com.quadzone.order.dto.OrderRegisterRequest;
-import com.quadzone.order.dto.OrderDetailsResponse;
-import com.quadzone.order.dto.OrderResponse;
-import com.quadzone.order.dto.OrderStatusResponse;
-import com.quadzone.order.dto.OrderUpdateRequest;
+import com.quadzone.order.OrderStatus;
+import com.quadzone.order.dto.*;
 import com.quadzone.payment.Payment;
 import com.quadzone.payment.PaymentMethod;
 import com.quadzone.payment.PaymentRepository;
@@ -22,8 +19,7 @@ import com.quadzone.user.User;
 import com.quadzone.user.UserRole;
 import com.quadzone.user.UserRepository;
 import com.quadzone.utils.email.EmailSenderService;
-import com.quadzone.order.dto.AssignOrderToShipperRequest;
-import com.quadzone.order.dto.CheckoutRequest;
+import com.quadzone.discount.Coupon;
 import com.quadzone.discount.CouponService;
 import lombok.RequiredArgsConstructor;
 
@@ -43,14 +39,42 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
 
-import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import java.security.SecureRandom;
 import java.util.List;
 
 @Service
 @RequiredArgsConstructor
 @Transactional
 public class OrderService {
+
+    private static final SecureRandom RANDOM = new SecureRandom();
+    private static final String ORDER_NUMBER_CHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+
+    /**
+     * Generate a unique random order number
+     * Format: ORD-XXXXXXXX (8 alphanumeric characters)
+     */
+    private String generateUniqueOrderNumber() {
+        String orderNumber;
+        int maxAttempts = 10;
+        int attempts = 0;
+
+        do {
+            StringBuilder sb = new StringBuilder("ORD-");
+            for (int i = 0; i < 8; i++) {
+                sb.append(ORDER_NUMBER_CHARS.charAt(RANDOM.nextInt(ORDER_NUMBER_CHARS.length())));
+            }
+            orderNumber = sb.toString();
+            attempts++;
+        } while (orderRepository.existsByOrderNumber(orderNumber) && attempts < maxAttempts);
+
+        if (attempts >= maxAttempts) {
+            // Fallback: use timestamp-based order number
+            orderNumber = "ORD-" + System.currentTimeMillis();
+        }
+
+        return orderNumber;
+    }
 
     private final OrderRepository orderRepository;
     private final UserRepository userRepository;
@@ -72,6 +96,7 @@ public class OrderService {
                 .orElseThrow(() -> new RuntimeException("User not found: " + request.userId()));
 
         Order order = OrderRegisterRequest.toOrder(request, user);
+        order.setOrderNumber(generateUniqueOrderNumber());
         Order savedOrder = orderRepository.save(order);
         OrderResponse orderResponse = OrderResponse.from(savedOrder);
 
@@ -159,6 +184,88 @@ public class OrderService {
     }
 
     @Transactional(readOnly = true)
+    public com.quadzone.order.dto.OrderTimelineResponse getOrderTimeline(Long orderId) {
+        Order order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Order not found: " + orderId));
+
+        java.util.List<com.quadzone.order.dto.OrderTimelineEvent> events = new java.util.ArrayList<>();
+
+        // Created
+        if (order.getOrderDate() != null) {
+            events.add(new com.quadzone.order.dto.OrderTimelineEvent(
+                    "order_created",
+                    "Order Created",
+                    "Order was created",
+                    order.getOrderDate()
+            ));
+        }
+
+        // Payment
+        paymentRepository.findByOrder(order).ifPresent(payment -> {
+            if (payment.getPaymentStatus() != null && payment.getPaymentDate() != null) {
+                String title = switch (payment.getPaymentStatus()) {
+                    case COMPLETED -> "Payment Completed";
+                    case FAILED -> "Payment Failed";
+                    case REFUNDED -> "Payment Refunded";
+                    case PARTIALLY_REFUNDED -> "Payment Partially Refunded";
+                    default -> "Payment Updated";
+                };
+                String desc = "Status: " + payment.getPaymentStatus().name();
+                events.add(new com.quadzone.order.dto.OrderTimelineEvent(
+                        "payment",
+                        title,
+                        desc,
+                        payment.getPaymentDate()
+                ));
+            }
+        });
+
+        // Order confirmation/cancellation (best-effort timestamps)
+        if (order.getOrderStatus() != null) {
+            switch (order.getOrderStatus()) {
+                case CONFIRMED -> {
+                    java.time.LocalDateTime confirmedAt = paymentRepository.findByOrder(order)
+                            .map(com.quadzone.payment.Payment::getPaymentDate)
+                            .orElse(order.getOrderDate());
+                    events.add(new com.quadzone.order.dto.OrderTimelineEvent(
+                            "order_status",
+                            "Order Confirmed",
+                            "Order confirmed",
+                            confirmedAt
+                    ));
+                }
+                case CANCELLED -> {
+                    java.time.LocalDateTime cancelledAt = order.getOrderDate();
+                    events.add(new com.quadzone.order.dto.OrderTimelineEvent(
+                            "order_status",
+                            "Order Cancelled",
+                            "Order cancelled",
+                            cancelledAt
+                    ));
+                }
+                default -> {}
+            }
+        }
+
+        // Delivery
+        deliveryRepository.findByOrder(order).ifPresent(delivery -> {
+            java.time.LocalDateTime when = delivery.getUpdatedAt() != null ? delivery.getUpdatedAt() : delivery.getCreatedAt();
+            events.add(new com.quadzone.order.dto.OrderTimelineEvent(
+                    "delivery",
+                    "Delivery Status",
+                    "Status: " + (delivery.getDeliveryStatus() != null ? delivery.getDeliveryStatus().name() : "UNKNOWN"),
+                    when
+            ));
+        });
+
+        // Sort by timestamp
+        events.sort((a, b) -> b.timestamp().compareTo(a.timestamp()));
+
+        String orderNum = order.getOrderNumber() != null ? order.getOrderNumber() : ("ORD-" + String.format("%05d", order.getId()));
+        return new com.quadzone.order.dto.OrderTimelineResponse(order.getId(), orderNum, events);
+    }
+
+    @Transactional(readOnly = true)
     public PagedResponse<OrderResponse> getMyOrders(int page, int size) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if (authentication == null || !authentication.isAuthenticated() || "anonymousUser".equals(authentication.getName())) {
@@ -190,33 +297,28 @@ public class OrderService {
 
         Page<Order> resultPage;
 
+        // Parse status if provided
+        OrderStatus orderStatus = null;
         if (status != null && !status.isBlank()) {
-            OrderStatus orderStatus;
             try {
-                orderStatus = OrderStatus.valueOf(status.toUpperCase());
+                orderStatus = OrderStatus.valueOf(status.trim().toUpperCase());
             } catch (IllegalArgumentException e) {
-                orderStatus = null;
+                // Invalid status, ignore filter
             }
+        }
 
-            if (orderStatus != null) {
-                if (search != null && !search.isBlank()) {
-                    resultPage = orderRepository.searchByQueryAndStatus(search.trim(), orderStatus, pageable);
-                } else {
-                    resultPage = orderRepository.findByOrderStatus(orderStatus, pageable);
-                }
-            } else {
-                if (search != null && !search.isBlank()) {
-                    resultPage = orderRepository.search(search.trim(), pageable);
-                } else {
-                    resultPage = orderRepository.findAll(pageable);
-                }
-            }
+        if (search != null && !search.isBlank() && orderStatus != null) {
+            // Both search and status filter
+            resultPage = orderRepository.searchByQueryAndStatus(search.trim(), orderStatus, pageable);
+        } else if (search != null && !search.isBlank()) {
+            // Only search
+            resultPage = orderRepository.search(search.trim(), pageable);
+        } else if (orderStatus != null) {
+            // Only status filter
+            resultPage = orderRepository.findByOrderStatus(orderStatus, pageable);
         } else {
-            if (search != null && !search.isBlank()) {
-                resultPage = orderRepository.search(search.trim(), pageable);
-            } else {
-                resultPage = orderRepository.findAll(pageable);
-            }
+            // No filters
+            resultPage = orderRepository.findAll(pageable);
         }
 
         var orders = resultPage.stream()
@@ -238,26 +340,6 @@ public class OrderService {
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Order not found: " + id));
     }
 
-    @Transactional(readOnly = true)
-    public OrderDetailsResponse getMyOrderDetails(Long id) {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        if (authentication == null || !authentication.isAuthenticated() || "anonymousUser".equals(authentication.getName())) {
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "User not authenticated");
-        }
-
-        User currentUser = userRepository.findByEmail(authentication.getName())
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
-
-        Order order = orderRepository.findById(id)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Order not found: " + id));
-
-        if (order.getUser() == null || !order.getUser().getId().equals(currentUser.getId())) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Order does not belong to the current user");
-        }
-
-        return OrderDetailsResponse.from(order);
-    }
-
     /**
      * Checkout method that supports both guest and authenticated users
      * @param request Checkout request containing customer info and order items
@@ -269,8 +351,8 @@ public class OrderService {
         User user = null;
 
         if (authentication != null &&
-            authentication.isAuthenticated() &&
-            !authentication.getName().equals("anonymousUser")) {
+                authentication.isAuthenticated() &&
+                !authentication.getName().equals("anonymousUser")) {
             // User is authenticated, get user from database
             user = userRepository.findByEmail(authentication.getName())
                     .orElse(null);
@@ -283,9 +365,13 @@ public class OrderService {
 
         double discountAmount = 0.0;
         String couponCode = request.couponCode();
+        Coupon appliedCoupon = null;
+
         if (couponCode != null && !couponCode.isBlank()) {
             // Recalculate discount on backend to tránh thao túng từ FE
             discountAmount = couponService.calculateDiscount(couponCode.trim(), subtotal);
+            // Get coupon entity to link to order
+            appliedCoupon = couponService.getCouponByCode(couponCode.trim());
         } else if (request.discountAmount() != null) {
             // Fallback nếu không có coupon (trường hợp khuyến mãi khác)
             discountAmount = request.discountAmount();
@@ -296,8 +382,9 @@ public class OrderService {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Total amount must be positive after discount");
         }
 
-        // Create order
+        // Create order with unique order number
         Order order = new Order();
+        order.setOrderNumber(generateUniqueOrderNumber());
         order.setOrderDate(LocalDateTime.now());
         order.setSubtotal(subtotal);
         order.setTaxAmount(taxAmount);
@@ -306,6 +393,12 @@ public class OrderService {
         order.setTotalAmount(totalAmount);
         order.setOrderStatus(OrderStatus.PENDING);
         order.setNotes(request.notes());
+
+        // Link coupon to order (if applied)
+        if (appliedCoupon != null) {
+            order.setCouponCode(couponCode.trim());
+            order.setCoupon(appliedCoupon);
+        }
 
         // Build address string
         StringBuilder addressBuilder = new StringBuilder();
@@ -350,7 +443,7 @@ public class OrderService {
                 throw new ResponseStatusException(
                         HttpStatus.BAD_REQUEST,
                         "Insufficient stock for product: " + product.getName() +
-                        ". Available: " + product.getStock() + ", Requested: " + itemRequest.quantity());
+                                ". Available: " + product.getStock() + ", Requested: " + itemRequest.quantity());
             }
 
             // Validate product is active
@@ -378,6 +471,12 @@ public class OrderService {
 
         // Save order
         Order savedOrder = orderRepository.save(order);
+
+        // Generate and set order number (format: ORD-00001)
+        if (savedOrder.getOrderNumber() == null) {
+            savedOrder.setOrderNumber("ORD-" + String.format("%05d", savedOrder.getId()));
+            savedOrder = orderRepository.save(savedOrder);
+        }
 
         // If coupon was applied, consume one usage (sau khi order tạo thành công)
         if (couponCode != null && !couponCode.isBlank()) {
@@ -569,14 +668,6 @@ public class OrderService {
             delivery.setTrackingNumber("TRACK-" + String.format("%08d", order.getId()));
         }
 
-        if (request.carrier() != null && !request.carrier().isBlank()) {
-            delivery.setCarrier(request.carrier());
-        }
-
-        if (request.estimatedDeliveryDate() != null) {
-            delivery.setEstimatedDeliveryDate(request.estimatedDeliveryDate());
-        }
-
         if (request.deliveryNotes() != null && !request.deliveryNotes().isBlank()) {
             delivery.setDeliveryNotes(request.deliveryNotes());
         }
@@ -594,7 +685,7 @@ public class OrderService {
 
         // Notify assigned shipper
         try {
-            String orderNumber = "ORD-" + String.format("%05d", order.getId());
+            String orderNum = order.getOrderNumber() != null ? order.getOrderNumber() : "ORD-" + String.format("%05d", order.getId());
             String customerName = orderResponse.customerName() != null
                     ? orderResponse.customerName()
                     : "Customer";
@@ -603,7 +694,7 @@ public class OrderService {
                     "delivery_assigned",
                     "Order Assigned to You",
                     String.format("Order #%s from %s has been assigned to you for delivery. Address: %s",
-                            orderNumber,
+                            orderNum,
                             customerName,
                             order.getAddress() != null && order.getAddress().length() > 50
                                     ? order.getAddress().substring(0, 50) + "..."
@@ -626,7 +717,7 @@ public class OrderService {
                     notifyStaffActivityToAdmin(currentUser, "Order Assigned to Shipper",
                             String.format("Staff %s assigned order #%s to shipper %s",
                                     currentUser.getFullName(),
-                                    "ORD-" + String.format("%05d", order.getId()),
+                                    order.getOrderNumber() != null ? order.getOrderNumber() : "ORD-" + order.getId(),
                                     shipper.getFullName()));
                 }
             }
@@ -701,7 +792,7 @@ public class OrderService {
                     "order_status",
                     "Order Status Updated",
                     String.format("Your order #%s status has been updated from %s to %s",
-                            "ORD-" + String.format("%05d", order.getId()),
+                            order.getOrderNumber() != null ? order.getOrderNumber() : "ORD-" + order.getId(),
                             oldStatusDisplayName,
                             statusDisplayName),
                     null // avatarUrl
@@ -719,7 +810,7 @@ public class OrderService {
      */
     private void notifyOrderToShippers(Order order) {
         try {
-            String orderNumber = "ORD-" + String.format("%05d", order.getId());
+            String orderNum = order.getOrderNumber() != null ? order.getOrderNumber() : "ORD-" + order.getId();
             String customerName = order.getCustomerFirstName() != null && order.getCustomerLastName() != null
                     ? order.getCustomerFirstName() + " " + order.getCustomerLastName()
                     : "Customer";
@@ -728,7 +819,7 @@ public class OrderService {
                     "delivery",
                     "New Delivery Assignment",
                     String.format("Order #%s from %s is ready for delivery. Address: %s",
-                            orderNumber,
+                            orderNum,
                             customerName,
                             order.getAddress() != null && order.getAddress().length() > 50
                                     ? order.getAddress().substring(0, 50) + "..."
@@ -776,7 +867,8 @@ public class OrderService {
         return status.name().charAt(0) + status.name().substring(1).toLowerCase().replace("_", " ");
     }
 
-    /**
+
+/**
      * Find orders assigned to the current authenticated shipper
      *
      * @param page Page number (0-indexed)
@@ -933,5 +1025,72 @@ public class OrderService {
         }
 
         return orderResponse;
+    }
+    /**
+     * Get orders for the currently authenticated user
+     * @param page Page number (0-indexed)
+     * @param size Page size
+     * @return PagedResponse with user's orders
+     */
+    @Transactional(readOnly = true)
+    public PagedResponse<OrderResponse> getMyOrders(int page, int size) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || !authentication.isAuthenticated() ||
+                authentication.getName().equals("anonymousUser")) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "User not authenticated");
+        }
+
+        User user = userRepository.findByEmail(authentication.getName())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
+
+        Pageable pageable = PageRequest.of(Math.max(page, 0), Math.max(size, 1));
+
+        // First try to find orders by user ID
+        Page<Order> ordersPage = orderRepository.findByUserId(user.getId(), pageable);
+
+        // If no orders found by user ID, also check by email (for orders placed before user registered)
+        if (ordersPage.isEmpty() && user.getEmail() != null) {
+            ordersPage = orderRepository.findByCustomerEmail(user.getEmail(), pageable);
+        }
+
+        var orders = ordersPage.stream()
+                .map(OrderResponse::from)
+                .toList();
+
+        return  PagedResponse.of(
+                orders,
+                ordersPage.getTotalElements(),
+                ordersPage.getNumber(),
+                ordersPage.getSize()
+        );
+    }
+    /**
+     * Get order details for the currently authenticated user
+     * @param orderId Order ID
+     * @return OrderDetailsResponse with order items
+     */
+    @Transactional(readOnly = true)
+    public OrderDetailsResponse getMyOrderDetails(Long orderId) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || !authentication.isAuthenticated() ||
+                authentication.getName().equals("anonymousUser")) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "User not authenticated");
+        }
+
+        User user = userRepository.findByEmail(authentication.getName())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
+
+        Order order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Order not found"));
+
+        // Check if order belongs to the user (by user ID or email)
+        boolean belongsToUser = (order.getUser() != null && order.getUser().getId().equals(user.getId()))
+                || (order.getCustomerEmail() != null && order.getCustomerEmail().equals(user.getEmail()));
+
+        if (!belongsToUser) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Order does not belong to user");
+        }
+
+        return OrderDetailsResponse.from(order);
     }
 }
